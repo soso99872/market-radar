@@ -408,6 +408,7 @@ def main():
             "fields": ["date", "open", "high", "low", "close", "value", "foreign", "trust", "dealer"],
             "rows": [[x if isinstance(x, str) else (None if pd.isna(x) else float(x)) for x in r] for r in rows],
             "signals": marks,
+            "extra": radar.EXTRAS.get(c),
             "summary": {
                 "close": float(close.at[last, c]), "chg": float(F["chg"].at[last, c]),
                 "ret5": None if pd.isna(ret5.at[last, c]) else round(float(ret5.at[last, c]) * 100, 2),

@@ -121,6 +121,59 @@
       out.join("") + '</svg><div class="cap"><span>' + MR.md(rows[0][0]) + "</span><span>" + n + " 個交易日</span><span>" + MR.md(rows[n - 1][0]) + "</span></div></div>";
   }
 
+  // 模型合理價:公式固定,把每一步算式攤開讓人可以自己驗算
+  function fvHtml(doc) {
+    var ex = doc.extra || {}, e = ex.fv, px = doc.summary.close;
+    if (!e) return '<div class="fvbox"><h4>模型合理價</h4><p class="flat" style="font-size:13px;margin:0">資料不足(需要至少 24 個月的本益比或淨值比歷史),不估算。</p></div>';
+    var cls = e.status === "低估" ? "up" : e.status === "高估" ? "down" : "flat";
+    var l = (e.low * 0.8), span = (e.high * 1.2 - l) || 1;
+    function at(v) { return Math.max(0, Math.min(100, (v - l) / span * 100)).toFixed(1) + "%"; }
+    var how = e.method === "pe"
+      ? "近四季 EPS " + e.eps + " 元(股價 ÷ 本益比 " + e.pe + ")× 營收動能 " + e.growth + " 倍 = 預估 EPS <b>" + e.feps + "</b> 元;" +
+        "× 過去 " + e.n + " 個月本益比中位數 " + e.band[1] + " 倍 = <b>" + e.fair + "</b> 元。合理區間用第 25~75 百分位(" + e.band[0] + "~" + e.band[2] + " 倍)。"
+      : "公司虧損或本益比過高,改用淨值比:每股淨值 " + e.bvps + " 元 × 過去 " + e.n + " 個月淨值比中位數 " + e.band[1] + " 倍 = <b>" + e.fair + "</b> 元。";
+    return '<div class="fvbox"><h4>模型合理價</h4>' +
+      '<div class="fvgrid"><div><span>目前股價</span><b>' + px + "</b></div>" +
+      "<div><span>模型合理價</span><b>" + e.fair + "</b></div>" +
+      "<div><span>合理區間</span><b>" + e.low + " ~ " + e.high + "</b></div>" +
+      '<div><span>潛在空間</span><b class="' + MR.dir(e.up) + '">' + MR.sign(e.up, 1) + "%</b></div>" +
+      '<div><span>評價</span><b class="' + cls + '">' + e.status + "</b></div></div>" +
+      '<div class="fvbar" aria-hidden="true"><i style="left:' + at(e.low) + ";width:calc(" + at(e.high) + " - " + at(e.low) + ')"></i>' +
+      '<u style="left:' + at(e.fair) + '"></u><s style="left:' + at(px) + '"></s></div>' +
+      '<p class="fvhow">' + how + "</p>" +
+      (e.extreme ? '<p class="fvhow" style="color:var(--down)">⚠ 合理價與股價差距超過常理範圍,多半是景氣轉折(獲利剛開始暴增或衰退)、一次性損益或市場重新評價,這個固定公式不適用於這檔。</p>' : "") +
+      '<p class="fvhow">公式固定、沒有人為調整;假設淨利率不變、評價回到自己的歷史中位數,實際上兩者都會變。回測顯示:2023–2026 被判「低估」的股票之後反而表現較差,這個合理價目前沒有預測力,只供了解估值位置。</p></div>';
+  }
+
+  function revHtml(doc) {
+    var r = (doc.extra || {}).rev || [];
+    if (r.length < 6) return "";
+    var mx = Math.max.apply(null, r.map(function (x) { return x[1] || 0; })) || 1;
+    var last = r[r.length - 1];
+    return '<div class="mem-tools"><h4>月營收 · 近 ' + r.length + " 個月</h4></div>" +
+      '<div class="revbars">' + r.map(function (x) {
+        return '<i title="' + esc(x[0]) + " 營收 " + x[1] + " 億,年增 " + (x[2] == null ? "—" : x[2] + "%") + '" style="height:' + Math.max(2, (x[1] || 0) / mx * 100).toFixed(0) +
+          "%;background:" + (x[2] > 0 ? "var(--up)" : x[2] < 0 ? "var(--down)" : "var(--muted)") + '"></i>';
+      }).join("") + "</div>" +
+      '<div class="kchart"><div class="cap"><span>' + esc(r[0][0]) + "</span><span>最新 " + esc(last[0]) + ":" + last[1] + " 億,年增 " + (last[2] == null ? "—" : MR.sign(last[2], 1) + "%") +
+      "</span></div></div>";
+  }
+
+  function peHtml(doc) {
+    var h = (doc.extra || {}).pe_hist || [], e = (doc.extra || {}).fv;
+    if (h.length < 12 || !e || e.method !== "pe") return "";
+    var v = h.map(function (x) { return x[1]; }), W = 600, H = 90;
+    var lo = Math.min.apply(null, v.concat([e.band[0]])), hi = Math.max.apply(null, v.concat([e.band[2]])), rg = hi - lo || 1;
+    var y = function (x) { return (H - 4 - (x - lo) / rg * (H - 8)).toFixed(1); };
+    var pts = v.map(function (x, i) { return (i / (v.length - 1) * W).toFixed(1) + "," + y(x); }).join(" ");
+    var band = '<rect x="0" y="' + y(e.band[2]) + '" width="' + W + '" height="' + (y(e.band[0]) - y(e.band[2])).toFixed(1) + '" fill="var(--accent)" opacity=".12"/>' +
+      '<line x1="0" x2="' + W + '" y1="' + y(e.band[1]) + '" y2="' + y(e.band[1]) + '" stroke="var(--accent)" stroke-dasharray="4 3"/>';
+    return '<div class="mem-tools"><h4>本益比歷史(每月) · 色帶為 25~75 百分位</h4></div><div class="kchart">' +
+      '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" style="height:' + H + 'px">' + band +
+      '<polyline points="' + pts + '" fill="none" stroke="var(--text)" stroke-width="1.5"/></svg>' +
+      '<div class="cap"><span>' + esc(h[0][0]) + "</span><span>中位數 " + e.band[1] + " 倍 · 目前 " + (e.pe == null ? "—" : e.pe + " 倍") + "</span><span>" + esc(h[h.length - 1][0]) + "</span></div></div>";
+  }
+
   function stockHtml(doc, stats) {
     var s = doc.summary, sigs = (stats && stats.signals) || {}, names = {}, grades = {};
     Object.keys(sigs).forEach(function (k) { names[k] = sigs[k].name; grades[k] = sigs[k].horizons["10"].grade; });
@@ -133,7 +186,7 @@
         return '<a class="th-chip" href="sectors.html#' + esc(t.id) + '">' + esc(t.name) + "</a>";
       }).join("") + "</div>" : "") +
       '</div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
-      '<div class="sh-body">' +
+      '<div class="sh-body">' + fvHtml(doc) +
       '<div class="kgrid">' +
       "<div><span>5 日漲跌</span><b>" + MR.pct(s.ret5) + "</b></div>" +
       "<div><span>20 日漲跌</span><b>" + MR.pct(s.ret20) + "</b></div>" +
@@ -144,7 +197,7 @@
       "<div><span>外資連買</span><b>" + s.foreign_streak + " 天</b></div>" +
       "<div><span>投信連買</span><b>" + s.trust_streak + " 天</b></div>" +
       "<div><span>今日法人</span><b>" + MR.yi(lastNet(doc)) + "</b></div>" +
-      "</div>" + kchart(doc, names, grades) +
+      "</div>" + kchart(doc, names, grades) + revHtml(doc) + peHtml(doc) +
       '<div class="mem-tools"><h4>近期訊號 · 歷史 10 日表現</h4></div>' +
       (recent.length ? '<ul class="siglist">' + recent.map(function (m) {
         var st = sigs[m[1]], h = st && st.horizons["10"];

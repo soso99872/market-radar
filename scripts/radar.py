@@ -255,7 +255,11 @@ def build(L):
     port = portfolio(state, pubs, close, opn, tradable)
     basket_log(state, pubs, close, opn, tradable, dates)
     cyc = cycle(L, rp, close, dates, usable)
-    doc = dict(meta, stats=stats, base=base, rev=rev_list, breakout=bo_list, portfolio=port, cycle=cyc)
+    fv = fair_all(rp, close, last)
+    for x in rev_list + bo_list:
+        x["fv"] = fv.get(x["code"])
+    rank = ranking(rev_list, bo_list)
+    doc = dict(meta, stats=stats, base=base, rev=rev_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank)
     with open(os.path.join(OUT, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 
@@ -424,6 +428,77 @@ def bo_reasons(x):
         out.append("無月營收資料")
     if x["days_ago"] > 0 and x["since"] is not None:
         out.append("突破後至今 %+.1f%%" % x["since"])
+    return out
+
+
+EXTRAS = {}   # 代號 → 個股面板用的估值、營收、本益比歷史(signals.py 寫個股檔時帶入)
+
+
+def fair_all(rp, close, last):
+    """每檔股票的模型合理價(公式見 fairvalue.py)。同時把個股面板要用的歷史資料放進 EXTRAS。"""
+    import fairvalue as FV
+    import valuation
+    VAL = valuation.load_all()
+    try:
+        with open(os.path.join(history.ROOT, "data", "fundamentals", "latest.json"), encoding="utf-8") as f:
+            now = json.load(f).get("val", {})
+    except FileNotFoundError:
+        now = {}
+    cur_m = (int(last[:4]), int(last[5:7]))
+    vm = [m for m in sorted(VAL) if m < cur_m][-FV.MAX_HIST:]
+    pe_h = {m: VAL[m]["s"] for m in vm}
+    rev, yoy = rp["rev"], rp["yoy"]
+    out = {}
+    EXTRAS.clear()
+    for c in close.columns:
+        price = close.at[last, c]
+        if pd.isna(price):
+            continue
+        pe, pb = (now.get(c) or [None, None])[:2]
+        col = rev[c].dropna()
+        ttm = r3 = None
+        if len(col) >= 12 and col.index[-1] >= rp["months"][-3]:
+            ttm, r3 = col.iloc[-12:].sum(), col.iloc[-3:].sum()
+        ph = [pe_h[m].get(c, [None])[0] for m in vm]
+        bh = [(pe_h[m].get(c) or [None, None])[1] for m in vm]
+        est = FV.estimate(float(price), pe, pb, ttm, r3, ph, bh)
+        ex = {"rev": [["%d-%02d" % m, _f(rev.at[m, c] / 1e5, 2), _f(yoy.at[m, c], 1)] for m in rev.index[-24:] if not pd.isna(rev.at[m, c])],
+              "pe_hist": [["%d-%02d" % m, v] for m, v in zip(vm, ph) if v]}
+        if est:
+            e = {"fair": _f(est["fair"]), "low": _f(est["low"]), "high": _f(est["high"]),
+                 "up": _f((est["fair"] / price - 1) * 100, 1), "status": FV.status(float(price), est),
+                 "method": est["method"], "band": [_f(b, 1) for b in est["band"]], "n": est["n"],
+                 "pe": pe, "pb": pb}
+            # 合理價偏離股價太多,通常是景氣轉折、一次性損益或評價重估,固定公式不適用
+            e["extreme"] = bool(e["up"] is not None and (e["up"] > 100 or e["up"] < -60))
+            if est["method"] == "pe":
+                e.update(eps=_f(est["eps"]), growth=_f(est["growth"]), feps=_f(est["feps"]))
+            else:
+                e.update(bvps=_f(est["bvps"]))
+            out[c] = e
+            ex["fv"] = e
+        EXTRAS[c] = ex
+    return out
+
+
+def ranking(rev_list, bo_list):
+    """潛在空間排行:起漲雷達名單(營收動能 + 近 5 日爆量突破)中有模型合理價的,依潛在空間由大到小。"""
+    seen, out = {}, []
+    for x in rev_list:
+        seen[x["code"]] = dict(x, src=["營收動能"])
+    for x in bo_list:
+        if x["days_ago"] > 5:
+            continue
+        if x["code"] in seen:
+            seen[x["code"]]["src"].append("爆量突破")
+        else:
+            seen[x["code"]] = dict(x, src=["爆量突破"])
+    keys = ("code", "name", "close", "chg", "fv", "src", "yoy", "yoy3", "rev_streak", "above_ma60", "dumped",
+            "low_vol", "themes", "ret20", "hi250")
+    for x in seen.values():
+        if x.get("fv"):
+            out.append({k: x.get(k) for k in keys})
+    out.sort(key=lambda x: -(x["fv"]["up"] or -999))
     return out
 
 

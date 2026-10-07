@@ -46,6 +46,16 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 .tag2 { font-size: 11.5px; font-weight: 700; border-radius: 4px; padding: 0 6px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
 .tag2.hot { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
 .tag2.dim { color: var(--faint); }
+.fvl { margin: 6px 0 2px; font-size: 13px; color: var(--muted); }
+.fvl b { font-family: var(--mono); color: var(--text); }
+.st3 { font-size: 11.5px; font-weight: 700; border-radius: 4px; padding: 0 6px; color: var(--muted); border: 1px solid var(--line); }
+.st3.lo { color: var(--up); border-color: color-mix(in srgb, var(--up) 50%, transparent); }
+.st3.hi { color: var(--down); border-color: color-mix(in srgb, var(--down) 50%, transparent); }
+.tk.rank td, .tk.rank th { white-space: nowrap; font-size: 13.5px; }
+.tk.rank td.l, .tk.rank th.l { text-align: left; font-family: var(--sans); }
+.tk.rank td.rk { color: var(--faint); }
+.tk.rank td.sm { font-size: 12px; color: var(--muted); }
+.tk.rank .stock-link b { font-family: var(--mono); }
 .tag2.warn { color: var(--down); border-color: color-mix(in srgb, var(--down) 45%, transparent); }
 table.pf { border-collapse: collapse; width: 100%; font-size: 13.5px; }
 .pf th { font-size: 12px; color: var(--faint); font-weight: 500; text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -127,9 +137,9 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   var esc = MR.esc, pct = MR.pct, sign = MR.sign, dir = MR.dir;
   var app = document.getElementById("app");
   var R = null, TK = null, AU = null, LIVE = null, LIVEHITS = [];
-  var view = (location.hash || "#rev").slice(1);
-  if (["rev", "cycle", "breakout", "track"].indexOf(view) < 0) view = "rev";
-  var hideLow = true, onlyNew = false, sortBy = "new", showAll = {};
+  var view = (location.hash || "#rank").slice(1);
+  if (["rank", "rev", "cycle", "breakout", "track"].indexOf(view) < 0) view = "rank";
+  var hideLow = true, onlyNew = false, sortBy = "new", showAll = {}, rankFilter = "all", rankSort = "up", FVT = null;
   try { hideLow = localStorage.getItem("radar.hideLow") !== "0"; } catch (e) {}
   MR.setupConv();
 
@@ -152,9 +162,9 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
     var a = R.stats.rev_high.horizons["60"], b = R.base["60"], bo = R.stats.breakout.horizons["60"], br = R.stats.breakout_rev.horizons["60"], bn = R.stats.breakout_norev.horizons["60"];
     return '<section class="verdict"><h2>這頁在找什麼、有多準</h2><ul>' +
       '<li><span class="k">爆發前:看營收,不看籌碼。</span>騰輝這類股在起漲前法人幾乎不在場,籌碼看不出來;但營收會先創新高。月營收創 12 個月新高、且年增 ≥ 30%(或連續 2 個月年增 ≥ 20%)的股票,公告後 60 日平均 <b>' +
-      num(a.avg, 1, "%") + "</b>、中位數 <b>" + num(a.med, 1, "%") + "</b>(一般股 " + num(b.avg, 1, "%") + " / " + num(b.med, 1, "%") + "),是目前唯一中位數為正的條件(證據:" + esc(a.grade) + ")。</li>" +
+      num(a.avg, 1, "%") + "</b>、中位數 <b>" + num(a.med, 1, "%") + "</b>(一般股 " + num(b.avg, 1, "%") + " / " + num(b.med, 1, "%") + ")," + (a.med > 0 ? "是少數中位數為正的條件" : "中位數雖然接近 0,但遠好於一般股") + "(證據:" + esc(a.grade) + ")。</li>" +
       '<li><span class="k">剛爆發:爆量突破要搭配營收。</span>有營收成長的突破 60 日平均 <b>' + num(br.avg, 1, "%") + "</b>,營收衰退的突破只有 <b>" + num(bn.avg, 1, "%") +
-      "</b>;但突破訊號整體統計不夠顯著(證據:" + esc(bo.grade) + "),當確認用,不當主訊號。</li>" +
+      "</b>;突破訊號本身證據為「" + esc(bo.grade) + "」,而且年度之間不穩定,當確認用,不當主訊號。</li>" +
       '<li><span class="k">命中率要有正確期待。</span>符合條件後 120 日內翻倍的比例約 <b>' + plain(a.double, 0, "%") + "</b>(隨便挑一檔是 " + plain(b.double, 0, "%") +
       "),也就是約 7 檔才有 1 檔;同時約 <b>" + plain(a.loss15, 0, "%") + "</b> 會在 60 日內虧超過 15%。報酬集中在少數大漲股,所以要<span class=\"k\">分散買 10 檔左右</span>(見營收動能頁下方的組合模擬)。</li>" +
       '<li><span class="k">整個產業的漲價行情看「產業循環」。</span>被動元件 2025 年底那波漲了 4 倍,產業營收轉強訊號在板塊只漲 6% 時就出現。</li>' +
@@ -183,6 +193,13 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
     }).join("") + "</div>" : "";
   }
 
+  function fvLine(x) {
+    var e = x.fv;
+    if (!e) return '<p class="fvl">模型合理價:資料不足</p>';
+    return '<p class="fvl">模型合理價 <b>' + e.fair + "</b>(" + e.low + "~" + e.high + ")· 潛在空間 <b class=\"" + dir(e.up) + "\">" + sign(e.up, 0) + "%</b>" + (e.extreme ? '(⚠ 偏離太大,公式不適用)' : "") + " · " +
+      '<span class="st3 ' + (e.status === "低估" ? "lo" : e.status === "高估" ? "hi" : "") + '">' + e.status + "</span></p>";
+  }
+
   function tags(x) {
     return (x.above_ma60 === true ? '<span class="tag2">站上季線</span>' : x.above_ma60 === false ? '<span class="tag2 dim">季線下</span>' : "") +
       (x.dumped ? '<span class="tag2 warn">法人大賣</span>' : "") +
@@ -197,7 +214,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       "<div><span>連續創新高</span><b>" + x.rev_streak + " 個月</b></div>" +
       "<div><span>距 52 週高</span><b>" + num(x.hi250, 0, "%") + "</b></div>" +
       "<div><span>20 日漲跌</span><b class=\"" + dir(x.ret20) + "\">" + num(x.ret20, 0, "%") + "</b></div></div>" +
-      bars(x.rev_hist) +
+      fvLine(x) + bars(x.rev_hist) +
       '<ul class="why"><li>' + x.why.map(esc).join("</li><li>") + "</li></ul>" + chips(x) + "</article>";
   }
 
@@ -210,7 +227,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       "<div><span>當天漲幅</span><b class=\"" + dir(x.day_chg) + "\">" + num(x.day_chg, 1, "%") + "</b></div>" +
       "<div><span>3 月營收年增</span><b class=\"" + dir(x.yoy3) + "\">" + num(x.yoy3, 0, "%") + "</b></div>" +
       "<div><span>突破後</span><b class=\"" + dir(x.since) + "\">" + num(x.since, 1, "%") + "</b></div></div>" +
-      '<ul class="why"><li>' + x.why.map(esc).join("</li><li>") + "</li></ul>" + chips(x) + "</article>";
+      fvLine(x) + '<ul class="why"><li>' + x.why.map(esc).join("</li><li>") + "</li></ul>" + chips(x) + "</article>";
   }
 
   function seg(name, cur, opts) {
@@ -257,6 +274,48 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       '<div class="tools"><label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label></div>" +
       list("bo", items, 18, function (x) { return boCard(x, false); }) +
       '<p class="note">爆量突破整體統計不夠顯著,而且中位數為負:多數突破之後會拉回。有營收成長支撐的突破明顯較好,營收衰退的突破歷史上平均是虧的。</p>';
+  }
+
+  function fvEvidence() {
+    if (!FVT) return '<p class="note">模型合理價的歷史回測尚未產生。</p>';
+    var q = FVT.quintiles || [], h = FVT.hold;
+    var rows = q.map(function (x) {
+      return "<tr><td>" + esc(x.label) + "</td><td>" + sign(x.up_med, 0) + "%</td><td class=\"" + dir(x.rel) + "\">" + sign(x.rel, 2) + "%</td><td>" + sign(x.med, 2) + "%</td><td>" + plain(x.mwin, 0, "%") + "</td></tr>";
+    }).join("");
+    return '<div class="box"><h3>潛在空間真的有用嗎?歷史回測(' + esc(FVT.span[0]) + " ~ " + esc(FVT.span[1]) + "," + FVT.months + " 個月)</h3>" +
+      '<table class="pf"><thead><tr><th>每月依潛在空間分 5 組</th><th>空間中位數</th><th>之後 ' + h + " 日比一般股</th><th>中位數</th><th>月勝率</th></tr></thead><tbody>" + rows + "</tbody></table>" +
+      "<p><b style=\"color:var(--text)\">" + esc(FVT.verdict) + "</b></p>" +
+      "<p>原因:被公式判為「低估」的,常是市場有理由給低本益比的公司;判為「高估」的成長股,評價反而持續上修。在名單內改用其他特徵排序,只有「營收連續創新高月數」稍有幫助(較長的一半 60 日多 10%,但 t = 2.0,仍不夠顯著)。正在用 2019–2023 的資料做樣本外驗證。</p></div>";
+  }
+
+  function rankView() {
+    var key = { up: function (x) { return -(x.fv.up || -999); }, streak: function (x) { return -(x.rev_streak || 0) * 1000 - (x.fv.up || 0) / 1000; },
+      high: function (x) { return x.hi250 == null ? 999 : -x.hi250; } }[rankSort];
+    var items = (R.rank || []).slice().sort(function (a, b) { return key(a) - key(b); }).filter(function (x) {
+      if (hideLow && x.low_vol) return false;
+      if (rankFilter === "lo") return x.fv.status === "低估";
+      if (rankFilter === "ok") return x.fv.status !== "高估";
+      if (rankFilter === "sane") return !x.fv.extreme;
+      return true;
+    });
+    var rows = items.slice(0, showAll.rank ? 999 : 40).map(function (x, i) {
+      var e = x.fv;
+      return '<tr><td class="rk">' + (i + 1) + '</td><td class="l"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(x.name) + "</button></td>" +
+        '<td data-px="' + esc(x.code) + '">' + x.close + "</td><td>" + e.fair + '</td><td class="sm">' + e.low + "~" + e.high + "</td>" +
+        '<td class="' + dir(e.up) + '"><b>' + sign(e.up, 0) + "%</b>" + (e.extreme ? ' <span class="st3 hi" title="偏離太大,多半是景氣轉折或一次性損益,固定公式不適用">⚠ 不適用</span>' : "") + "</td>" +
+        '<td><span class="st3 ' + (e.status === "低估" ? "lo" : e.status === "高估" ? "hi" : "") + '">' + e.status + "</span></td>" +
+        '<td class="sm">' + (e.method === "pe" ? "本益比 " + e.band[1] + " 倍" : "淨值比 " + e.band[1] + " 倍") + "</td>" +
+        '<td class="' + dir(x.yoy) + '">' + num(x.yoy, 0, "%") + '</td><td class="l sm">' + x.src.join("、") + (x.above_ma60 === false ? "、季線下" : "") + (x.dumped ? "、法人大賣" : "") + "</td></tr>";
+    }).join("");
+    return '<div class="sec-h"><h2>潛在空間排行</h2><p>起漲雷達名單(營收動能 + 近 5 日爆量突破)中,依「模型合理價 ÷ 目前股價 − 1」由大到小排序。點代號看算式與詳細資料。</p></div>' +
+      fvEvidence() +
+      '<div class="tools"><span>排序</span>' + seg("rs", rankSort, [["up", "潛在空間"], ["streak", "營收連續創新高"], ["high", "接近 52 週高"]]) +
+      "<span>只看</span>" + seg("rf", rankFilter, [["all", "全部"], ["sane", "排除公式不適用"], ["ok", "排除高估"], ["lo", "只看低估"]]) +
+      '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label><span>共 " + items.length + " 檔</span></div>" +
+      '<div class="tkwrap"><table class="tk rank"><thead><tr><th>#</th><th class="l">個股</th><th>股價</th><th>模型合理價</th><th>合理區間</th><th>潛在空間</th><th>評價</th><th>依據</th><th>營收年增</th><th class="l">入選原因</th></tr></thead><tbody>' +
+      rows + "</tbody></table></div>" +
+      (items.length > 40 ? '<button type="button" class="more" data-all="rank">' + (showAll.rank ? "收合" : "顯示全部 " + items.length + " 檔") + "</button>" : "") +
+      '<p class="note">模型合理價 = 預估 EPS × 這檔股票自己過去 5 年本益比中位數(虧損股改用淨值比),預估 EPS = 近四季 EPS × 近 3 月營收年化 ÷ 近 12 月營收。這是固定公式算出的參考值,不是目標價或買賣建議;它假設淨利率不變、評價會回到歷史常態,兩者實際上都會變。潛在空間很大常常代表市場認為這次不一樣(例如景氣反轉或一次性獲利),請搭配上方回測判斷可信度。</p>';
   }
 
   function portfolioBox() {
@@ -339,19 +398,21 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       '<span class="sep"></span><span id="live-status">' + MR.liveStatus(LIVE, R.date) + "</span></div>" +
       verdict() +
       '<div class="tabs"><div class="seg" role="tablist" aria-label="檢視">' +
-      [["rev", "營收動能 · 爆發前"], ["cycle", "產業循環"], ["breakout", "爆量突破 · 剛爆發" + (LIVEHITS.length ? " +" + LIVEHITS.length : "")], ["track", "實績追蹤"]].map(function (o) {
+      [["rank", "潛在空間排行"], ["rev", "營收動能 · 爆發前"], ["cycle", "產業循環"], ["breakout", "爆量突破 · 剛爆發" + (LIVEHITS.length ? " +" + LIVEHITS.length : "")], ["track", "實績追蹤"]].map(function (o) {
         return '<button type="button" role="tab" data-view="' + o[0] + '" aria-pressed="' + (o[0] === view) + '" aria-selected="' + (o[0] === view) + '">' + o[1] + "</button>";
       }).join("") + "</div></div>" +
-      (view === "rev" ? revView() : view === "cycle" ? cycleView() : view === "breakout" ? boView() : trackView());
+      (view === "rank" ? rankView() : view === "rev" ? revView() : view === "cycle" ? cycleView() : view === "breakout" ? boView() : trackView());
     if (LIVE) MR.patchPrices(app, LIVE);
     document.title = "起漲雷達 · " + R.date;
   }
 
   app.addEventListener("click", function (e) {
-    var b = e.target.closest("[data-view],[data-sort],[data-all]");
+    var b = e.target.closest("[data-view],[data-sort],[data-all],[data-rf],[data-rs]");
     if (!b) return;
     if (b.dataset.view) { view = b.dataset.view; history.replaceState(null, "", "#" + view); }
     if (b.dataset.sort) sortBy = b.dataset.sort;
+    if (b.dataset.rf) rankFilter = b.dataset.rf;
+    if (b.dataset.rs) rankSort = b.dataset.rs;
     if (b.dataset.all) showAll[b.dataset.all] = !showAll[b.dataset.all];
     render();
   });
@@ -363,9 +424,10 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   });
 
   Promise.all([MR.json("data/radar/latest.json"), MR.json("data/track/summary.json").catch(function () { return null; }),
-    MR.json("data/track/audit.json").catch(function () { return null; })])
+    MR.json("data/track/audit.json").catch(function () { return null; }),
+    MR.json("data/radar/fv_backtest.json").catch(function () { return null; })])
     .then(function (r) {
-      R = r[0]; TK = r[1]; AU = r[2];
+      R = r[0]; TK = r[1]; AU = r[2]; FVT = r[3];
       render();
       // 證交所若已公布比網站更新的收盤資料,直接在瀏覽器更新上市股價格並判斷今日突破
       return MR.fetchLive(R.date).then(function (lv) {

@@ -11,6 +11,9 @@ on:
       - .github/workflows/market-data.yml
       - scripts/fetch_flows.py
       - scripts/fetch_quotes.py
+      - scripts/history.py
+      - scripts/signals.py
+      - scripts/fundamentals.py
       - data/sectors/themes.json
 
 permissions:
@@ -23,7 +26,7 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -35,6 +38,10 @@ jobs:
           python scripts/fetch_quotes.py > /tmp/quotes.json && mv /tmp/quotes.json data/quotes.json || echo "::warning::fetch_quotes 失敗"
       - name: 抓法人買賣超並計算板塊
         run: python scripts/fetch_flows.py || echo "::warning::fetch_flows 失敗"
+      - name: 本益比與月營收
+        run: python scripts/fundamentals.py || echo "::warning::fundamentals 失敗"
+      - name: 訊號回測、觀察名單與個股資料
+        run: python scripts/signals.py || echo "::warning::signals 失敗"
       - name: 提交
         run: |
           git config user.name "github-actions[bot]"
@@ -43,7 +50,7 @@ jobs:
           for i in 1 2 3; do
             git fetch -q origin main
             git reset -q --mixed origin/main
-            git add -A data/quotes.json data/flows data/sectors/latest.json data/screens
+            git add -A data/quotes.json data/flows data/sectors/latest.json data/screens data/history data/signals data/stocks data/watch data/fundamentals
             if git diff --cached --quiet; then echo "沒有變更"; exit 0; fi
             git commit -q -m "資料更新 $(TZ=Asia/Taipei date '+%F %H:%M')"
             git push origin HEAD:main && exit 0

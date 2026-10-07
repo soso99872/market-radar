@@ -258,8 +258,10 @@ def build(L):
     fv = fair_all(rp, close, last)
     for x in rev_list + bo_list:
         x["fv"] = fv.get(x["code"])
-    rank = ranking(rev_list, bo_list)
-    doc = dict(meta, stats=stats, base=base, rev=rev_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank)
+    mom = momentum(L, rp, close, opn, tradable, usable, newpub, rev_list)
+    rank = ranking(rev_list, bo_list, mom)
+    doc = dict(meta, stats=stats, base=base, rev=rev_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank,
+               momentum={k: v for k, v in mom.items() if k != "today"})
     with open(os.path.join(OUT, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 
@@ -481,8 +483,78 @@ def fair_all(rp, close, last):
     return out
 
 
-def ranking(rev_list, bo_list):
-    """潛在空間排行:起漲雷達名單(營收動能 + 近 5 日爆量突破)中有模型合理價的,依潛在空間由大到小。"""
+MOM_FEATS = ("離季線幅度", "60 日漲幅", "連續創新高月數", "距 52 週高點")
+
+
+def momentum(L, rp, close, opn, tradable, usable, newpub, rev_list, h=60):
+    """營收動能名單內的綜合動能分數,以及「同分組歷史 60 日後實際落點」當作統計預期區間。
+
+    分數 = 4 個特徵在當天名單內的百分位排名平均(離季線幅度、60 日漲幅、營收連續創新高月數、距 52 週高點)。
+    這 4 個特徵在 2019–2023 與 2023–2026 兩段期間方向一致(動能延續),但組合是看過兩段資料後才定的,
+    真正的檢驗是實績追蹤。"""
+    ma60 = L["ma60"]
+    feats = {
+        "離季線幅度": (close / ma60 - 1).values,
+        "60 日漲幅": (close / close.shift(60) - 1).values,
+        "連續創新高月數": to_daily(rp["streak"].astype(float), rp["months"], close.index).values,
+        "距 52 週高點": (close / close.rolling(250, min_periods=200).max() - 1).values,
+    }
+    good = (to_daily(rp["good"].astype(float), rp["months"], close.index) == 1).values & tradable.values
+    C, E, T = close.values, opn.shift(-1).values, tradable.values
+    N = len(close.index)
+
+    def scores(i, js):
+        X = np.column_stack([feats[k][i, js] for k in MOM_FEATS])
+        ok = ~np.isnan(X).any(axis=1)
+        sc = np.full(len(js), np.nan)
+        if ok.sum() >= 5:
+            sc[ok] = pd.DataFrame(X[ok]).rank(pct=True).mean(axis=1).values
+        return sc
+
+    hist = {q: [] for q in range(5)}
+    for i in np.where(newpub.values & usable.values)[0]:
+        if i + h >= N:
+            continue
+        js = np.where(good[i])[0]
+        if len(js) < 10:
+            continue
+        sc = scores(i, js)
+        f = C[i + h] / E[i] - 1 - S.COST
+        bench = np.nanmean(f[T[i] & ~np.isnan(f)])
+        qs = pd.Series(sc).rank(pct=True).values
+        for j, s_, q_ in zip(js, sc, qs):
+            if not np.isnan(s_) and not np.isnan(f[j]):
+                hist[min(4, int(q_ * 5 - 1e-9))].append((f[j], f[j] - bench))
+    qstat = []
+    for q in range(5):
+        a = np.array(hist[q])
+        if len(a) == 0:
+            qstat.append(None)
+            continue
+        qstat.append({"q": q, "n": int(len(a)), "rel": _f(a[:, 1].mean() * 100), "avg": _f(a[:, 0].mean() * 100),
+                      "p25": _f(np.percentile(a[:, 0], 25) * 100), "p50": _f(np.median(a[:, 0]) * 100),
+                      "p75": _f(np.percentile(a[:, 0], 75) * 100), "win": _f((a[:, 1] > 0).mean() * 100, 0)})
+    # 今天的名單
+    last_i = N - 1
+    code_ix = {c: k for k, c in enumerate(close.columns)}
+    js = np.array([code_ix[x["code"]] for x in rev_list], dtype=int)
+    today = {}
+    if len(js) >= 5:
+        sc = scores(last_i, js)
+        qs = pd.Series(sc).rank(pct=True).values
+        for x, s_, q_ in zip(rev_list, sc, qs):
+            if np.isnan(s_):
+                continue
+            q = min(4, int(q_ * 5 - 1e-9))
+            st, px = qstat[q], x["close"]
+            today[x["code"]] = {"score": _f(q_ * 100, 0), "q": q,
+                                "proj": None if not st else {"p25": _f(px * (1 + st["p25"] / 100)), "p50": _f(px * (1 + st["p50"] / 100)),
+                                                             "p75": _f(px * (1 + st["p75"] / 100)), "rel": st["rel"], "win": st["win"]}}
+    return {"hold": h, "quintiles": qstat, "today": today, "feats": list(MOM_FEATS)}
+
+
+def ranking(rev_list, bo_list, mom):
+    """潛在排行:起漲雷達名單(營收動能 + 近 5 日爆量突破),附綜合動能分數、統計預期區間與模型合理價。"""
     seen, out = {}, []
     for x in rev_list:
         seen[x["code"]] = dict(x, src=["營收動能"])
@@ -496,9 +568,10 @@ def ranking(rev_list, bo_list):
     keys = ("code", "name", "close", "chg", "fv", "src", "yoy", "yoy3", "rev_streak", "above_ma60", "dumped",
             "low_vol", "themes", "ret20", "hi250")
     for x in seen.values():
-        if x.get("fv"):
-            out.append({k: x.get(k) for k in keys})
-    out.sort(key=lambda x: -(x["fv"]["up"] or -999))
+        r = {k: x.get(k) for k in keys}
+        r["mom"] = mom["today"].get(x["code"])   # 只有營收動能名單內的才有分數
+        out.append(r)
+    out.sort(key=lambda x: -(x["mom"]["score"] if x["mom"] else -1))
     return out
 
 

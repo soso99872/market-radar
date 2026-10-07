@@ -139,7 +139,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   var R = null, TK = null, AU = null, LIVE = null, LIVEHITS = [];
   var view = (location.hash || "#rank").slice(1);
   if (["rank", "rev", "cycle", "breakout", "track"].indexOf(view) < 0) view = "rank";
-  var hideLow = true, onlyNew = false, sortBy = "new", showAll = {}, rankFilter = "all", rankSort = "up", FVT = null;
+  var hideLow = true, onlyNew = false, sortBy = "new", showAll = {}, rankFilter = "all", rankSort = "score", FVT = null;
   try { hideLow = localStorage.getItem("radar.hideLow") !== "0"; } catch (e) {}
   MR.setupConv();
 
@@ -166,7 +166,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       '<li><span class="k">剛爆發:爆量突破要搭配營收。</span>有營收成長的突破 60 日平均 <b>' + num(br.avg, 1, "%") + "</b>,營收衰退的突破只有 <b>" + num(bn.avg, 1, "%") +
       "</b>;突破訊號本身證據為「" + esc(bo.grade) + "」,而且年度之間不穩定,當確認用,不當主訊號。</li>" +
       '<li><span class="k">命中率要有正確期待。</span>符合條件後 120 日內翻倍的比例約 <b>' + plain(a.double, 0, "%") + "</b>(隨便挑一檔是 " + plain(b.double, 0, "%") +
-      "),也就是約 7 檔才有 1 檔;同時約 <b>" + plain(a.loss15, 0, "%") + "</b> 會在 60 日內虧超過 15%。報酬集中在少數大漲股,所以要<span class=\"k\">分散買 10 檔左右</span>(見營收動能頁下方的組合模擬)。</li>" +
+      "),也就是約 " + Math.round(100 / (a.double || 1)) + " 檔才有 1 檔;同時約 <b>" + plain(a.loss15, 0, "%") + "</b> 會在 60 日內虧超過 15%。報酬集中在少數大漲股,所以要<span class=\"k\">分散買 10 檔左右</span>(見營收動能頁下方的組合模擬)。</li>" +
       '<li><span class="k">整個產業的漲價行情看「產業循環」。</span>被動元件 2025 年底那波漲了 4 倍,產業營收轉強訊號在板塊只漲 6% 時就出現。</li>' +
       "</ul><details><summary>方法與限制</summary><ul>" +
       "<li>營收資料:公開資訊觀測站月營收彙總表(" + esc(R.span[0]) + " 起),回測時視為次月 11 日才知道,隔天開盤進場,扣交易成本 " + R.cost_pct.toFixed(3) + "%。</li>" +
@@ -282,37 +282,53 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
     var rows = q.map(function (x) {
       return "<tr><td>" + esc(x.label) + "</td><td>" + sign(x.up_med, 0) + "%</td><td class=\"" + dir(x.rel) + "\">" + sign(x.rel, 2) + "%</td><td>" + sign(x.med, 2) + "%</td><td>" + plain(x.mwin, 0, "%") + "</td></tr>";
     }).join("");
-    return '<div class="box"><h3>潛在空間真的有用嗎?歷史回測(' + esc(FVT.span[0]) + " ~ " + esc(FVT.span[1]) + "," + FVT.months + " 個月)</h3>" +
+    return '<div class="box"><h3>估值合理價有用嗎?歷史回測(' + esc(FVT.span[0]) + " ~ " + esc(FVT.span[1]) + "," + FVT.months + " 個月)</h3>" +
       '<table class="pf"><thead><tr><th>每月依潛在空間分 5 組</th><th>空間中位數</th><th>之後 ' + h + " 日比一般股</th><th>中位數</th><th>月勝率</th></tr></thead><tbody>" + rows + "</tbody></table>" +
       "<p><b style=\"color:var(--text)\">" + esc(FVT.verdict) + "</b></p>" +
-      "<p>原因:被公式判為「低估」的,常是市場有理由給低本益比的公司;判為「高估」的成長股,評價反而持續上修。在名單內改用其他特徵排序,只有「營收連續創新高月數」稍有幫助(較長的一半 60 日多 10%,但 t = 2.0,仍不夠顯著)。正在用 2019–2023 的資料做樣本外驗證。</p></div>";
+      "<p>分期間看:2021–2023 估值便宜的一組略好(+2.4%,t = 1.8,不顯著),2023–2026 反而是貴的一組較好。不論哪一段,起漲雷達名單內「估值空間較小」的一半都比「空間較大」的一半表現好(名單內的高成長股,市場願意給更高評價)。所以估值合理價只用來了解股價相對自身歷史的位置,排序請用動能分數。</p></div>";
+  }
+
+  function momEvidence() {
+    var M = R.momentum;
+    if (!M) return "";
+    var lab = ["最低 1/5", "第 2 組", "第 3 組", "第 4 組", "最高 1/5"];
+    var rows = M.quintiles.map(function (q, i) {
+      return q ? "<tr" + (i === 4 ? ' class="hl"' : "") + "><td>" + lab[i] + '</td><td class="' + dir(q.rel) + '">' + sign(q.rel, 1) + "%</td><td>" + plain(q.win, 0, "%") +
+        '</td><td class="' + dir(q.p25) + '">' + sign(q.p25, 0) + '%</td><td class="' + dir(q.p50) + '">' + sign(q.p50, 0) + '%</td><td class="' + dir(q.p75) + '">' + sign(q.p75, 0) + "%</td><td>" + q.n + "</td></tr>" : "";
+    }).join("");
+    return '<div class="box"><h3>動能分數與統計 60 日區間怎麼來(' + esc(R.span[0].slice(0, 4)) + " 起的所有營收公告日)</h3>" +
+      '<table class="pf"><thead><tr><th>名單內依動能分數分組</th><th>60 日比一般股</th><th>勝過一般股</th><th>25%</th><th>中位數</th><th>75%</th><th>樣本</th></tr></thead><tbody>' + rows + "</tbody></table>" +
+      "<p>動能分數 = 名單內各股在「" + M.feats.join("、") + "」四項的排名平均(0~100,越高越強)。2019–2023 與 2023–2026 兩段期間,分數最高 1/5 都明顯勝過最低 1/5(比一般股約 +12% / +9% 對 0%)," +
+      "但這個組合是看過兩段資料才定的,實績追蹤才是真正的檢驗。統計 60 日區間 = 目前股價 × 歷史上同分組股票 60 日後報酬的 25% / 中位數 / 75% 百分位;它是過去同類股票的實際分布,不是預測,而且即使是最高分組,中位數也只比 0 高一點、四分之一會跌超過 14%。</p></div>";
   }
 
   function rankView() {
-    var key = { up: function (x) { return -(x.fv.up || -999); }, streak: function (x) { return -(x.rev_streak || 0) * 1000 - (x.fv.up || 0) / 1000; },
+    var key = { score: function (x) { return -(x.mom ? x.mom.score : -1); }, up: function (x) { return x.fv ? -(x.fv.up || -999) : 999; }, streak: function (x) { return -(x.rev_streak || 0) * 1000 - (x.fv.up || 0) / 1000; },
       high: function (x) { return x.hi250 == null ? 999 : -x.hi250; } }[rankSort];
     var items = (R.rank || []).slice().sort(function (a, b) { return key(a) - key(b); }).filter(function (x) {
       if (hideLow && x.low_vol) return false;
-      if (rankFilter === "lo") return x.fv.status === "低估";
-      if (rankFilter === "ok") return x.fv.status !== "高估";
-      if (rankFilter === "sane") return !x.fv.extreme;
+      if (rankFilter === "lo") return x.fv && x.fv.status === "低估";
+      if (rankFilter === "ok") return x.fv && x.fv.status !== "高估";
+      if (rankFilter === "sane") return x.fv && !x.fv.extreme;
       return true;
     });
     var rows = items.slice(0, showAll.rank ? 999 : 40).map(function (x, i) {
-      var e = x.fv;
+      var e = x.fv || {}, m = x.mom, pj = m && m.proj;
       return '<tr><td class="rk">' + (i + 1) + '</td><td class="l"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(x.name) + "</button></td>" +
-        '<td data-px="' + esc(x.code) + '">' + x.close + "</td><td>" + e.fair + '</td><td class="sm">' + e.low + "~" + e.high + "</td>" +
-        '<td class="' + dir(e.up) + '"><b>' + sign(e.up, 0) + "%</b>" + (e.extreme ? ' <span class="st3 hi" title="偏離太大,多半是景氣轉折或一次性損益,固定公式不適用">⚠ 不適用</span>' : "") + "</td>" +
-        '<td><span class="st3 ' + (e.status === "低估" ? "lo" : e.status === "高估" ? "hi" : "") + '">' + e.status + "</span></td>" +
-        '<td class="sm">' + (e.method === "pe" ? "本益比 " + e.band[1] + " 倍" : "淨值比 " + e.band[1] + " 倍") + "</td>" +
+        '<td data-px="' + esc(x.code) + '">' + x.close + "</td>" +
+        "<td><b>" + (m ? m.score : "—") + "</b></td>" +
+        '<td class="sm">' + (pj ? pj.p25 + " ~ <b>" + pj.p50 + "</b> ~ " + pj.p75 : "—") + "</td>" +
+        "<td>" + (e.fair == null ? "—" : e.fair) + "</td>" +
+        '<td class="' + dir(e.up) + '">' + (e.up == null ? "—" : sign(e.up, 0) + "%") + (e.extreme ? ' <span class="st3 hi" title="偏離太大,多半是景氣轉折或一次性損益,固定公式不適用">⚠</span>' : "") + "</td>" +
+        "<td>" + (e.status ? '<span class="st3 ' + (e.status === "低估" ? "lo" : e.status === "高估" ? "hi" : "") + '">' + e.status + "</span>" : "—") + "</td>" +
         '<td class="' + dir(x.yoy) + '">' + num(x.yoy, 0, "%") + '</td><td class="l sm">' + x.src.join("、") + (x.above_ma60 === false ? "、季線下" : "") + (x.dumped ? "、法人大賣" : "") + "</td></tr>";
     }).join("");
-    return '<div class="sec-h"><h2>潛在空間排行</h2><p>起漲雷達名單(營收動能 + 近 5 日爆量突破)中,依「模型合理價 ÷ 目前股價 − 1」由大到小排序。點代號看算式與詳細資料。</p></div>' +
-      fvEvidence() +
-      '<div class="tools"><span>排序</span>' + seg("rs", rankSort, [["up", "潛在空間"], ["streak", "營收連續創新高"], ["high", "接近 52 週高"]]) +
+    return '<div class="sec-h"><h2>潛在排行</h2><p>營收動能名單依「動能分數」排序,並附兩種客觀價格:依歷史同分組實際落點換算的「統計 60 日區間」,以及依本益比河流圖算的「估值合理價」。點代號看算式與詳細資料。</p></div>' +
+      momEvidence() + fvEvidence() +
+      '<div class="tools"><span>排序</span>' + seg("rs", rankSort, [["score", "動能分數"], ["up", "估值空間"], ["streak", "營收連續創新高"], ["high", "接近 52 週高"]]) +
       "<span>只看</span>" + seg("rf", rankFilter, [["all", "全部"], ["sane", "排除公式不適用"], ["ok", "排除高估"], ["lo", "只看低估"]]) +
       '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label><span>共 " + items.length + " 檔</span></div>" +
-      '<div class="tkwrap"><table class="tk rank"><thead><tr><th>#</th><th class="l">個股</th><th>股價</th><th>模型合理價</th><th>合理區間</th><th>潛在空間</th><th>評價</th><th>依據</th><th>營收年增</th><th class="l">入選原因</th></tr></thead><tbody>' +
+      '<div class="tkwrap"><table class="tk rank"><thead><tr><th>#</th><th class="l">個股</th><th>股價</th><th>動能分數</th><th>統計 60 日區間(25%~中位~75%)</th><th>估值合理價</th><th>估值空間</th><th>估值評價</th><th>營收年增</th><th class="l">入選原因</th></tr></thead><tbody>' +
       rows + "</tbody></table></div>" +
       (items.length > 40 ? '<button type="button" class="more" data-all="rank">' + (showAll.rank ? "收合" : "顯示全部 " + items.length + " 檔") + "</button>" : "") +
       '<p class="note">模型合理價 = 預估 EPS × 這檔股票自己過去 5 年本益比中位數(虧損股改用淨值比),預估 EPS = 近四季 EPS × 近 3 月營收年化 ÷ 近 12 月營收。這是固定公式算出的參考值,不是目標價或買賣建議;它假設淨利率不變、評價會回到歷史常態,兩者實際上都會變。潛在空間很大常常代表市場認為這次不一樣(例如景氣反轉或一次性獲利),請搭配上方回測判斷可信度。</p>';
@@ -359,7 +375,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
     }).join("");
     return '<div class="sec-h"><h2>產業循環 · 抓整個產業的漲價行情</h2><p>記憶體、被動元件這類行情是整個產業一起動。沒有產品報價資料,改看兩件公開資料:板塊內公司的營收是否一起轉強、股價是否一起創新高。</p></div>' +
       '<div class="evi">' + st("both") + st("rev_up") + st("rally") + "</div>" +
-      '<p class="note">「營收轉強」= 板塊同口徑營收 3 個月平均年增 ≥ 15%、比 3 個月前高 10 個百分點以上,且過半成員年增 ≥ 20%。「齊漲」= 過半成員在 52 週高點 5% 內且板塊指數創新高。兩者在 60 日內都出現 = 景氣上行確認。只有 31 個板塊、3 年資料,樣本少,統計上不如個股名單可靠;而且板塊清單是現在定的,有後見之明。</p>' +
+      '<p class="note">「營收轉強」= 板塊同口徑營收 3 個月平均年增 ≥ 15%、比 3 個月前高 10 個百分點以上,且過半成員年增 ≥ 20%。「齊漲」= 過半成員在 52 週高點 5% 內且板塊指數創新高。兩者在 60 日內都出現 = 景氣上行確認。只有 31 個板塊,樣本少,統計上不如個股名單可靠:2023–2026 AI 行情期間效果很強(60 日比其他板塊 +25%),但 2019–2023 只剩 +5.7%、中位數為負;而且板塊清單是現在定的,有後見之明。</p>' +
       '<div class="cy">' + cards + "</div>" +
       '<div class="box"><h3>歷史大行情回顧:訊號在什麼時候出現</h3><table class="pf"><thead><tr><th>板塊</th><th>低點 → 高點</th><th>漲幅</th><th>營收轉強</th><th>營收轉強 + 齊漲</th></tr></thead><tbody>' + cases + "</tbody></table>" +
       "<p>漲幅是板塊等權指數。「已漲」= 訊號出現時已從低點漲多少,「之後」= 訊號出現後到高點還剩多少。2025 年 4 月關稅急跌後的全面反彈多數抓不到,因為那是大盤行情,不是產業景氣。</p></div>";
@@ -398,7 +414,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       '<span class="sep"></span><span id="live-status">' + MR.liveStatus(LIVE, R.date) + "</span></div>" +
       verdict() +
       '<div class="tabs"><div class="seg" role="tablist" aria-label="檢視">' +
-      [["rank", "潛在空間排行"], ["rev", "營收動能 · 爆發前"], ["cycle", "產業循環"], ["breakout", "爆量突破 · 剛爆發" + (LIVEHITS.length ? " +" + LIVEHITS.length : "")], ["track", "實績追蹤"]].map(function (o) {
+      [["rank", "潛在排行"], ["rev", "營收動能 · 爆發前"], ["cycle", "產業循環"], ["breakout", "爆量突破 · 剛爆發" + (LIVEHITS.length ? " +" + LIVEHITS.length : "")], ["track", "實績追蹤"]].map(function (o) {
         return '<button type="button" role="tab" data-view="' + o[0] + '" aria-pressed="' + (o[0] === view) + '" aria-selected="' + (o[0] === view) + '">' + o[1] + "</button>";
       }).join("") + "</div></div>" +
       (view === "rank" ? rankView() : view === "rev" ? revView() : view === "cycle" ? cycleView() : view === "breakout" ? boView() : trackView());

@@ -77,3 +77,15 @@ for k in feat:
     out.append((k, ic.mean(), (ic > 0).mean(), sp.mean(), t, len(Q)))
 for k, a, b, c, t, n in sorted(out, key=lambda x: -abs(x[4])):
     print("%-20s %+8.3f %7.0f%% %+9.2f%% %+9.2f %8d" % (k, a, b * 100, c * 100, t, n))
+
+# 綜合分數:兩段期間方向都一致的 4 個特徵,在每次公告日內各自排名後平均
+COMBO = ["離季線幅度", "60 日漲幅", "連續創新高月數", "距 52 週高點"]
+Q = R.dropna(subset=COMBO).copy()
+Q["score"] = sum(Q.groupby("i")[k].rank(pct=True) for k in COMBO) / len(COMBO)
+sp = Q.groupby("i").apply(lambda g: g[g.score >= g.score.median()].x.mean() - g[g.score < g.score.median()].x.mean() if len(g) >= 8 else np.nan).dropna()
+ic = Q.groupby("i").apply(lambda g: g.score.rank().corr(g.x.rank()) if len(g) >= 8 else np.nan).dropna()
+top = Q.groupby("i").apply(lambda g: g[g.score >= g.score.quantile(0.8)].x.mean()).dropna()
+bot = Q.groupby("i").apply(lambda g: g[g.score <= g.score.quantile(0.2)].x.mean()).dropna()
+print("\n綜合動能分數(%s)" % "、".join(COMBO))
+print("  前半 − 後半 %+.2f%%, t = %+.2f, 為正的公告日 %.0f%%;IC %+.3f" % (sp.mean() * 100, S.nw_t(sp.values, 3), (sp > 0).mean() * 100, ic.mean()))
+print("  分數最高 1/5 比一般股 %+.2f%%,最低 1/5 %+.2f%%" % (top.mean() * 100, bot.mean() * 100))

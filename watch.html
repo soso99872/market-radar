@@ -104,7 +104,7 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
 
 <footer>
   名單是依公開的法人買賣超、股價與基本面資料,用固定規則篩出來的,每個交易日收盤後更新;不是買賣建議,也不代表會漲或會跌。
-  每一項條件都附上 2023 年 10 月以來的回測結果,歷史表現不代表未來。本益比與月營收只有最新一期,沒有經過回測,僅供參考。
+  每一項條件都附上 2019 年以來的回測結果,歷史表現不代表未來。本益比與月營收只有最新一期,沒有經過回測,僅供參考。
 </footer>
 
 <script src="assets/common.js"></script>
@@ -150,7 +150,7 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
     if (s) li.push("<span class=\"k\">漲多不等於會跌。</span>高於季線 50% 以上的股票平均仍 <b>" + sign(s.all.avg_rel, 2) + "%</b>,但中位數 <b>" +
       sign(s.all.med_rel, 2) + "%</b>:多數會回檔、少數繼續噴,風險在波動,不在方向。");
     li.push("<span class=\"k\">幾乎所有條件的中位數都是負的</span>:就算是有根據的名單,單一個股多數時候仍會輸,平均報酬靠少數大漲股撐起來。分散持有與停損比挑對一檔更重要。");
-    return '<section class="verdict"><h2>先看結論:用 3 年資料驗證過的事</h2><ul><li>' + li.join("</li><li>") + "</li></ul>" +
+    return '<section class="verdict"><h2>先看結論:用 2019 年以來的資料驗證過的事</h2><ul><li>' + li.join("</li><li>") + "</li></ul>" +
       "<details><summary>名單怎麼來、哪些沒驗證過</summary><ul>" +
       "<li>板塊資金:板塊內所有成分股三大法人買賣超加總,看 20 日與 5 日方向;排名用「20 日買賣超 ÷ 成交金額」,避免大型板塊天生數字大。</li>" +
       "<li>比較基準:板塊類條件跟「所有板塊成分股平均」比,個股條件跟「所有流動股平均」比。板塊清單是現在定的,事後看本來就偏向強勢產業,直接跟全市場比會高估。</li>" +

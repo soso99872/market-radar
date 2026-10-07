@@ -18,7 +18,7 @@
    - Fed 官員談話、台灣央行、關稅與出口管制、地緣政治等政策事件。
 4. 寫入 `data/DATE.json`(格式見下方),並把 DATE 加到 `data/index.json` 的 `dates` 陣列最前面(不重複,新到舊排序)。若 `data/sample.json` 還存在且 `data/index.json` 有 `"sample"`,刪掉 sample 檔並從 dates 移除。
 5. `python scripts/validate.py data/DATE.json`,不通過就修正到通過為止。
-6. 只提交你寫的報告檔:`git add data/DATE.json data/index.json && git commit -m "晨報 DATE"`(若有刪 sample 也一併 add)。不要改動 `data/quotes.json`、`data/flows/`、`data/sectors/`,那些由 GitHub Actions 維護。
+6. 只提交你寫的報告檔:`git add data/DATE.json data/index.json && git commit -m "晨報 DATE"`(若有刪 sample 也一併 add)。不要改動 `data/quotes.json`、`data/flows/`、`data/sectors/`、`data/screens/`,那些由 GitHub Actions 維護。
 7. `git pull --rebase origin main && git push origin HEAD:main`(GitHub Actions 可能剛推過資料,所以要先 rebase)。
 
 ## 撰寫原則

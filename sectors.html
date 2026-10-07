@@ -120,6 +120,21 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 .row .sub b { font-family: var(--mono); font-weight: 600; }
 .row .sub i { font-style: normal; color: var(--faint); margin: 0 5px; }
 
+/* view tabs + contrarian list */
+.vtabs { display: flex; gap: 18px; border-bottom: 1px solid var(--line); margin: -2px 0 12px; }
+.vtabs button { background: none; border: 0; padding: 4px 0 8px; font-size: 15px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.vtabs button[aria-pressed="true"] { color: var(--text); font-weight: 700; border-bottom-color: var(--accent); }
+.stk { display: grid; grid-template-columns: minmax(0, 1fr) auto 92px; gap: 2px 10px; align-items: baseline; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+.stk:last-child { border-bottom: 0; }
+.stk .id { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 16px; }
+.stk .id b { font-family: var(--mono); font-weight: 600; margin-right: 8px; }
+.stk .chg, .stk .net { font-family: var(--mono); font-weight: 600; text-align: right; }
+.stk .sub { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: center; }
+.stk .sub b { font-family: var(--mono); font-weight: 600; }
+.stk .ratio { color: var(--accent); }
+.th-chip { font-size: 12px; border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; background: none; color: var(--muted); cursor: pointer; }
+.th-chip:hover { border-color: var(--accent); color: var(--text); }
+
 /* heatmap */
 .heat-wrap { overflow-x: auto; margin: 0 -4px; }
 .heat { border-collapse: separate; border-spacing: 2px; width: 100%; font-size: 12px; }
@@ -221,7 +236,11 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
   var app = document.getElementById("app");
   var sheet = document.getElementById("sheet");
   var D = null;
-  var state = { mode: "buy", win: "5", memWin: "1", open: null };
+  var S = null; // 個股篩選(逆勢買超)
+  var state = { view: "sector", mode: "buy", win: "5", cwin: "1", csort: "ratio", memWin: "1", open: null };
+  var VIEWS = { sector: "板塊排行", contra: "逆勢買超" };
+  var CWINS = { "1": "當日", "5": "5 日" };
+  var CSORT = { ratio: "依買超佔成交", net: "依買超金額" };
   var MODES = { buy: "買超", sell: "賣超", gain: "漲幅", loss: "跌幅" };
   var WINS = { "1": "當日", "5": "5 日", "20": "20 日" };
 
@@ -326,14 +345,43 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
       }).join("") + "</span>賣超 ← → 買超 · 依 5 日淨買超排序 · 滑過格子看數字</div>";
   }
 
+  function contraHtml() {
+    if (!S || !S.contrarian) return '<p class="empty">逆勢買超資料尚未產生。</p>';
+    var w = state.cwin, rows = (S.contrarian[w] || []).slice(), wl = CWINS[w].replace(" ", "");
+    if (state.csort === "net") rows.sort(function (a, b) { return b.net - a.net; });
+    var head = '<div class="tools">' + seg("cwin", CWINS, w) + seg("csort", CSORT, state.csort) + "</div>" +
+      '<div class="note">' + (w === "1" ? "今日" : "近 5 日") + "股價下跌、三大法人卻淨買超的個股。買超佔成交比例越高,代表法人在下跌中承接的力道相對越大;只呈現事實、不構成投資建議。</div>";
+    if (!rows.length) return head + '<p class="empty">沒有符合條件的個股。</p>';
+    return head + '<div class="rank-h"><span>' + wl + "漲跌</span><span style=\"width:92px;text-align:right\">" + wl + "法人買超</span></div>" +
+      rows.map(function (r) {
+        var who = [["外資", r.foreign], ["投信", r.trust], ["自營", r.dealer]].filter(function (x) { return Math.abs(x[1]) >= 0.01; })
+          .map(function (x) { return x[0] + ' <b class="' + dir(x[1]) + '">' + sign(x[1], 2) + "</b>"; }).join(" ");
+        return '<div class="stk"><span class="id"><b>' + esc(r.code) + "</b>" + esc(r.name) + "</span>" +
+          '<span class="chg">' + pct(r.chg) + '</span><span class="net">' + yi(r.net) + "</span>" +
+          '<span class="sub">' + (r.ratio != null ? '<span class="ratio">佔成交 <b>' + r.ratio.toFixed(1) + "%</b></span>" : "") +
+          "<span>" + who + "</span>" +
+          (r.streak >= 2 ? "<span>法人連買 <b>" + r.streak + "</b> 天</span>" : "") +
+          (r.trust_streak >= 3 ? '<span>投信連買 <b class="up">' + r.trust_streak + "</b> 天</span>" : "") +
+          r.themes.map(function (t) {
+            var th = D.themes.filter(function (x) { return x.name === t; })[0];
+            return th ? '<button type="button" class="th-chip" data-open="' + esc(th.id) + '">' + esc(t) + "</button>" : "";
+          }).join("") + "</span></div>";
+      }).join("");
+  }
+
   function render() {
     var tx = D.taiex;
     app.innerHTML =
       '<div class="status">' + (tx ? "<span>大盤 <b class=\"" + dir(tx[1]) + '">' + sign(tx[1], 2) + "%</b></span><span class=\"sep\"></span>" : "") +
       "<span>資料日期 <b>" + esc(D.date) + '</b></span><span class="sep"></span><span>每個交易日約 18:00 更新</span></div>' +
       '<div class="grid">' +
-      '<section class="card"><h2>板塊資金排行</h2><div class="tools">' + seg("mode", MODES, state.mode) + seg("win", WINS, state.win) + "</div>" +
-      '<div class="note">' + esc(noteText()) + "</div>" + rankHtml() + "</section>" +
+      '<section class="card"><div class="vtabs" role="group">' + Object.keys(VIEWS).map(function (k) {
+        return '<button type="button" data-view="' + k + '" aria-pressed="' + (k === state.view) + '">' + VIEWS[k] + "</button>";
+      }).join("") + "</div>" +
+      (state.view === "sector"
+        ? '<div class="tools">' + seg("mode", MODES, state.mode) + seg("win", WINS, state.win) + "</div>" +
+          '<div class="note">' + esc(noteText()) + "</div>" + rankHtml()
+        : contraHtml()) + "</section>" +
       '<section class="card"><h2>資金輪動 · 近 ' + Math.min(10, D.dates.length) + " 個交易日</h2>" + heatHtml() + "</section>" +
       "</div>";
     document.title = "板塊資金 · " + D.date;
@@ -413,13 +461,21 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
   });
 
   app.addEventListener("click", function (e) {
-    var b = e.target.closest("[data-mode],[data-win],[data-open]");
+    var b = e.target.closest("[data-mode],[data-win],[data-open],[data-view],[data-cwin],[data-csort]");
     if (!b) return;
     if (b.hasAttribute("data-open")) return openSheet(b.getAttribute("data-open"));
     if (b.hasAttribute("data-mode")) state.mode = b.getAttribute("data-mode");
     if (b.hasAttribute("data-win")) state.win = b.getAttribute("data-win");
+    if (b.hasAttribute("data-view")) state.view = b.getAttribute("data-view");
+    if (b.hasAttribute("data-cwin")) state.cwin = b.getAttribute("data-cwin");
+    if (b.hasAttribute("data-csort")) state.csort = b.getAttribute("data-csort");
     render();
   });
+
+  fetch("data/screens/latest.json", { cache: "no-cache" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { S = d; if (D && state.view === "contra") render(); })
+    .catch(function () {});
 
   fetch("data/sectors/latest.json", { cache: "no-cache" })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })

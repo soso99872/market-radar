@@ -43,7 +43,7 @@ jobs:
           for i in 1 2 3; do
             git fetch -q origin main
             git reset -q --mixed origin/main
-            git add -A data/quotes.json data/flows data/sectors/latest.json
+            git add -A data/quotes.json data/flows data/sectors/latest.json data/screens
             if git diff --cached --quiet; then echo "沒有變更"; exit 0; fi
             git commit -q -m "資料更新 $(TZ=Asia/Taipei date '+%F %H:%M')"
             git push origin HEAD:main && exit 0

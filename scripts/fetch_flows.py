@@ -20,6 +20,7 @@ CLOSED = os.path.join(ROOT, "data", "flows", "closed.json")
 THEMES = os.path.join(ROOT, "data", "sectors", "themes.json")
 OUT = os.path.join(ROOT, "data", "sectors", "latest.json")
 MARKET = os.path.join(ROOT, "data", "flows", "market.json")
+SCREENS = os.path.join(ROOT, "data", "screens", "latest.json")
 
 TZ = timezone(timedelta(hours=8))
 DAYS = 21          # 21 個交易日 → 可算 20 日累計與 20 日漲跌
@@ -65,13 +66,13 @@ def fetch_day(d):
     tpq = get("https://www.tpex.org.tw/www/zh-tw/afterTrading/otc?date=%s&type=EW&response=json" % slash.replace("/", "%2F"))
     time.sleep(1)
 
-    px = {}   # code -> (name, close, chg_pct)
+    px = {}   # code -> (name, close, chg_pct, 成交金額)
     taiex = None
     for t in mi.get("tables", []):
         f = t.get("fields") or []
         if "證券代號" in f and "收盤價" in f:
             ic, iname, iclose = f.index("證券代號"), f.index("證券名稱"), f.index("收盤價")
-            isign, idiff = f.index("漲跌(+/-)"), f.index("漲跌價差")
+            isign, idiff, ival = f.index("漲跌(+/-)"), f.index("漲跌價差"), f.index("成交金額")
             for r in t["data"]:
                 c, close, diff = r[ic].strip(), num(r[iclose]), num(r[idiff])
                 if not STOCK.match(c) or not close:
@@ -80,7 +81,7 @@ def fetch_day(d):
                 if "-" in r[isign]:
                     diff = -diff
                 prev = close - diff
-                px[c] = (r[iname].strip(), close, round(diff / prev * 100, 2) if prev else 0.0)
+                px[c] = (r[iname].strip(), close, round(diff / prev * 100, 2) if prev else 0.0, num(r[ival]) or 0)
         elif f and f[0] == "指數" and taiex is None:
             for r in t.get("data", []):
                 if r[0].strip() == "發行量加權股價指數":
@@ -95,7 +96,7 @@ def fetch_day(d):
                 continue
             diff = diff or 0.0
             prev = close - diff
-            px[c] = (r[1].strip(), close, round(diff / prev * 100, 2) if prev else 0.0)
+            px[c] = (r[1].strip(), close, round(diff / prev * 100, 2) if prev else 0.0, num(r[8]) or 0)
 
     flows = {}  # code -> (foreign, trust, dealer) 股數
     for r in t86["data"]:
@@ -109,9 +110,9 @@ def fetch_day(d):
             flows[c] = (num(r[10]), num(r[13]), num(r[22]))
 
     stocks = {}
-    for c, (name, close, chg) in px.items():
+    for c, (name, close, chg, value) in px.items():
         fo, tr, de = flows.get(c, (0.0, 0.0, 0.0))
-        stocks[c] = [name, close, chg, int(fo), int(tr), int(de)]
+        stocks[c] = [name, close, chg, int(fo), int(tr), int(de), int(value)]
     return {"date": d.strftime("%Y-%m-%d"), "taiex": taiex, "stocks": stocks}
 
 
@@ -278,6 +279,68 @@ def build(days):
     }
 
 
+def contrarian(days, themes):
+    """逆勢買超:區間內股價下跌、三大法人卻淨買超的個股。
+
+    依法人買超佔區間成交金額的比例排序(同樣買 1 億,小型股的意義比台積電大),
+    並要求一定的買超金額,過濾掉成交稀少的小票。
+    """
+    last = days[-1]
+    tags = {}
+    for th in themes:
+        for c in th["codes"]:
+            tags.setdefault(c, []).append(th["name"])
+    out = {}
+    for w, min_net in ((1, 0.3), (5, 1.0)):
+        if len(days) <= w:
+            continue
+        span = days[-w:]
+        rows = []
+        for c, s in last["stocks"].items():
+            base = days[-1 - w]["stocks"].get(c) if w > 1 else None
+            chg = s[2] if w == 1 else (round((s[1] / base[1] - 1) * 100, 2) if base and base[1] else None)
+            if chg is None or chg >= 0:
+                continue
+            f = t = d = value = 0.0
+            for day in span:
+                x = day["stocks"].get(c)
+                if x:
+                    f, t, d = f + yi(x[3], x[1]), t + yi(x[4], x[1]), d + yi(x[5], x[1])
+                    value += (x[6] if len(x) > 6 else 0) / 1e8
+            net = f + t + d
+            if net < min_net:
+                continue
+            # 法人連續買超天數(不限於區間)
+            streak = 0
+            for day in reversed(days):
+                x = day["stocks"].get(c)
+                if x and x[3] + x[4] + x[5] > 0:
+                    streak += 1
+                else:
+                    break
+            trust_streak = 0
+            for day in reversed(days):
+                x = day["stocks"].get(c)
+                if x and x[4] > 0:
+                    trust_streak += 1
+                else:
+                    break
+            rows.append({
+                "code": c, "name": s[0], "close": s[1], "chg": chg,
+                "net": round(net, 2), "foreign": round(f, 2), "trust": round(t, 2), "dealer": round(d, 2),
+                "ratio": round(net / value * 100, 1) if value else None,
+                "streak": streak, "trust_streak": trust_streak, "themes": tags.get(c, []),
+            })
+        rows.sort(key=lambda r: -(r["ratio"] if r["ratio"] is not None else 0))
+        out[str(w)] = rows[:40]
+    return {
+        "date": last["date"],
+        "generated_at": datetime.now(TZ).isoformat(timespec="minutes"),
+        "note": "股價下跌但三大法人淨買超的個股,依買超佔成交金額比例排序;當日門檻 0.3 億、5 日門檻 1 億。只呈現事實,不構成投資建議。",
+        "contrarian": out,
+    }
+
+
 def main():
     days = collect()
     if not days:
@@ -286,6 +349,9 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, separators=(",", ":"))
+    os.makedirs(os.path.dirname(SCREENS), exist_ok=True)
+    with open(SCREENS, "w", encoding="utf-8") as f:
+        json.dump(contrarian(days, load_json(THEMES, [])), f, ensure_ascii=False, separators=(",", ":"))
     try:
         m = fetch_market(datetime.strptime(days[-1]["date"], "%Y-%m-%d"))
         if m:

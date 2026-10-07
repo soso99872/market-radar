@@ -99,6 +99,12 @@ def fetch_day(d):
             px[c] = [r[1].strip(), num(r[4]) or close, num(r[5]) or close, num(r[6]) or close, close,
                      round(diff / prev * 100, 2) if prev else 0.0, int(num(r[8]) or 0)]
 
+    # 上市先公布、上櫃還沒出來時先不存,等下一次排程,避免把上櫃當成沒成交、法人為 0 存進歷史
+    if not any(STOCK.match(r[0].strip()) for t in tpq.get("tables", []) for r in t.get("data", [])) \
+            or not (tp3.get("tables") or [{}])[0].get("data"):
+        print("TPEx not ready for", d, file=sys.stderr)
+        return None
+
     flows = {}
     for r in t86["data"]:
         c = r[0].strip()

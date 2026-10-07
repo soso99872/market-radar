@@ -3,7 +3,9 @@ name: 行情與法人資料
 on:
   schedule:
     - cron: "15 22 * * 0-4"   # 台北 06:15(週一至週五):隔夜美股行情 + 前一交易日法人,給 07:30 晨報用
-    - cron: "40 9 * * 1-5"    # 台北 17:40(週一至週五):當日法人買賣超,更新板塊資金頁
+    - cron: "45 8 * * 1-5"    # 台北 16:45:法人資料通常已公布,先更新一次
+    - cron: "40 9 * * 1-5"    # 台北 17:40:補齊當日法人與上櫃資料
+    - cron: "35 12 * * *"     # 台北 20:35(每天):補抓陸續公布的月營收
   workflow_dispatch:
   push:
     branches: [main]
@@ -14,6 +16,8 @@ on:
       - scripts/history.py
       - scripts/signals.py
       - scripts/fundamentals.py
+      - scripts/revenue.py
+      - scripts/radar.py
       - data/sectors/themes.json
 
 permissions:
@@ -26,7 +30,7 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -40,7 +44,9 @@ jobs:
         run: python scripts/fetch_flows.py || echo "::warning::fetch_flows 失敗"
       - name: 本益比與月營收
         run: python scripts/fundamentals.py || echo "::warning::fundamentals 失敗"
-      - name: 訊號回測、觀察名單與個股資料
+      - name: 月營收
+        run: python scripts/revenue.py || echo "::warning::revenue 失敗"
+      - name: 訊號回測、觀察名單、起漲雷達與個股資料
         run: python scripts/signals.py || echo "::warning::signals 失敗"
       - name: 提交
         run: |
@@ -50,7 +56,7 @@ jobs:
           for i in 1 2 3; do
             git fetch -q origin main
             git reset -q --mixed origin/main
-            git add -A data/quotes.json data/flows data/sectors/latest.json data/screens data/history data/signals data/stocks data/watch data/fundamentals
+            git add -A data/quotes.json data/flows data/sectors/latest.json data/screens data/history data/signals data/stocks data/watch data/fundamentals data/revenue data/radar data/track
             if git diff --cached --quiet; then echo "沒有變更"; exit 0; fi
             git commit -q -m "資料更新 $(TZ=Asia/Taipei date '+%F %H:%M')"
             git push origin HEAD:main && exit 0

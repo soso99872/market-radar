@@ -11,6 +11,7 @@
    - 台股前一交易日三大法人金額讀 `data/flows/market.json`(證交所官方數字,date 要是前一交易日),直接填進 `tw_flows` 的 foreign / trust / dealer,不要用新聞上的數字取代。
    - `data/signals/today.json` 是前一交易日觸發籌碼訊號的個股,`data/signals/stats.json` 是各訊號的歷史回測(勝率、平均超額報酬、證據強度)。可以在台股 key_points 提到「哪些板塊/個股出現了什麼訊號、這個訊號歷史上的統計」,但只能陳述事實與歷史數據,不可寫成買賣建議;證據強度為「弱」或「樣本不足」的訊號不要拿來當重點。
    - `data/watch/latest.json` 是觀察名單:`themes[]` 各板塊資金狀態(state 流入/流出/轉弱/回流、rank、bottom=資金排名墊底)、`picks` 資金流入板塊中的法人重押股、`dump` 法人持續調節股、`stretch` 大幅偏離季線股,各自附 `why` 原因。可在 `sector_watch` 或 key_points 提及「哪些板塊資金持續流入/撤出」並引用 stats.json 中 `w_*` 條件的歷史數字;同樣只陳述事實,不可寫成買賣建議或「會漲/會跌」。
+   - `data/radar/latest.json` 是起漲雷達:`rev` 營收創 12 個月新高且年增 ≥ 30% 的個股(`rev_new` = 最新月份新公告)、`breakout` 近 10 日爆量突破創 52 週新高的個股,`stats` 是這些條件的回測(含 120 日內翻倍比例)。可在台股 key_points 提「本月有哪些公司營收創新高」等事實,不可寫成會漲或買進建議。
    - `data/sectors/latest.json` 有各板塊近 1/5/20 日法人買賣超(`themes[].w`)與資金連續流入流出天數(`streak`),可以拿來寫 `sector_watch` 與台股相關的 key_points;引用時以這份資料為準。
 3. 用 WebSearch / WebFetch 研究以下內容(優先用 Reuters、Bloomberg、CNBC、WSJ、鉅亨網、經濟日報、工商時報、MoneyDJ、證交所、期交所):
    - 隔夜美股收盤重點:主要漲跌原因、領漲/領跌族群、重要個股消息。
@@ -20,7 +21,7 @@
    - Fed 官員談話、台灣央行、關稅與出口管制、地緣政治等政策事件。
 4. 寫入 `data/DATE.json`(格式見下方),並把 DATE 加到 `data/index.json` 的 `dates` 陣列最前面(不重複,新到舊排序)。若 `data/sample.json` 還存在且 `data/index.json` 有 `"sample"`,刪掉 sample 檔並從 dates 移除。
 5. `python scripts/validate.py data/DATE.json`,不通過就修正到通過為止。
-6. 只提交你寫的報告檔:`git add data/DATE.json data/index.json && git commit -m "晨報 DATE"`(若有刪 sample 也一併 add)。不要改動 `data/quotes.json`、`data/flows/`、`data/sectors/`、`data/screens/`、`data/history/`、`data/signals/`、`data/stocks/`、`data/watch/`、`data/fundamentals/`,那些由 GitHub Actions 維護。
+6. 只提交你寫的報告檔:`git add data/DATE.json data/index.json && git commit -m "晨報 DATE"`(若有刪 sample 也一併 add)。不要改動 `data/quotes.json`、`data/flows/`、`data/sectors/`、`data/screens/`、`data/history/`、`data/signals/`、`data/stocks/`、`data/watch/`、`data/fundamentals/`、`data/revenue/`、`data/radar/`、`data/track/`,那些由 GitHub Actions 維護。
 7. `git pull --rebase origin main && git push origin HEAD:main`(GitHub Actions 可能剛推過資料,所以要先 rebase)。
 
 ## 撰寫原則

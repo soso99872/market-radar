@@ -35,6 +35,9 @@ THEMES = os.path.join(ROOT, "data", "sectors", "themes.json")
 COST = 0.00585
 HORIZONS = (5, 10, 20)
 OOS_DAYS = 250
+# 同時檢驗的條件有數十個(訊號 × 持有天數),單看 t ≥ 2 會把運氣誤認成優勢,門檻依多重比較拉高
+T_STRONG = 3.5
+T_MID = 2.5
 STOCK_DAYS = 120
 
 SIGNALS = {
@@ -144,11 +147,11 @@ def grade(full, oos):
         return "樣本不足"
     same_up = oos.get("n", 0) >= 15 and oos["avg_rel"] > 0
     same_dn = oos.get("n", 0) >= 15 and oos["avg_rel"] < 0
-    if full["t"] >= 3 and same_up and full["avg_rel"] >= 0.3:
+    if full["t"] >= T_STRONG and same_up and full["avg_rel"] >= 0.3:
         return "強"
-    if full["t"] >= 2 and same_up:
+    if full["t"] >= T_MID and same_up:
         return "中"
-    if full["t"] <= -2 and same_dn:
+    if full["t"] <= -T_MID and same_dn:
         return "反向"
     return "弱"
 
@@ -363,9 +366,12 @@ def main():
     with open(os.path.join(WATCH_DIR, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(watch, f, ensure_ascii=False, separators=(",", ":"))
 
-    # 個股頁:板塊成分股 + 近 20 日有訊號的股票 + 觀察名單
+    rd = radar.build(locals()) or {"rev": [], "breakout": []}
+
+    # 個股頁:板塊成分股 + 近 20 日有訊號的股票 + 觀察名單 + 起漲雷達
     recent = dates[-20:]
     universe = set(themes) | {x["code"] for k in ("picks", "dump", "stretch") for x in watch[k]}
+    universe |= {x["code"] for k in ("rev", "breakout") for x in rd[k]}
     for sid in EVENTS:
         m = sig[sid].loc[recent].fillna(False).astype(bool)
         universe |= set(m.columns[m.any()])
@@ -585,6 +591,9 @@ def build_watch(L):
         "themes": tlist, "picks": picks[:60], "dump": dump[:40], "stretch": stretch[:40],
         "counts": {"picks": len(picks), "dump": len(dump), "stretch": len(stretch)},
     }
+
+
+import radar  # noqa: E402  (radar 會反向 import 本模組的常數與 nw_t)
 
 
 def load_themes():

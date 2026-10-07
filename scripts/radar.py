@@ -9,6 +9,7 @@
 回測規則與 signals.py 相同:收盤後才知道、隔天開盤進場、扣交易成本;
 月營收視為次月 11 日起才知道(法定公告期限是 10 日)。
 """
+import csv
 import json
 import os
 
@@ -24,10 +25,11 @@ TRACK = os.path.join(history.ROOT, "data", "track")
 MIN_VALUE = 0.3          # 億,當天成交金額門檻(比觀察名單寬,才看得到小型股)
 SURGE = 5                # 成交金額 ≥ 前 20 日均量幾倍
 REV_YOY = 30             # 營收年增門檻(%)
+REV_YOY2 = 20            # 或連續 2 個月年增都 ≥ 這個數(接住像騰輝 1 月年增 29% 這種差一點的)
 
 RULES = {
-    "rev_high": {"name": "營收創 12 個月新高且年增 ≥ 30%",
-                 "desc": "月營收公告後的第一個交易日(視為次月 11 日),當月營收高於前 12 個月且年增 ≥ 30%"},
+    "rev_high": {"name": "營收創 12 個月新高且高成長",
+                 "desc": "月營收公告後的第一個交易日(視為次月 11 日),當月營收高於前 12 個月,且年增 ≥ 30% 或連續 2 個月年增 ≥ 20%"},
     "breakout": {"name": "爆量突破、創 52 週新高",
                  "desc": "成交金額 ≥ 前 20 日均量 5 倍、漲 ≥ 5%,收盤突破前 60 日整理區間(區間 ≤ 35%)且創 250 日新高(20 日內只計一次)"},
     "breakout_rev": {"name": "爆量突破 + 營收成長",
@@ -52,11 +54,12 @@ def revenue_panels(codes):
     rmax12 = rev.shift(1).rolling(12, min_periods=10).max()
     rec = (rev >= rmax12) & rev.notna()
     yoy3 = yoy.rolling(3, min_periods=3).mean()
+    good = rec & ((yoy >= REV_YOY) | ((yoy >= REV_YOY2) & (yoy.shift(1) >= REV_YOY2)))
     # 連續創新高月數
     streak = rec.astype(int).copy()
     for i in range(1, len(streak)):
         streak.iloc[i] = (streak.iloc[i - 1] + 1) * rec.iloc[i].astype(int)
-    return {"months": months, "rev": rev, "yoy": yoy, "mom": mom, "rec": rec, "yoy3": yoy3, "streak": streak}
+    return {"months": months, "rev": rev, "yoy": yoy, "mom": mom, "rec": rec, "yoy3": yoy3, "streak": streak, "good": good}
 
 
 def to_daily(panel, months, index):
@@ -140,11 +143,11 @@ def build(L):
     vol60 = chg.rolling(60, min_periods=40).std()
     ret20 = close / close.shift(20) - 1
 
-    D = {k: to_daily(rp[k], rp["months"], close.index) for k in ("yoy", "yoy3", "rec")}
+    D = {k: to_daily(rp[k], rp["months"], close.index) for k in ("yoy", "yoy3", "rec", "good")}
     newpub = pd.Series(False, index=close.index)
     for y, m in rp["months"]:
         i = pd.to_datetime(close.index).searchsorted(pd.Timestamp(y + (m == 12), m % 12 + 1, 11))
-        if i < len(close.index):
+        if 0 < i < len(close.index):
             newpub.iloc[i] = True
     tradable = vyi >= MIN_VALUE
 
@@ -152,7 +155,7 @@ def build(L):
     bo = surge & (close >= mx60) & (mx60 / mn60 - 1 <= 0.35) & (close >= mx250)
     sig = {
         "rev_high": pd.DataFrame(np.outer(newpub.values, np.ones(len(codes), bool)), index=close.index, columns=codes)
-        & (D["rec"] == 1) & (D["yoy"] >= REV_YOY) & tradable,
+        & (D["good"] == 1) & tradable,
         "breakout": first(bo),
     }
     sig["breakout_rev"] = sig["breakout"] & (D["yoy3"] >= 20)
@@ -191,8 +194,12 @@ def build(L):
             "hi250": None if pd.isna(hi250_now.at[last, c]) else _f((cl / hi250_now.at[last, c] - 1) * 100, 1),
             "net20": _f(net[c].iloc[-20:].sum(), 1),
             "vol60": _f(v60), "themes": themes.get(c, []),
+            "above_ma60": None if pd.isna(ma60.at[last, c]) else bool(cl > ma60.at[last, c]),
+            "dumped": bool(rk_last.get(c, 1) <= 0.1),
         }
 
+    ma60 = L["ma60"]
+    rk_last = L["rk_n"].loc[last].fillna(1).to_dict()
     vol_cut = float(vol60.loc[last][tradable.loc[last]].quantile(0.3))
     rev_list = []
     for c in codes:
@@ -203,7 +210,7 @@ def build(L):
         mi = col.last_valid_index()
         if len(rp["months"]) > 1 and mi < rp["months"][-2]:
             continue   # 最新兩個月都沒公布,資料太舊
-        if not (rp["rec"].at[mi, c] and (rp["yoy"].at[mi, c] or 0) >= REV_YOY):
+        if not rp["good"].at[mi, c]:
             continue
         if pd.isna(close.at[last, c]) or not (vyi[c].iloc[-20:].mean() >= MIN_VALUE / 3):
             continue
@@ -243,7 +250,12 @@ def build(L):
             "vol_cut": _f(vol_cut), "min_value": MIN_VALUE, "cost_pct": S.COST * 100,
             "span": [str(rev_start.date()), last], "oos_start": dates[oos_i]}
     os.makedirs(OUT, exist_ok=True)
-    doc = dict(meta, stats=stats, base=base, rev=rev_list, breakout=bo_list)
+    state = (D["good"] == 1) & tradable & usable.values[:, None]
+    pubs = [i for i in np.where(newpub.values)[0] if usable.iat[i]]
+    port = portfolio(state, pubs, close, opn, tradable)
+    basket_log(state, pubs, close, opn, tradable, dates)
+    cyc = cycle(L, rp, close, dates, usable)
+    doc = dict(meta, stats=stats, base=base, rev=rev_list, breakout=bo_list, portfolio=port, cycle=cyc)
     with open(os.path.join(OUT, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 
@@ -253,8 +265,143 @@ def build(L):
     return doc
 
 
+def portfolio(state, pubs, close, opn, tradable, h=60, draws=100):
+    """照名單操作的組合模擬:每月營收公告日從名單隨機買 k 檔等權,持有 h 日。比較分散與停損的效果。"""
+    rng = np.random.default_rng(20261007)
+    C, E, T, M = close.values, opn.shift(-1).values, tradable.values, state.values
+
+    def run(k, stop=False, pool=None):
+        res = []
+        for i in pubs:
+            if i + h >= len(C):
+                continue
+            js = np.where((pool[i] if pool is not None else M[i]) & ~np.isnan(E[i]) & ~np.isnan(C[i + h]))[0]
+            if len(js) < k:
+                continue
+            for _ in range(draws if k < len(js) else 1):
+                pick = rng.choice(js, k, replace=False)
+                r = C[i + h, pick] / E[i, pick] - 1 - S.COST
+                if stop:
+                    for q, j in enumerate(pick):
+                        path = C[i + 1:i + h + 1, j] / E[i, j] - 1
+                        hit = np.where(path <= -0.15)[0]
+                        if len(hit):
+                            r[q] = path[hit[0]] - S.COST
+                res.append(r.mean())
+        a = np.array(res)
+        return {"k": k, "stop": stop, "random": pool is not None, "n": int(len(a)),
+                "avg": _f(a.mean() * 100, 1), "med": _f(np.median(a) * 100, 1),
+                "loss15": _f((a < -0.15).mean() * 100, 1), "loss10": _f((a < -0.10).mean() * 100, 1),
+                "p5": _f(np.percentile(a, 5) * 100, 1), "win": _f((a > 0).mean() * 100, 1)}
+    rows = [run(k) for k in (1, 5, 10, 20)]
+    rows.append(run(10, stop=True))
+    rows.append(run(10, pool=T))
+    return {"hold": h, "rows": rows}
+
+
+def basket_log(state, pubs, close, opn, tradable, dates, h=20):
+    """每月一籃(名單全部等權、持有 20 日)扣掉一般股的報酬,寫成 anti-gambling-trader 可讀的交易紀錄。
+    每籃之間不重疊,符合它「交易彼此獨立」的前提;扣掉一般股是因為只看絕對損益時,多頭裡亂選也會被判有優勢。"""
+    C, E, T, M = close.values, opn.shift(-1).values, tradable.values, state.values
+    rows = []
+    for i in pubs:
+        if i + h >= len(C) or not M[i].any():
+            continue
+        f = C[i + h] / E[i] - 1 - S.COST
+        pick, univ = M[i] & ~np.isnan(f), T[i] & ~np.isnan(f)
+        if pick.any():
+            rows.append(["籃%s" % dates[i][:7], dates[i + 1], dates[i + h],
+                         int(round(1e6 * (f[pick].mean() - f[univ].mean()))), "TWD"])
+    os.makedirs(TRACK, exist_ok=True)
+    with open(os.path.join(TRACK, "basket_backtest.csv"), "w", encoding="utf-8", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["代號", "進場時間", "出場時間", "已實現淨損益", "損益幣別"])
+        w.writerows(rows)
+
+
+def cycle(L, rp, close, dates, usable):
+    """產業景氣循環:板塊營收(同口徑)年增轉強 + 成分股齊漲。抓記憶體、被動元件這類整個產業的漲價行情。"""
+    ret = close.pct_change()
+    mx250 = close.rolling(250, min_periods=200).max()
+    themes = [t for t in L["theme_list"] if len([c for c in t["codes"] if c in close.columns]) >= 3]
+    IDX, BR, RV, RACC, RB, info = {}, {}, {}, {}, {}, {}
+    for t in themes:
+        mem = [c for c in t["codes"] if c in close.columns]
+        IDX[t["id"]] = (1 + ret[mem].mean(axis=1).fillna(0)).cumprod()
+        BR[t["id"]] = (close[mem] >= 0.95 * mx250[mem]).sum(axis=1) / close[mem].notna().sum(axis=1)
+        cur, prv = rp["rev"][mem], rp["rev"][mem].shift(12)
+        both = cur.notna() & prv.notna()          # 只用兩年都有資料的公司,算同口徑年增
+        yoy = (cur.where(both).sum(axis=1) / prv.where(both).sum(axis=1) - 1) * 100
+        yoy[both.sum(axis=1) < max(2, len(mem) // 2)] = np.nan
+        y3 = yoy.rolling(3).mean()
+        brv = (rp["yoy"][mem] >= 20).sum(axis=1) / rp["yoy"][mem].notna().sum(axis=1)
+        RV[t["id"]] = to_daily(y3.to_frame("x"), rp["months"], close.index)["x"]
+        RACC[t["id"]] = to_daily((y3 - y3.shift(3)).to_frame("x"), rp["months"], close.index)["x"]
+        RB[t["id"]] = to_daily(brv.to_frame("x"), rp["months"], close.index)["x"]
+        info[t["id"]] = {"name": t["name"], "n": len(mem), "y3m": [_f(v, 0) for v in y3.iloc[-13:].values]}
+    IDX, BR, RV, RACC, RB = map(pd.DataFrame, (IDX, BR, RV, RACC, RB))
+    rev_up = (RV >= 15) & (RACC >= 10) & (RB >= 0.5)
+    rally = (BR >= 0.5) & (IDX >= IDX.rolling(250, min_periods=200).max())
+    both = rev_up.rolling(60, min_periods=1).max().astype(bool) & rally
+    sigs = {"rev_up": first(rev_up, 60), "rally": first(rally, 60), "both": first(both, 60)}
+    labels = {"rev_up": "產業營收轉強", "rally": "產業齊漲", "both": "營收轉強 + 齊漲"}
+    stats = {}
+    for k, m in sigs.items():
+        stats[k] = {"name": labels[k]}
+        for h in (60, 120):
+            fwd = IDX.shift(-h) / IDX.shift(-1) - 1
+            rel = fwd.sub(fwd.mean(axis=1), axis=0)
+            mm = m & usable.values[:, None]
+            v, a = rel[mm].stack().dropna().values, fwd[mm].stack().dropna().values
+            stats[k][str(h)] = {"n": int(len(v)), "avg_rel": _f(v.mean() * 100, 1) if len(v) else None,
+                                "med_rel": _f(np.median(v) * 100, 1) if len(v) else None,
+                                "win": _f((v > 0).mean() * 100, 0) if len(v) else None,
+                                "avg": _f(a.mean() * 100, 1) if len(a) else None}
+    # 歷史大行情個案:板塊等權指數 120 日內從低點漲 ≥ 50%,訊號在哪裡出現
+    cases, start = [], int(np.argmax(usable.values))
+    for tid in IDX.columns:
+        s_ = IDX[tid].values
+        i = start
+        while i < len(s_) - 1:
+            w = s_[i:i + 121]
+            j = int(np.argmax(w))
+            if w[j] >= 1.5 * s_[i] and s_[i] == s_[max(0, i - 20):i + 1].min():
+                pk = i + j
+                tr = i + int(np.argmin(s_[i:pk + 1]))
+                row = {"id": tid, "name": info[tid]["name"], "trough": dates[tr], "peak": dates[pk],
+                       "gain": _f((s_[pk] / s_[tr] - 1) * 100, 0)}
+                for k in ("rev_up", "both"):
+                    col = sigs[k][tid].values
+                    ks = [q for q in range(max(0, tr - 40), pk + 1) if col[q]]
+                    row[k] = None if not ks else {"date": dates[ks[0]], "at": _f((s_[ks[0]] / s_[tr] - 1) * 100, 0),
+                                                  "left": _f((s_[pk] / s_[ks[0]] - 1) * 100, 0)}
+                cases.append(row)
+                i = pk + 1
+            else:
+                i += 1
+    cases.sort(key=lambda x: -x["gain"])
+    last = dates[-1]
+    now = []
+    for tid in IDX.columns:
+        r_up, r_ral = bool(rev_up[tid].iloc[-60:].any()), bool(rally[tid].iloc[-20:].any())
+        state = ("景氣上行確認" if r_up and r_ral else "營收轉強、股價未齊漲" if r_up
+                 else "股價齊漲、營收未跟上" if r_ral else "—")
+        now.append(dict(info[tid], id=tid, state=state, rev_y3=_f(RV.at[last, tid], 0), rev_acc=_f(RACC.at[last, tid], 0),
+                        rev_breadth=_f(RB.at[last, tid] * 100, 0), price_breadth=_f(BR.at[last, tid] * 100, 0),
+                        ret60=_f((IDX.at[last, tid] / IDX[tid].iloc[-61] - 1) * 100, 1)))
+    order = {"景氣上行確認": 0, "營收轉強、股價未齊漲": 1, "股價齊漲、營收未跟上": 2, "—": 3}
+    now.sort(key=lambda x: (order[x["state"]], -(x["rev_y3"] if x["rev_y3"] is not None else -999)))
+    return {"stats": stats, "cases": cases, "now": now}
+
+
 def rev_reasons(x):
     out = ["%s 月營收年增 %+.0f%%,創近 12 個月新高" % (x["rev_month"][5:].lstrip("0"), x["yoy"])]
+    if x["yoy"] < REV_YOY:
+        out.append("年增未達 30%,但已連續 2 個月年增 ≥ 20%")
+    if x.get("above_ma60") is False:
+        out.append("股價仍在季線下")
+    if x.get("dumped"):
+        out.append("但近 20 日法人賣超居全市場後 10%")
     if x["rev_streak"] >= 2:
         out.append("已連續 %d 個月創新高" % x["rev_streak"])
     if x["yoy3"] is not None:
@@ -340,7 +487,24 @@ def track(L, rev_list, bo_list, close, opn, vyi, dates):
             xs = [r["x%d" % h] for r in v["rows"] if r.get("x%d" % h) is not None]
             v["avg_x%d" % h] = _f(np.mean(xs)) if xs else None
             v["n%d" % h] = len(xs)
+    # 實盤的每月一籃:從快照中每隔 20 個交易日取一天,把營收動能名單等權持有 20 日(扣掉一般股),給第三方稽核用
+    live_rows, next_i = [], -1
+    for fn in sorted(os.listdir(d)):
+        s = json.load(open(os.path.join(d, fn), encoding="utf-8"))
+        i = idx.get(s["date"])
+        if i is None or i < next_i or i + 20 >= len(dates):
+            continue
+        f = close.iloc[i + 20] / opn.iloc[i + 1] - 1 - S.COST
+        cs = [c for c in s.get("rev", []) if c in close.columns and not pd.isna(f[c])]
+        if cs:
+            live_rows.append(["籃%s" % s["date"], dates[i + 1], dates[i + 20],
+                              int(round(1e6 * (f[cs].mean() - f[univ.iloc[i]].mean()))), "TWD"])
+            next_i = i + 20
     os.makedirs(TRACK, exist_ok=True)
+    with open(os.path.join(TRACK, "basket_live.csv"), "w", encoding="utf-8", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["代號", "進場時間", "出場時間", "已實現淨損益", "損益幣別"])
+        w.writerows(live_rows)
     with open(os.path.join(TRACK, "summary.json"), "w", encoding="utf-8") as f:
         json.dump({"since": sorted(os.listdir(d))[0][:10] if os.listdir(d) else last, "date": last, "lists": res},
                   f, ensure_ascii=False, separators=(",", ":"))

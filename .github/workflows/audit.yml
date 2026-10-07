@@ -1,0 +1,56 @@
+name: 第三方稽核
+
+# 每週用 anti-gambling-trader 檢驗「照營收動能名單每月一籃」的成績,結果寫進 data/track/audit.json
+on:
+  schedule:
+    - cron: "17 2 * * 6"     # 台北週六 10:17
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/audit.yml
+      - scripts/audit.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-data
+  cancel-in-progress: false
+
+env:
+  AGT_SHA: d7c5abb6c935f4e623972b4fc3f2f89ad9f74f92   # 固定版本,升級前先人工確認
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+        with:
+          repository: mars-tw/anti-gambling-trader-tw
+          ref: ${{ env.AGT_SHA }}
+          path: _agt
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: 稽核
+        run: python scripts/audit.py "$GITHUB_WORKSPACE/_agt" "$AGT_SHA"
+      - name: 提交
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp data/track/audit.json /tmp/audit.json
+          for i in 1 2 3; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/audit.json data/track/audit.json
+            git add data/track/audit.json
+            if git diff --cached --quiet; then echo "沒有變更"; exit 0; fi
+            git commit -q -m "第三方稽核 $(TZ=Asia/Taipei date '+%F')"
+            git push origin HEAD:main && exit 0
+            sleep 5
+          done
+          exit 1

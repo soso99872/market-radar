@@ -25,7 +25,8 @@ CELL = re.compile(r"<td[^>]*>([^<]*)</td>", re.I)
 
 
 def fetch_month(y, m):
-    out = {}
+    """回傳 (資料, 是否四頁都成功);任一頁失敗就不要存,下次再抓。"""
+    out, ok = {}, True
     for mkt in ("sii", "otc"):
         for kind in ("0", "1"):   # 0 = 國內公司,1 = 外國企業(KY)
             url = "https://mopsov.twse.com.tw/nas/t21/%s/t21sc03_%d_%d_%s.html" % (mkt, y - 1911, m, kind)
@@ -34,7 +35,8 @@ def fetch_month(y, m):
                 with urllib.request.urlopen(req, timeout=40) as r:
                     t = r.read().decode("big5", "replace")
             except Exception as e:  # noqa: BLE001
-                print("skip", url, e, file=sys.stderr)
+                print("fail", url, e, file=sys.stderr)
+                ok = False
                 continue
             for code, cells in ROW.findall(t):
                 v = [history.num(html.unescape(x)) for x in CELL.findall(cells)]
@@ -42,7 +44,7 @@ def fetch_month(y, m):
                 if v and v[0] is not None:
                     out[code] = [int(v[0]), None if v[4] is None else round(v[4], 2), None if v[3] is None else round(v[3], 2)]
             time.sleep(2)
-    return out
+    return out, ok
 
 
 def path_for(y, m):
@@ -67,8 +69,8 @@ def run(stop, refresh=0):
         p = path_for(y, m)
         if os.path.exists(p) and i >= refresh:
             continue
-        d = fetch_month(y, m)
-        if len(d) < 500:   # 尚未公布完整
+        d, ok = fetch_month(y, m)
+        if not ok or len(d) < 500:
             print("incomplete", y, m, len(d), file=sys.stderr)
             continue
         with open(p, "w", encoding="utf-8") as f:
@@ -90,7 +92,14 @@ def load_all():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) >= 3 and sys.argv[1] == "backfill":
+    if len(sys.argv) >= 3 and sys.argv[1] == "refetch":   # 重抓指定月份,例:refetch 2024-06
+        y, m = map(int, sys.argv[2].split("-"))
+        d, ok = fetch_month(y, m)
+        if ok and len(d) >= 500:
+            with open(path_for(y, m), "w", encoding="utf-8") as f:
+                json.dump(d, f, separators=(",", ":"))
+        print("refetch", y, m, ok, len(d))
+    elif len(sys.argv) >= 3 and sys.argv[1] == "backfill":
         y, m = map(int, sys.argv[2].split("-"))
         print("done", run((y, m)))
     else:

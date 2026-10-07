@@ -129,6 +129,7 @@ def fetch_market(d):
 
     return {
         "date": d.strftime("%Y-%m-%d"),
+        "fetched_at": datetime.now(TZ).isoformat(timespec="minutes"),
         "foreign": yi("外資及陸資(不含外資自營商)", "外資自營商"),
         "trust": yi("投信"),
         "dealer": yi("自營商(自行買賣)", "自營商(避險)"),

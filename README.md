@@ -8,3 +8,9 @@
 - `scripts/validate.py`:檢查報告格式
 
 本機預覽:`python -m http.server` 後開 http://localhost:8000
+
+## 板塊資金頁(sectors.html)
+
+- `.github/workflows/market-data.yml` 每個交易日台北 06:15 與 17:40 執行:抓行情到 `data/quotes.json`、抓證交所與櫃買中心的個股三大法人買賣超,算出 `data/sectors/latest.json` 與 `data/flows/market.json`。
+- 板塊分類在 `data/sectors/themes.json`,直接編輯代號清單即可(推上去會自動重算);名稱以交易所資料為準。
+- 金額 = 買賣超股數 × 當日收盤價(估算)。

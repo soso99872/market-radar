@@ -25,8 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: pip install -q yfinance
@@ -39,8 +39,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data
-          if git diff --cached --quiet; then echo "沒有變更"; exit 0; fi
-          git commit -m "資料更新 $(TZ=Asia/Taipei date '+%F %H:%M')"
-          for i in 1 2 3; do git pull --rebase -q origin main && git push origin HEAD:main && exit 0; sleep 5; done
+          # 每次都疊在最新的 main 上,只提交本流程負責的檔案,避免和晨報或其他執行互相覆蓋
+          for i in 1 2 3; do
+            git fetch -q origin main
+            git reset -q --mixed origin/main
+            git add -A data/quotes.json data/flows data/sectors/latest.json
+            if git diff --cached --quiet; then echo "沒有變更"; exit 0; fi
+            git commit -q -m "資料更新 $(TZ=Asia/Taipei date '+%F %H:%M')"
+            git push origin HEAD:main && exit 0
+            sleep 5
+          done
           exit 1

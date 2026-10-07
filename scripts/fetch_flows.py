@@ -52,7 +52,6 @@ def num(s):
 def fetch_day(d):
     """回傳某日的個股資料;非交易日(或資料尚未公布)回傳 None。"""
     ymd = d.strftime("%Y%m%d")
-    roc = "%d/%02d/%02d" % (d.year - 1911, d.month, d.day)
     slash = d.strftime("%Y/%m/%d")
 
     t86 = get("https://www.twse.com.tw/rwd/zh/fund/T86?date=%s&selectType=ALLBUT0999&response=json" % ymd)
@@ -168,8 +167,8 @@ def collect():
                     with open(path, "w", encoding="utf-8") as f:
                         json.dump(day, f, ensure_ascii=False, separators=(",", ":"))
                     days.append(day)
-                else:
-                    closed.add(iso)
+                elif d < now.date():
+                    closed.add(iso)   # 今天查無資料可能只是還沒公布,不記成休市
         d -= timedelta(days=1)
         walked += 1
     with open(CLOSED, "w", encoding="utf-8") as f:

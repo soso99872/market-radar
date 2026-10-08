@@ -172,7 +172,16 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       "<li>營收資料:公開資訊觀測站月營收彙總表(" + esc(R.span[0]) + " 起),回測時視為次月 11 日才知道,隔天開盤進場,扣交易成本 " + R.cost_pct.toFixed(3) + "%。</li>" +
       "<li>評級門檻已依多重比較拉高(強:t ≥ 3.5;中:t ≥ 2.5)。這些規則是看過 2023–2026 資料後才定的,所以「近一年」也不是真正的樣本外;真正的檢驗是下方的<b>實績追蹤</b>,從 " + esc((TK && TK.since) || R.date) + " 起每天記錄名單、事後結算。</li>" +
       "<li>回測期間是 AI 多頭,隨便挑都有 " + plain(b.double, 0, "%") + " 會翻倍;空頭時這些數字會差很多。資料不含已下市股票,結果偏樂觀。</li>" +
-      "<li>「低波動」= 近 60 日日報酬波動在可交易股票後 30%(像中華電這類),預設隱藏,因為很難有爆發力。</li></ul></details></section>";
+      "<li>「低波動」= 近 60 日日報酬波動在可交易股票後 30%(像中華電這類),預設隱藏,因為很難有爆發力。</li>" + gmNote() + "</ul></details></section>";
+  }
+
+  function gmNote() {
+    var m = R.margin_bt, a = m && m["營收動能名單"];
+    if (!a || !a["上升"].x) return "";
+    return "<li>「毛利率升/降」標籤 = 最新一季毛利率與去年同季相比 ±1 個百分點以上。回測(" + esc(m.span[0].slice(0, 4)) + "–" + esc(m.span[1].slice(0, 4)) +
+      ",用財報申報期限日才視為已知)顯示,營收動能名單裡毛利率下降的股票 60 日比一般股 " + sign(a["下降"].x, 1) + "%、上升的 " + sign(a["上升"].x, 1) +
+      "%,差距在統計上不顯著(t = " + a["下降減上升"][1] + "),虧超 15% 的比例也沒有比較高(" + a["下降"].loss15 + "% 對 " + a["上升"].loss15 +
+      "%)。所以這個標籤只供了解,不影響排名、不剔除股票。</li>";
   }
 
   function bars(h) {
@@ -205,7 +214,15 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   function tags(x) {
     return (x.above_ma60 === true ? '<span class="tag2">站上季線</span>' : x.above_ma60 === false ? '<span class="tag2 dim">季線下</span>' : "") +
       (x.dumped ? '<span class="tag2 warn">法人大賣</span>' : "") +
-      (x.low_vol ? '<span class="tag2 dim">低波動</span>' : "");
+      (x.low_vol ? '<span class="tag2 dim">低波動</span>' : "") + gmTag(x);
+  }
+
+  // 毛利率標籤:最新一季與去年同季相比 ±1 個百分點以上才標;回測顯示對這份名單沒有預測力,只供參考
+  function gmTag(x) {
+    var g = x.gm;
+    if (!g || g.d == null || Math.abs(g.d) < 1) return "";
+    return '<span class="tag2' + (g.d < 0 ? " dim" : "") + '" title="' + esc(g.p) + " 毛利率 " + g.gm + "%,去年同季相比 " + sign(g.d, 1) + ' 個百分點">毛利率' +
+      (g.d > 0 ? "升" : "降") + " " + sign(g.d, 1) + "pp</span>";
   }
 
   function revCard(x) {

@@ -169,3 +169,6 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
 .fvhow b { color: var(--text); font-family: var(--mono); }
 .revbars { display: flex; align-items: flex-end; gap: 2px; height: 60px; margin: 4px 0 2px; }
 .revbars i { flex: 1; border-radius: 1px 1px 0 0; opacity: .8; }
+.gmbars { gap: 6px; height: 70px; margin-top: 16px; }
+.gmbars i { position: relative; background: var(--accent); opacity: .7; }
+.gmbars em { position: absolute; top: -16px; left: 0; right: 0; text-align: center; font-style: normal; font-size: 10.5px; font-family: var(--mono); color: var(--muted); }

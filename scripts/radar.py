@@ -256,10 +256,21 @@ def build(L):
     basket_log(state, pubs, close, opn, tradable, dates)
     cyc = cycle(L, rp, close, dates, usable)
     fv = fair_all(rp, close, last)
+    mg = margin_now()
     for x in rev_list + bo_list:
         x["fv"] = fv.get(x["code"])
+        m = mg.get(x["code"])
+        x["gm"] = {"p": m["p"], "gm": m["gm"], "d": m["d"]} if m else None
+    for c, m in mg.items():
+        if c in EXTRAS:
+            EXTRAS[c]["gm"] = m["hist"]
     mom = momentum(L, rp, close, opn, tradable, usable, newpub, rev_list)
     rank = ranking(rev_list, bo_list, mom)
+    try:   # 毛利率回測結果(scripts/margin_test.py 產生,研究用、不在排程跑)
+        with open(os.path.join(OUT, "margin_test.json"), encoding="utf-8") as f:
+            meta["margin_bt"] = json.load(f)
+    except (OSError, ValueError):
+        pass
     doc = dict(meta, stats=stats, base=base, rev=rev_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank,
                momentum={k: v for k, v in mom.items() if k != "today"})
     with open(os.path.join(OUT, "latest.json"), "w", encoding="utf-8") as f:
@@ -434,6 +445,23 @@ def bo_reasons(x):
 
 
 EXTRAS = {}   # 代號 → 個股面板用的估值、營收、本益比歷史(signals.py 寫個股檔時帶入)
+
+
+def margin_now():
+    """每檔最新一季毛利率、與去年同季相比的變化(百分點)、近 8 季歷史。只供顯示:回測顯示它對營收動能名單沒有預測力。"""
+    import margin
+    out = {}
+    for c, cum in margin.load().items():
+        q = margin.quarterly(cum)
+        gm = {p: g / r * 100 for p, (r, g) in q.items() if r and r > 0 and abs(g / r) <= 1}
+        if not gm:
+            continue
+        ps = sorted(gm)
+        p = ps[-1]
+        py = "%d%s" % (int(p[:4]) - 1, p[4:])
+        out[c] = {"p": p, "gm": _f(gm[p], 1), "d": _f(gm[p] - gm[py], 1) if py in gm else None,
+                  "hist": [[k, _f(gm[k], 1)] for k in ps[-8:]]}
+    return out
 
 
 def fair_all(rp, close, last):

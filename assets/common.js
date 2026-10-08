@@ -207,6 +207,24 @@
       "</span></div></div>";
   }
 
+  // 季度毛利率:近 8 季,最新一季與去年同季比較
+  function gmHtml(doc) {
+    var h = (doc.extra || {}).gm || [];
+    if (h.length < 2) return "";
+    var v = h.map(function (x) { return x[1]; });
+    var lo = Math.min.apply(null, v.concat([0])), hi = Math.max.apply(null, v), rg = hi - lo || 1;
+    var last = h[h.length - 1], ly = null;
+    h.forEach(function (x) { if (x[0] === (+last[0].slice(0, 4) - 1) + last[0].slice(4)) ly = x[1]; });
+    var d = ly == null ? null : last[1] - ly;
+    return '<div class="mem-tools"><h4>毛利率 · 近 ' + h.length + " 季</h4></div>" +
+      '<div class="revbars gmbars">' + h.map(function (x) {
+        return '<i title="' + esc(x[0]) + " 毛利率 " + x[1] + '%" style="height:' + Math.max(3, (x[1] - lo) / rg * 100).toFixed(0) + '%"><em>' + x[1] + "</em></i>";
+      }).join("") + "</div>" +
+      '<div class="kchart"><div class="cap"><span>' + esc(h[0][0]) + "</span><span>最新 " + esc(last[0]) + ":" + last[1] + "%" +
+      (d == null ? "" : ",比去年同季 " + MR.sign(d, 1) + " 個百分點") + "</span><span>" + esc(last[0]) + "</span></div></div>" +
+      '<p class="fvhow">回測顯示,營收創新高的股票裡,毛利率下降的組別之後表現沒有明顯比較差,這裡只供了解獲利品質。</p>';
+  }
+
   function peHtml(doc) {
     var h = (doc.extra || {}).pe_hist || [], e = (doc.extra || {}).fv;
     if (h.length < 12 || !e || e.method !== "pe") return "";
@@ -245,7 +263,7 @@
       "<div><span>外資連買</span><b>" + s.foreign_streak + " 天</b></div>" +
       "<div><span>投信連買</span><b>" + s.trust_streak + " 天</b></div>" +
       "<div><span>今日法人</span><b>" + MR.yi(lastNet(doc)) + "</b></div>" +
-      "</div>" + kchart(doc, names, grades) + revHtml(doc) + peHtml(doc) +
+      "</div>" + kchart(doc, names, grades) + revHtml(doc) + gmHtml(doc) + peHtml(doc) +
       '<div class="mem-tools"><h4>近期訊號 · 歷史 10 日表現</h4></div>' +
       (recent.length ? '<ul class="siglist">' + recent.map(function (m) {
         var st = sigs[m[1]], h = st && st.horizons["10"];

@@ -136,7 +136,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   "use strict";
   var esc = MR.esc, pct = MR.pct, sign = MR.sign, dir = MR.dir;
   var app = document.getElementById("app");
-  var R = null, TK = null, AU = null, LIVE = null, LIVEHITS = [];
+  var R = null, TK = null, AU = null, RC = null, LIVE = null, LIVEHITS = [];
   var view = (location.hash || "#rank").slice(1);
   if (["rank", "rev", "cycle", "breakout", "track"].indexOf(view) < 0) view = "rank";
   var hideLow = true, onlyNew = false, sortBy = "new", showAll = {}, rankFilter = "all", rankSort = "score", FVT = null;
@@ -381,6 +381,27 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       "<p>漲幅是板塊等權指數。「已漲」= 訊號出現時已從低點漲多少,「之後」= 訊號出現後到高點還剩多少。2025 年 4 月關稅急跌後的全面反彈多數抓不到,因為那是大盤行情,不是產業景氣。</p></div>";
   }
 
+  function recallBox() {
+    if (!RC) return "";
+    function cell(x) { return x ? MR.md(x.date) + "(" + (x.pre ? "起漲前" : "已漲 " + num(x.at, 0, "%")) + ",之後 " + num(x.left, 0, "%") + ")" : '<span style="color:var(--faint)">—</span>'; }
+    var yr = Object.keys(RC.by_year).map(function (y) { var v = RC.by_year[y]; return y + " 年 " + v.caught + "%"; }).join(" · ");
+    var top = RC.top.slice(0, showAll.recall ? 40 : 15).map(function (x) {
+      return '<tr><td><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(x.name) + "</button></td><td>" + esc(x.trough.slice(0, 7)) + " → " + esc(x.peak.slice(0, 7)) +
+        '</td><td class="up">' + num(x.gain, 0, "%") + "</td><td>" + cell(x.rev) + "</td><td>" + cell(x.bo) + "</td><td>" + (x.yoy3_peak == null ? "—" : num(x.yoy3_peak, 0, "%")) + "</td></tr>";
+    }).join("");
+    var a = RC.all, b = RC.big3x, m = RC.missed;
+    return '<div class="box"><h3>歷史飆股回顧:' + esc(RC.span[0].slice(0, 7)) + " ~ " + esc(RC.span[1].slice(0, 7)) + " 所有「120 日內翻倍」的波段</h3>" +
+      '<table class="pf"><thead><tr><th></th><th>抓得到</th><th>漲幅 &lt;30% 時就抓到</th><th>抓到時已漲(中位)</th><th>抓到後還剩(中位)</th></tr></thead><tbody>' +
+      "<tr class=\"hl\"><td>營收動能(全部 " + RC.episodes + " 段)</td><td>" + a.rev.caught + "%</td><td>" + a.rev.early + "%</td><td>" + num(a.rev.at_med, 0, "%") + "</td><td>" + num(a.rev.left_med, 0, "%") + "</td></tr>" +
+      "<tr><td>營收動能(漲 3 倍以上的 " + RC.big + " 段)</td><td>" + b.rev.caught + "%</td><td>" + b.rev.early + "%</td><td>" + num(b.rev.at_med, 0, "%") + "</td><td>" + num(b.rev.left_med, 0, "%") + "</td></tr>" +
+      "<tr><td>營收真的有成長的飆股(" + RC.grow.n + " 段)</td><td>" + RC.grow.rev.caught + "%</td><td>" + RC.grow.rev.early + "%</td><td>" + num(RC.grow.rev.at_med, 0, "%") + "</td><td>" + num(RC.grow.rev.left_med, 0, "%") + "</td></tr>" +
+      "<tr><td>爆量突破(全部)</td><td>" + a.bo.caught + "%</td><td>" + a.bo.early + "%</td><td>" + num(a.bo.at_med, 0, "%") + "</td><td>" + num(a.bo.left_med, 0, "%") + "</td></tr></tbody></table>" +
+      "<p>營收動能名單平常只涵蓋約 " + RC.coverage + "% 的可交易股票,卻抓到約一半的飆股(隨機挑同樣多檔只會碰到約 " + Math.round(RC.coverage) + "%)。各年度:" + yr + "。" +
+      "抓不到的 " + m.n + " 段中:" + m.no_growth + " 段營收根本沒成長(題材、籌碼行情)," + m.mild_growth + " 段營收成長溫和(多是報價、預期先行的族群)," + m.no_data + " 段沒有營收資料。</p>" +
+      '<table class="pf" style="margin-top:8px"><thead><tr><th>漲最多的波段</th><th>低點 → 高點</th><th>漲幅</th><th>營收動能何時抓到</th><th>爆量突破何時抓到</th><th>高點時 3 月營收年增</th></tr></thead><tbody>' + top + "</tbody></table>" +
+      (RC.top.length > 15 ? '<button type="button" class="more" data-all="recall">' + (showAll.recall ? "收合" : "顯示前 40 名") + "</button>" : "") + "</div>";
+  }
+
   function auditBox() {
     if (!AU) return "";
     function one(x, label) {
@@ -403,7 +424,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       function cell(h) { var x = v["avg_x" + h]; return '<td class="' + dir(x) + '">' + (x == null ? "累積中" : sign(x, 2) + "%") + '<br><small style="color:var(--faint)">' + v["n" + h] + " 天</small></td>"; }
       return "<tr><td>" + esc(v.name) + "</td>" + cell(5) + cell(20) + cell(60) + "</tr>";
     }).join("");
-    return auditBox() + '<div class="sec-h"><h2>實績追蹤</h2><p>從 ' + esc(TK.since) + " 起,每個交易日把當天的名單存下來(之後不會修改),再用之後的實際股價結算。這是唯一不能事後挑選的成績單。</p></div>" +
+    return recallBox() + auditBox() + '<div class="sec-h"><h2>實績追蹤</h2><p>從 ' + esc(TK.since) + " 起,每個交易日把當天的名單存下來(之後不會修改),再用之後的實際股價結算。這是唯一不能事後挑選的成績單。</p></div>" +
       '<div class="tkwrap"><table class="tk"><thead><tr><th>名單</th><th>5 日後比一般股</th><th>20 日後比一般股</th><th>60 日後比一般股</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
       '<p class="note">「比一般股」= 名單內個股隔天開盤買進、持有 N 日的平均報酬,減掉同一天所有可交易股票的平均,已扣交易成本。剛開始記錄時樣本很少,數字波動會很大,至少累積數個月再判斷。</p>';
   }
@@ -414,7 +435,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       '<span class="sep"></span><span id="live-status">' + MR.liveStatus(LIVE, R.date) + "</span></div>" +
       verdict() +
       '<div class="tabs"><div class="seg" role="tablist" aria-label="檢視">' +
-      [["rank", "潛在排行"], ["rev", "營收動能 · 爆發前"], ["cycle", "產業循環"], ["breakout", "爆量突破 · 剛爆發" + (LIVEHITS.length ? " +" + LIVEHITS.length : "")], ["track", "實績追蹤"]].map(function (o) {
+      [["rank", "潛在排行"], ["rev", "營收動能 · 爆發前"], ["cycle", "產業循環"], ["breakout", "爆量突破 · 剛爆發" + (LIVEHITS.length ? " +" + LIVEHITS.length : "")], ["track", "驗證與實績"]].map(function (o) {
         return '<button type="button" role="tab" data-view="' + o[0] + '" aria-pressed="' + (o[0] === view) + '" aria-selected="' + (o[0] === view) + '">' + o[1] + "</button>";
       }).join("") + "</div></div>" +
       (view === "rank" ? rankView() : view === "rev" ? revView() : view === "cycle" ? cycleView() : view === "breakout" ? boView() : trackView());
@@ -441,9 +462,10 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
 
   Promise.all([MR.json("data/radar/latest.json"), MR.json("data/track/summary.json").catch(function () { return null; }),
     MR.json("data/track/audit.json").catch(function () { return null; }),
-    MR.json("data/radar/fv_backtest.json").catch(function () { return null; })])
+    MR.json("data/radar/fv_backtest.json").catch(function () { return null; }),
+    MR.json("data/radar/recall.json").catch(function () { return null; })])
     .then(function (r) {
-      R = r[0]; TK = r[1]; AU = r[2]; FVT = r[3];
+      R = r[0]; TK = r[1]; AU = r[2]; FVT = r[3]; RC = r[4];
       render();
       // 證交所若已公布比網站更新的收盤資料,直接在瀏覽器更新上市股價格並判斷今日突破
       return MR.fetchLive(R.date).then(function (lv) {

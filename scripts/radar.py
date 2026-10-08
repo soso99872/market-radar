@@ -266,7 +266,7 @@ def build(L):
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 
     write_live(L, close, vyi, chg, D, last, names, vol60, vol_cut)
-    track(L, rev_list, bo_list, close, opn, vyi, dates)
+    track(L, rev_list, bo_list, close, opn, vyi, dates, mom)
     print("radar: rev %d, breakout %d" % (len(rev_list), len(bo_list)))
     return doc
 
@@ -592,7 +592,7 @@ def write_live(L, close, vyi, chg, D, last, names, vol60, vol_cut):
                   f, ensure_ascii=False, separators=(",", ":"))
 
 
-def track(L, rev_list, bo_list, close, opn, vyi, dates):
+def track(L, rev_list, bo_list, close, opn, vyi, dates, mom=None):
     """名單實績:每天存快照(不覆蓋舊的),再用之後的實際股價結算。"""
     last = dates[-1]
     d = os.path.join(TRACK, "lists")
@@ -604,13 +604,22 @@ def track(L, rev_list, bo_list, close, opn, vyi, dates):
         "breakout": [x["code"] for x in bo_list if x["days_ago"] == 0],
         "picks": [x["code"] for x in w.get("picks", [])],
         "dump": [x["code"] for x in w.get("dump", [])],
+        "mom_top": [c for c, v in ((mom or {}).get("today") or {}).items() if v["q"] == 4],
     }
     p = os.path.join(d, last + ".json")
     if not os.path.exists(p):
         with open(p, "w", encoding="utf-8") as f:
             json.dump(snap, f, ensure_ascii=False, separators=(",", ":"))
+    else:
+        # 已存在的快照不改既有名單;只補上後來新增的名單種類
+        old = json.load(open(p, encoding="utf-8"))
+        add = {k: v for k, v in snap.items() if k not in old}
+        if add:
+            old.update(add)
+            with open(p, "w", encoding="utf-8") as f:
+                json.dump(old, f, ensure_ascii=False, separators=(",", ":"))
 
-    names = {"rev": "營收動能", "breakout": "爆量突破", "picks": "法人資金流向", "dump": "法人持續調節"}
+    names = {"rev": "營收動能", "mom_top": "營收動能 · 動能分數前 1/5", "breakout": "爆量突破", "picks": "法人資金流向", "dump": "法人持續調節"}
     idx = {x: i for i, x in enumerate(dates)}
     univ = vyi >= MIN_VALUE
     res = {k: {"name": v, "rows": []} for k, v in names.items()}

@@ -195,7 +195,7 @@
     var off = s.high250 ? (s.close / s.high250 - 1) * 100 : null;
     var recent = (doc.signals || []).slice(-8).reverse();
     return '<div class="sh-head"><div><h3 id="stk-title"><span class="num">' + esc(doc.code) + "</span> " + esc(doc.name) + "</h3>" +
-      '<div class="stk-head"><span class="px">' + esc(s.close) + "</span>" + MR.pct(s.chg) +
+      '<div class="stk-head" id="stk-px"><span class="px">' + esc(s.close) + "</span>" + MR.pct(s.chg) +
       '<span class="flat" style="font-size:12px">' + esc(doc.date) + " 收盤</span></div>" +
       (doc.themes.length ? '<div class="chips">' + doc.themes.map(function (t) {
         return '<a class="th-chip" href="sectors.html#' + esc(t.id) + '">' + esc(t.name) + "</a>";
@@ -234,7 +234,16 @@
     d.innerHTML = '<div class="sh-head"><div><h3 id="stk-title">' + esc(code) + '</h3></div><button type="button" class="x" data-close aria-label="關閉">×</button></div><div class="sh-body"><p class="flat">載入中…</p></div>';
     if (!d.open) d.showModal();
     Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats()])
-      .then(function (res) { d.innerHTML = stockHtml(res[0], res[1]); })
+      .then(function (res) {
+        d.innerHTML = stockHtml(res[0], res[1]);
+        // 盤中或今日收盤後:用即時報價取代排程資料的收盤價(live.js 有載入且已設定 Worker 才會有)
+        if (MR.intradayOne) MR.intradayOne(code, res[0].date).then(function (lv) {
+          var el = d.querySelector("#stk-px");
+          if (!lv || !el || !d.open) return;
+          el.innerHTML = '<span class="px">' + lv.q[1] + "</span>" + MR.pct(lv.q[2]) + '<span class="flat" style="font-size:12px">' +
+            (lv.open ? "盤中即時 " + esc(String(lv.q[4]).slice(0, 5)) : esc(lv.date) + " 收盤") + "</span>";
+        });
+      })
       .catch(function () {
         d.querySelector(".sh-body").innerHTML = '<p class="flat">這檔股票目前沒有詳細資料(只收錄板塊成分股與近期觸發訊號的個股)。</p>';
       });

@@ -74,6 +74,11 @@
   };
 
   MR.liveStatus = function (live, siteDate) {
+    var it = MR.INTRA;
+    if (it && it.date >= (live ? live.date : "") && it.date > (siteDate || "")) {
+      return '<b style="color:var(--accent)">' + (it.open ? "盤中即時" : "今日收盤") + "</b> 股價為證交所 " + MR.md(it.date) + " " + MR.esc(String(it.time).slice(0, 5)) +
+        (it.open ? " 報價(重整頁面即更新)" : "") + "(法人與排名待排程更新)";
+    }
     if (live) return '<b style="color:var(--accent)">已即時更新</b> 上市股價為證交所 ' + MR.md(live.date) + " 官方收盤(上櫃、法人與排名待排程更新)";
     var st = MR._liveState;
     if (st === "checking") return "檢查證交所最新資料…";
@@ -81,14 +86,83 @@
     return "已是最新資料";
   };
 
-  MR.patchPrices = function (root, live) {
+  MR.patchPrices = function (root, live, siteDate) {
     var st = root.querySelector("#live-status");
-    if (st) st.innerHTML = MR.liveStatus(live);
-    if (!live) return;
+    if (st) st.innerHTML = MR.liveStatus(live, siteDate);
+    var it = MR.INTRA, useIt = it && it.date >= (live ? live.date : "") && it.date > (siteDate || "");
+    if (!live && !useIt) return;
     Array.prototype.forEach.call(root.querySelectorAll("[data-px]"), function (el) {
-      var r = live.s[el.getAttribute("data-px")];
+      var c = el.getAttribute("data-px"), q = useIt && it.s[c];
+      if (q) { el.innerHTML = q[1] + " " + MR.pct(q[2]) + '<span class="lv">' + (it.open ? MR.esc(String(q[4]).slice(0, 5)) : MR.md(it.date)) + "</span>"; return; }
+      var r = live && live.s[c];
       if (r) el.innerHTML = r[1] + " " + MR.pct(r[2]) + '<span class="lv">' + MR.md(live.date) + "</span>";
     });
+  };
+
+  // ---- 即時報價:經 Cloudflare Worker(worker/worker.js)讀證交所 MIS,上市上櫃都有 ----
+  // 部署 Worker 後把網址填在這裡;留空就只用上面的收盤資料
+  MR.QUOTE_PROXY = "";
+  try { MR.QUOTE_PROXY = localStorage.getItem("quoteProxy") || MR.QUOTE_PROXY; } catch (e) {}   // 本機測試用
+
+  function marketOpen(now) {
+    return now.dow > 0 && now.dow < 6 && now.hour >= 8.98 && now.hour < 13.6;
+  }
+
+  // 不在背景輪詢:開頁面(含重整)、切換檢視、回到這個瀏覽器分頁時才查一次頁面上 [data-px] 的代號
+  var intraHooks = [];
+  MR.startIntraday = function (getRoot, siteDate, onUpdate) {
+    if (!MR.QUOTE_PROXY) return;
+    var hook = { getRoot: getRoot, siteDate: siteDate, onUpdate: onUpdate };
+    intraHooks.push(hook);
+    if (intraHooks.length === 1) {
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) intraHooks.forEach(function (h) { refresh(h, true); });
+      });
+    }
+    refresh(hook, true);
+  };
+
+  // 切換檢視後呼叫:只補查還沒有報價的代號(盤中則全部重查)
+  MR.refreshIntraday = function () {
+    intraHooks.forEach(function (h) { refresh(h, false); });
+  };
+
+  function refresh(h, all) {
+    var now = taipeiNow();
+    // 盤前 MIS 還是前一日資料、週末沒有新資料;收盤後查到的就是今日收盤(含上櫃)
+    if (now.dow === 0 || now.dow === 6 || now.hour < 8.98 || now.iso <= h.siteDate) return;
+    var it = MR.INTRA && MR.INTRA.date === now.iso ? MR.INTRA : null, codes = {};
+    Array.prototype.forEach.call(h.getRoot().querySelectorAll("[data-px]"), function (el) {
+      var c = el.getAttribute("data-px");
+      if (all || !it || !it.s[c]) codes[c] = 1;
+    });
+    var list = Object.keys(codes).slice(0, 300);
+    if (!list.length) return h.onUpdate();
+    fetch(MR.QUOTE_PROXY + "?codes=" + list.join(","))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || j.date !== now.iso) return;
+        var s = MR.INTRA && MR.INTRA.date === j.date ? MR.INTRA.s : {};
+        Object.keys(j.s).forEach(function (c) { s[c] = j.s[c]; });
+        MR.INTRA = { date: j.date, time: j.time, open: marketOpen(taipeiNow()), s: s };
+        h.onUpdate();
+      })
+      .catch(function () {});
+  }
+
+  // 個股面板打開時單獨查那一檔
+  MR.intradayOne = function (code, siteDate) {
+    var now = taipeiNow();
+    if (!MR.QUOTE_PROXY || now.dow === 0 || now.dow === 6 || now.hour < 8.98 || now.iso <= siteDate) return Promise.resolve(null);
+    var it = MR.INTRA;
+    if (it && it.date === now.iso && it.s[code] && !marketOpen(now)) return Promise.resolve({ q: it.s[code], date: it.date, open: false });
+    return fetch(MR.QUOTE_PROXY + "?codes=" + encodeURIComponent(code))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var q = j && j.date === now.iso && j.s[code];
+        return q ? { q: q, date: j.date, open: marketOpen(taipeiNow()) } : null;
+      })
+      .catch(function () { return null; });
   };
 
   // 用排程算好的門檻(前 20 日均量、前 60 日高低點、前 250 日高點)判斷今天是否爆量突破

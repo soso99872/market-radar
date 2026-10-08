@@ -451,7 +451,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
         return '<button type="button" role="tab" data-view="' + o[0] + '" aria-pressed="' + (o[0] === view) + '" aria-selected="' + (o[0] === view) + '">' + o[1] + "</button>";
       }).join("") + "</div></div>" +
       (view === "rank" ? rankView() : view === "rev" ? revView() : view === "cycle" ? cycleView() : view === "breakout" ? boView() : trackView());
-    if (LIVE) MR.patchPrices(app, LIVE);
+    MR.patchPrices(app, LIVE, R.date);
     document.title = "起漲雷達 · " + R.date;
   }
 
@@ -464,6 +464,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
     if (b.dataset.rs) rankSort = b.dataset.rs;
     if (b.dataset.all) showAll[b.dataset.all] = !showAll[b.dataset.all];
     render();
+    if (b.dataset.view || b.dataset.all) MR.refreshIntraday();
   });
   app.addEventListener("change", function (e) {
     var o = e.target.dataset && e.target.dataset.opt;
@@ -479,6 +480,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
     .then(function (r) {
       R = r[0]; TK = r[1]; AU = r[2]; FVT = r[3]; RC = r[4];
       render();
+      MR.startIntraday(function () { return app; }, R.date, function () { MR.patchPrices(app, LIVE, R.date); });
       // 證交所若已公布比網站更新的收盤資料,直接在瀏覽器更新上市股價格並判斷今日突破
       return MR.fetchLive(R.date).then(function (lv) {
         if (!lv) return;

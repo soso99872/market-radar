@@ -116,6 +116,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 </footer>
 
 <script src="assets/common.js"></script>
+<script src="assets/live.js"></script>
 <script>
 (function () {
   "use strict";
@@ -255,6 +256,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
       }).join("");
   }
 
+  var sheetPoll = null;
+
   function render() {
     var tx = D.taiex;
     app.innerHTML =
@@ -293,7 +296,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
     return '<table class="mem"><thead><tr><th>代碼</th><th>名稱</th><th class="n">' + wl + '漲跌</th><th class="n">' + wl + "買超</th></tr></thead><tbody>" +
       rows.map(function (m) {
         return '<tr><td class="code"><button type="button" class="stock-link num" data-stock="' + esc(m.code) + '">' + esc(m.code) + '</button></td><td><button type="button" class="stock-link" data-stock="' + esc(m.code) + '">' + esc(m.name) + '</button></td><td class="n">' +
-          (w === "1" ? '<span class="px">' + esc(m.close) + "</span>" : "") + pct(m[w][0]) + '</td><td class="n">' + yi(m[w][1]) + "</td></tr>";
+          (w === "1" ? '<span class="px" data-px="' + esc(m.code) + '">' + esc(m.close) + "</span>" : "") + pct(m[w][0]) + '</td><td class="n">' + yi(m[w][1]) + "</td></tr>";
       }).join("") + "</tbody></table>";
   }
 
@@ -325,6 +328,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
     state.open = t;
     sheet.innerHTML = sheetHtml(t);
     if (!sheet.open) sheet.showModal();
+    if (!sheetPoll) { sheetPoll = 1; MR.startIntraday(function () { return sheet; }, D.date, function () { if (sheet.open) MR.patchPrices(sheet, null, D.date); }); }
+    else { MR.patchPrices(sheet, null, D.date); MR.refreshIntraday(); }
     sheet.querySelector(".sh-body").scrollTop = 0;
     history.replaceState(null, "", "#" + id);
   }

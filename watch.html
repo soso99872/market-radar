@@ -273,7 +273,7 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
         return '<button type="button" role="tab" data-view="' + o[0] + '" aria-pressed="' + (o[0] === view) + '" aria-selected="' + (o[0] === view) + '">' + o[1] + "</button>";
       }).join("") + "</div></div>" +
       (view === "trend" ? trend() : view === "picks" ? picks() : risk());
-    MR.patchPrices(app, LIVE);
+    MR.patchPrices(app, LIVE, W.date);
     document.title = "觀察名單 · " + W.date;
   }
 
@@ -285,11 +285,13 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
     if (b.dataset.sort) sortBy = b.dataset.sort;
     if (b.dataset.all) showAll[b.dataset.all] = !showAll[b.dataset.all];
     render();
+    if (b.dataset.view || b.dataset.all) MR.refreshIntraday();
   });
 
   Promise.all([MR.json("data/watch/latest.json"), MR.stats()])
     .then(function (r) {
       W = r[0]; ST = r[1]; render();
+      MR.startIntraday(function () { return app; }, W.date, function () { MR.patchPrices(app, LIVE, W.date); });
       return MR.fetchLive(W.date).then(function (lv) { LIVE = lv; render(); });
     })
     .catch(function () { app.innerHTML = '<p class="err">觀察名單資料尚未產生。</p>'; });

@@ -44,6 +44,13 @@
     if (!statsP) statsP = MR.json("data/signals/stats.json").catch(function () { return null; });
     return statsP;
   };
+  // 個股基本資料(scripts/profile.py),只載一次
+  var profP = null;
+  MR.profile = function () {
+    if (!profP) profP = MR.json("data/profile/latest.json").catch(function () { return {}; });
+    return profP;
+  };
+
   MR.gradeTag = function (g) {
     var cls = { "強": "g3", "中": "g2", "反向": "gneg", "弱": "g1" }[g] || "g0";
     return '<span class="grade ' + cls + '" title="證據強度">證據' + esc(g) + "</span>";
@@ -160,6 +167,32 @@
       '<p class="fvhow">公式固定、沒有人為調整;假設淨利率不變、評價回到自己的歷史中位數,實際上兩者都會變。回測顯示:2023–2026 被判「低估」的股票之後反而表現較差,這個合理價目前沒有預測力,只供了解估值位置。</p></div>';
   }
 
+  // 公司概況:產業、主要業務、產品營收比重、概念股
+  function profileHtml(p) {
+    if (!p || !(p.ind || p.biz || p.mix)) return "";
+    var mix = (p.mix || []).filter(function (x) { return x[1] > 0; });
+    var shown = mix.slice(0, 6), rest = mix.slice(6).reduce(function (s, x) { return s + x[1]; }, 0);
+    if (rest >= 0.5) shown.push(["其餘 " + (mix.length - 6) + " 項", Math.round(rest * 100) / 100]);
+    var mx = Math.max.apply(null, shown.map(function (x) { return x[1]; }).concat([1]));
+    var facts = [];
+    if (p.ind) facts.push("<div><span>產業</span><b>" + esc(p.ind) + "</b></div>");
+    if (p.capital != null) facts.push("<div><span>股本</span><b>" + esc(p.capital) + " 億</b></div>");
+    if (p.listed) facts.push("<div><span>上市(櫃)</span><b>" + esc(p.listed.slice(0, 4)) + " 年</b></div>");
+    if (p.founded) facts.push("<div><span>成立</span><b>" + esc(p.founded.slice(0, 4)) + " 年</b></div>");
+    return '<div class="fvbox prof"><h4>公司概況</h4>' +
+      (facts.length ? '<div class="fvgrid">' + facts.join("") + "</div>" : "") +
+      (p.biz ? '<p class="fvhow"><b>主要業務</b> ' + esc(p.biz) + "</p>" : "") +
+      (shown.length ? '<p class="fvhow" style="margin-bottom:4px"><b>產品營收比重</b>' + (p.mix_year ? "(" + esc(p.mix_year) + " 年)" : "") + "</p>" +
+        '<div class="mixbars">' + shown.map(function (x) {
+          return '<div class="mixrow"><span class="mixname">' + esc(x[0]) + '</span><span class="mixbar"><i style="width:' +
+            (x[1] / mx * 100).toFixed(1) + '%"></i></span><span class="mixpct num">' + x[1].toFixed(1) + "%</span></div>";
+        }).join("") + "</div>" : "") +
+      (p.concepts && p.concepts.length ? '<p class="fvhow"><b>概念股分類</b> ' + p.concepts.map(function (c) {
+        return '<span class="cpt">' + esc(c) + "</span>";
+      }).join("") + "</p>" : "") +
+      '<p class="fvhow" style="color:var(--faint)">來源:Yahoo 股市(產業、業務、概念股,Yahoo 頁面只列出部分分類)、MoneyDJ(營收比重,取自年報)。題材與比重只供了解公司在做什麼,不是選股依據。</p></div>';
+  }
+
   function revHtml(doc) {
     var r = (doc.extra || {}).rev || [];
     if (r.length < 6) return "";
@@ -189,7 +222,7 @@
       '<div class="cap"><span>' + esc(h[0][0]) + "</span><span>中位數 " + e.band[1] + " 倍 · 目前 " + (e.pe == null ? "—" : e.pe + " 倍") + "</span><span>" + esc(h[h.length - 1][0]) + "</span></div></div>";
   }
 
-  function stockHtml(doc, stats) {
+  function stockHtml(doc, stats, prof) {
     var s = doc.summary, sigs = (stats && stats.signals) || {}, names = {}, grades = {};
     Object.keys(sigs).forEach(function (k) { names[k] = sigs[k].name; grades[k] = sigs[k].horizons["10"].grade; });
     var off = s.high250 ? (s.close / s.high250 - 1) * 100 : null;
@@ -201,7 +234,7 @@
         return '<a class="th-chip" href="sectors.html#' + esc(t.id) + '">' + esc(t.name) + "</a>";
       }).join("") + "</div>" : "") +
       '</div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
-      '<div class="sh-body">' + fvHtml(doc) +
+      '<div class="sh-body">' + profileHtml(prof && prof[doc.code]) + fvHtml(doc) +
       '<div class="kgrid">' +
       "<div><span>5 日漲跌</span><b>" + MR.pct(s.ret5) + "</b></div>" +
       "<div><span>20 日漲跌</span><b>" + MR.pct(s.ret20) + "</b></div>" +
@@ -233,9 +266,9 @@
     var d = ensureDialog();
     d.innerHTML = '<div class="sh-head"><div><h3 id="stk-title">' + esc(code) + '</h3></div><button type="button" class="x" data-close aria-label="關閉">×</button></div><div class="sh-body"><p class="flat">載入中…</p></div>';
     if (!d.open) d.showModal();
-    Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats()])
+    Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile()])
       .then(function (res) {
-        d.innerHTML = stockHtml(res[0], res[1]);
+        d.innerHTML = stockHtml(res[0], res[1], res[2]);
         // 盤中或今日收盤後:用即時報價取代排程資料的收盤價(live.js 有載入且已設定 Worker 才會有)
         if (MR.intradayOne) MR.intradayOne(code, res[0].date).then(function (lv) {
           var el = d.querySelector("#stk-px");

@@ -20,6 +20,7 @@ on:
       - scripts/radar.py
       - scripts/valuation.py
       - scripts/fairvalue.py
+      - scripts/estimates.py
       - data/sectors/themes.json
 
 permissions:
@@ -48,6 +49,8 @@ jobs:
         run: python scripts/fundamentals.py || echo "::warning::fundamentals 失敗"
       - name: 月營收
         run: python scripts/revenue.py || echo "::warning::revenue 失敗"
+      - name: 分析師共識預估(12 小時內抓過就略過)
+        run: python scripts/estimates.py || echo "::warning::estimates 失敗"
       - name: 本益比每月快照
         run: python scripts/valuation.py || echo "::warning::valuation 失敗"
       - name: 訊號回測、觀察名單、起漲雷達與個股資料
@@ -60,7 +63,7 @@ jobs:
           for i in 1 2 3; do
             git fetch -q origin main
             git reset -q --mixed origin/main
-            git add -A data/quotes.json data/flows data/sectors/latest.json data/screens data/history data/signals data/stocks data/watch data/fundamentals data/revenue data/valuation data/radar data/track
+            git add -A data/quotes.json data/flows data/sectors/latest.json data/screens data/history data/signals data/stocks data/watch data/fundamentals data/revenue data/valuation data/estimates data/radar data/track
             if git diff --cached --quiet; then echo "沒有變更"; exit 0; fi
             git commit -q -m "資料更新 $(TZ=Asia/Taipei date '+%F %H:%M')"
             git push origin HEAD:main && exit 0

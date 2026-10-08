@@ -446,7 +446,12 @@ def fair_all(rp, close, last):
             now = json.load(f).get("val", {})
     except FileNotFoundError:
         now = {}
+    try:
+        cons = json.load(open(os.path.join(history.ROOT, "data", "estimates", "latest.json"), encoding="utf-8")).get("s", {})
+    except FileNotFoundError:
+        cons = {}
     cur_m = (int(last[:4]), int(last[5:7]))
+    w1 = (cur_m[1] - 1) / 12   # 未來 12 個月 EPS = 今年預估 × 剩餘比例 + 明年預估 × 已過比例
     vm = [m for m in sorted(VAL) if m < cur_m][-FV.MAX_HIST:]
     pe_h = {m: VAL[m]["s"] for m in vm}
     rev, yoy = rp["rev"], rp["yoy"]
@@ -473,6 +478,21 @@ def fair_all(rp, close, last):
                  "pe": pe, "pb": pb}
             # 合理價偏離股價太多,通常是景氣轉折、一次性損益或評價重估,固定公式不適用
             e["extreme"] = bool(e["up"] is not None and (e["up"] > 100 or e["up"] < -60))
+            # 前瞻估值:分析師共識的未來 12 個月 EPS × 自身歷史本益比中位數(只有 PE 法、且有預估時)
+            k = cons.get(c) or {}
+            pe_band = FV.band(ph)
+            if est_ok(k) and pe_band:
+                e0, e1 = k.get("eps0") or k["eps1"], k["eps1"]
+                feps12 = e0 * (1 - w1) + e1 * w1
+                if feps12 > 0:
+                    lo_, mid_, hi_ = pe_band[:3]
+                    e["fwd"] = {"eps": _f(feps12), "pe": _f(price / feps12, 1), "fair": _f(feps12 * mid_),
+                                "low": _f(feps12 * lo_), "high": _f(feps12 * hi_), "up": _f((feps12 * mid_ / price - 1) * 100, 1),
+                                "n": k.get("n1"), "eps0": k.get("eps0"), "eps1": k["eps1"], "band": [_f(b, 1) for b in pe_band[:3]]}
+                    e["fwd"]["status"] = "低估" if price < feps12 * lo_ else "高估" if price > feps12 * hi_ else "合理"
+            if k.get("tgt"):
+                e["tgt"] = {"mean": k["tgt"], "lo": k.get("tgt_lo"), "hi": k.get("tgt_hi"),
+                            "up": _f((k["tgt"] / price - 1) * 100, 1)}
             if est["method"] == "pe":
                 e.update(eps=_f(est["eps"]), growth=_f(est["growth"]), feps=_f(est["feps"]))
             else:
@@ -551,6 +571,10 @@ def momentum(L, rp, close, opn, tradable, usable, newpub, rev_list, h=60):
                                 "proj": None if not st else {"p25": _f(px * (1 + st["p25"] / 100)), "p50": _f(px * (1 + st["p50"] / 100)),
                                                              "p75": _f(px * (1 + st["p75"] / 100)), "rel": st["rel"], "win": st["win"]}}
     return {"hold": h, "quintiles": qstat, "today": today, "feats": list(MOM_FEATS)}
+
+
+def est_ok(k):
+    return bool(k and k.get("eps1") and (k.get("n1") or 0) >= 1)
 
 
 def ranking(rev_list, bo_list, mom):

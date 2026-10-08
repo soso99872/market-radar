@@ -47,6 +47,8 @@ PE = pd.DataFrame({m: {c: v[0] for c, v in VAL[m]["s"].items()} for m in vm}).T.
 pe_rel = PE / PE.shift(1).rolling(FV.MAX_HIST, min_periods=FV.MIN_HIST).median()
 pe_rel.index = [pd.Timestamp(VAL[m]["date"]) for m in vm]
 feat["本益比相對歷史"] = pe_rel.reindex(pd.to_datetime(close.index), method="ffill").set_axis(close.index)
+# 市場隱含成長:股價要回到自身本益比中位數,EPS 需要成長多少;成長覆蓋 = 營收成長 − 隱含成長
+feat["成長覆蓋(營收成長−隱含成長)"] = D["yoy3"] / 100 - (feat["本益比相對歷史"] - 1)
 
 pub = []
 for y, m in rp["months"]:

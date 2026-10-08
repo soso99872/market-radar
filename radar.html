@@ -194,9 +194,11 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   }
 
   function fvLine(x) {
-    var e = x.fv;
-    if (!e) return '<p class="fvl">模型合理價:資料不足</p>';
-    return '<p class="fvl">模型合理價 <b>' + e.fair + "</b>(" + e.low + "~" + e.high + ")· 潛在空間 <b class=\"" + dir(e.up) + "\">" + sign(e.up, 0) + "%</b>" + (e.extreme ? '(⚠ 偏離太大,公式不適用)' : "") + " · " +
+    var e = x.fv, w = e && e.fwd;
+    if (w) return '<p class="fvl">前瞻合理價 <b>' + w.fair + "</b>(前瞻本益比 " + w.pe + " 倍,歷史中位 " + w.band[1] + " 倍)· 空間 <b class=\"" + dir(w.up) + "\">" + sign(w.up, 0) + "%</b> · " +
+      '<span class="st3 ' + (w.status === "低估" ? "lo" : w.status === "高估" ? "hi" : "") + '">前瞻' + w.status + "</span></p>";
+    if (!e) return '<p class="fvl">估值:資料不足</p>';
+    return '<p class="fvl">無分析師預估;依過去四季 EPS 的合理價 <b>' + e.fair + "</b>(" + e.low + "~" + e.high + ")· 空間 <b class=\"" + dir(e.up) + "\">" + sign(e.up, 0) + "%</b>" + (e.extreme ? '(⚠ 偏離太大,公式不適用)' : "") + " · " +
       '<span class="st3 ' + (e.status === "低估" ? "lo" : e.status === "高估" ? "hi" : "") + '">' + e.status + "</span></p>";
   }
 
@@ -276,13 +278,20 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       '<p class="note">爆量突破整體統計不夠顯著,而且中位數為負:多數突破之後會拉回。有營收成長支撐的突破明顯較好,營收衰退的突破歷史上平均是虧的。</p>';
   }
 
+  function fwdNote() {
+    return '<div class="box"><h3>前瞻估值怎麼算、可信度如何</h3><p>股價會先反映未來,所以用過去四季 EPS 算估值,強勢股幾乎都會被判「高估」。前瞻估值改用 Yahoo Finance 匯總的分析師共識:' +
+      "未來 12 個月 EPS = 今年預估 × 剩餘月份比例 + 明年預估 × 已過月份比例;前瞻合理價 = 未來 12 個月 EPS × 這檔股票自己過去 5 年本益比中位數;前瞻本益比高於歷史第 75 百分位為「高估」、低於第 25 百分位為「低估」。" +
+      "名單中約一半的股票有分析師預估,小型股多半沒有。</p><p><b style=\"color:var(--text)\">這個前瞻估值目前無法回測</b>:免費來源只有當下的共識,沒有歷史紀錄。網站從 2026-10-08 起每天存一份共識快照,累積半年以上才能檢驗它準不準。" +
+      "另外要注意:分析師預估通常偏樂觀,景氣反轉時也常來不及下修。下面是過去四季 EPS 版本的回測,結論是它在名單內沒有預測力;我們也測過「營收成長是否追得上股價隱含的成長」,同樣沒有預測力。</p></div>";
+  }
+
   function fvEvidence() {
     if (!FVT) return '<p class="note">模型合理價的歷史回測尚未產生。</p>';
     var q = FVT.quintiles || [], h = FVT.hold;
     var rows = q.map(function (x) {
       return "<tr><td>" + esc(x.label) + "</td><td>" + sign(x.up_med, 0) + "%</td><td class=\"" + dir(x.rel) + "\">" + sign(x.rel, 2) + "%</td><td>" + sign(x.med, 2) + "%</td><td>" + plain(x.mwin, 0, "%") + "</td></tr>";
     }).join("");
-    return '<div class="box"><h3>估值合理價有用嗎?歷史回測(' + esc(FVT.span[0]) + " ~ " + esc(FVT.span[1]) + "," + FVT.months + " 個月)</h3>" +
+    return '<div class="box"><h3>過去四季 EPS 版本的估值有用嗎?歷史回測(' + esc(FVT.span[0]) + " ~ " + esc(FVT.span[1]) + "," + FVT.months + " 個月)</h3>" +
       '<table class="pf"><thead><tr><th>每月依潛在空間分 5 組</th><th>空間中位數</th><th>之後 ' + h + " 日比一般股</th><th>中位數</th><th>月勝率</th></tr></thead><tbody>" + rows + "</tbody></table>" +
       "<p><b style=\"color:var(--text)\">" + esc(FVT.verdict) + "</b></p>" +
       "<p>分期間看:2021–2023 估值便宜的一組略好(+2.4%,t = 1.8,不顯著),2023–2026 反而是貴的一組較好。不論哪一段,起漲雷達名單內「估值空間較小」的一半都比「空間較大」的一半表現好(名單內的高成長股,市場願意給更高評價)。所以估值合理價只用來了解股價相對自身歷史的位置,排序請用動能分數。</p></div>";
@@ -303,35 +312,38 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   }
 
   function rankView() {
-    var key = { score: function (x) { return -(x.mom ? x.mom.score : -1); }, up: function (x) { return x.fv ? -(x.fv.up || -999) : 999; }, streak: function (x) { return -(x.rev_streak || 0) * 1000 - (x.fv.up || 0) / 1000; },
+    var key = { score: function (x) { return -(x.mom ? x.mom.score : -1); }, up: function (x) { return x.fv && x.fv.fwd ? -x.fv.fwd.up : 999; }, streak: function (x) { return -(x.rev_streak || 0) * 1000 - (x.fv.up || 0) / 1000; },
       high: function (x) { return x.hi250 == null ? 999 : -x.hi250; } }[rankSort];
     var items = (R.rank || []).slice().sort(function (a, b) { return key(a) - key(b); }).filter(function (x) {
       if (hideLow && x.low_vol) return false;
-      if (rankFilter === "lo") return x.fv && x.fv.status === "低估";
-      if (rankFilter === "ok") return x.fv && x.fv.status !== "高估";
-      if (rankFilter === "sane") return x.fv && !x.fv.extreme;
+      var w = x.fv && x.fv.fwd;
+      if (rankFilter === "lo") return w && w.status === "低估";
+      if (rankFilter === "ok") return w && w.status !== "高估";
+      if (rankFilter === "sane") return !!w;
       return true;
     });
     var rows = items.slice(0, showAll.rank ? 999 : 40).map(function (x, i) {
-      var e = x.fv || {}, m = x.mom, pj = m && m.proj;
+      var e = x.fv || {}, m = x.mom, pj = m && m.proj, w = e.fwd, t = e.tgt;
       return '<tr><td class="rk">' + (i + 1) + '</td><td class="l"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(x.name) + "</button></td>" +
         '<td data-px="' + esc(x.code) + '">' + x.close + "</td>" +
         "<td><b>" + (m ? m.score : "—") + "</b></td>" +
         '<td class="sm">' + (pj ? pj.p25 + " ~ <b>" + pj.p50 + "</b> ~ " + pj.p75 : "—") + "</td>" +
-        "<td>" + (e.fair == null ? "—" : e.fair) + "</td>" +
-        '<td class="' + dir(e.up) + '">' + (e.up == null ? "—" : sign(e.up, 0) + "%") + (e.extreme ? ' <span class="st3 hi" title="偏離太大,多半是景氣轉折或一次性損益,固定公式不適用">⚠</span>' : "") + "</td>" +
-        "<td>" + (e.status ? '<span class="st3 ' + (e.status === "低估" ? "lo" : e.status === "高估" ? "hi" : "") + '">' + e.status + "</span>" : "—") + "</td>" +
+        "<td>" + (w ? w.pe + '<small style="color:var(--faint)"> / ' + w.band[1] + "</small>" : "—") + "</td>" +
+        "<td>" + (w ? w.fair : "—") + "</td>" +
+        '<td class="' + dir(w && w.up) + '">' + (w ? sign(w.up, 0) + "%" : "—") + "</td>" +
+        "<td>" + (w ? '<span class="st3 ' + (w.status === "低估" ? "lo" : w.status === "高估" ? "hi" : "") + '">' + w.status + "</span>" : '<span class="st3" title="沒有分析師預估">無預估</span>') + "</td>" +
+        '<td class="sm">' + (t ? t.mean + "(" + sign(t.up, 0) + "%)" : "—") + "</td>" +
         '<td class="' + dir(x.yoy) + '">' + num(x.yoy, 0, "%") + '</td><td class="l sm">' + x.src.join("、") + (x.above_ma60 === false ? "、季線下" : "") + (x.dumped ? "、法人大賣" : "") + "</td></tr>";
     }).join("");
-    return '<div class="sec-h"><h2>潛在排行</h2><p>營收動能名單依「動能分數」排序,並附兩種客觀價格:依歷史同分組實際落點換算的「統計 60 日區間」,以及依本益比河流圖算的「估值合理價」。點代號看算式與詳細資料。</p></div>' +
-      momEvidence() + fvEvidence() +
-      '<div class="tools"><span>排序</span>' + seg("rs", rankSort, [["score", "動能分數"], ["up", "估值空間"], ["streak", "營收連續創新高"], ["high", "接近 52 週高"]]) +
-      "<span>只看</span>" + seg("rf", rankFilter, [["all", "全部"], ["sane", "排除公式不適用"], ["ok", "排除高估"], ["lo", "只看低估"]]) +
+    return '<div class="sec-h"><h2>潛在排行</h2><p>營收動能名單依「動能分數」排序,並附兩種客觀價格:依歷史同分組實際落點換算的「統計 60 日區間」,以及用分析師共識預估 EPS 算的「前瞻合理價」。點代號看算式與詳細資料。</p></div>' +
+      momEvidence() + fwdNote() + fvEvidence() +
+      '<div class="tools"><span>排序</span>' + seg("rs", rankSort, [["score", "動能分數"], ["up", "前瞻空間"], ["streak", "營收連續創新高"], ["high", "接近 52 週高"]]) +
+      "<span>只看</span>" + seg("rf", rankFilter, [["all", "全部"], ["sane", "有分析師預估"], ["ok", "前瞻不高估"], ["lo", "前瞻低估"]]) +
       '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label><span>共 " + items.length + " 檔</span></div>" +
-      '<div class="tkwrap"><table class="tk rank"><thead><tr><th>#</th><th class="l">個股</th><th>股價</th><th>動能分數</th><th>統計 60 日區間(25%~中位~75%)</th><th>估值合理價</th><th>估值空間</th><th>估值評價</th><th>營收年增</th><th class="l">入選原因</th></tr></thead><tbody>' +
+      '<div class="tkwrap"><table class="tk rank"><thead><tr><th>#</th><th class="l">個股</th><th>股價</th><th>動能分數</th><th>統計 60 日區間(25%~中位~75%)</th><th>前瞻本益比 / 歷史中位</th><th>前瞻合理價</th><th>前瞻空間</th><th>前瞻評價</th><th>分析師目標價</th><th>營收年增</th><th class="l">入選原因</th></tr></thead><tbody>' +
       rows + "</tbody></table></div>" +
       (items.length > 40 ? '<button type="button" class="more" data-all="rank">' + (showAll.rank ? "收合" : "顯示全部 " + items.length + " 檔") + "</button>" : "") +
-      '<p class="note">模型合理價 = 預估 EPS × 這檔股票自己過去 5 年本益比中位數(虧損股改用淨值比),預估 EPS = 近四季 EPS × 近 3 月營收年化 ÷ 近 12 月營收。這是固定公式算出的參考值,不是目標價或買賣建議;它假設淨利率不變、評價會回到歷史常態,兩者實際上都會變。潛在空間很大常常代表市場認為這次不一樣(例如景氣反轉或一次性獲利),請搭配上方回測判斷可信度。</p>';
+      '<p class="note">前瞻合理價 = 分析師共識的未來 12 個月 EPS × 這檔股票自己過去 5 年本益比中位數;前瞻評價依前瞻本益比落在自身歷史第 25~75 百分位的哪裡判斷(歷史本益比分布很寬的股票,空間可能很大但仍屬「合理」)。沒有分析師預估的股票,點開可看依過去四季 EPS 算的版本。這些都是固定公式算出的參考值,不是目標價或買賣建議。</p>';
   }
 
   function portfolioBox() {

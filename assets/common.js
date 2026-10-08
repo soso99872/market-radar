@@ -124,7 +124,7 @@
   // 模型合理價:公式固定,把每一步算式攤開讓人可以自己驗算
   function fvHtml(doc) {
     var ex = doc.extra || {}, e = ex.fv, px = doc.summary.close;
-    if (!e) return '<div class="fvbox"><h4>模型合理價</h4><p class="flat" style="font-size:13px;margin:0">資料不足(需要至少 24 個月的本益比或淨值比歷史),不估算。</p></div>';
+    if (!e) return '<div class="fvbox"><h4>估值</h4><p class="flat" style="font-size:13px;margin:0">資料不足(需要至少 24 個月的本益比或淨值比歷史),不估算。</p></div>';
     var cls = e.status === "低估" ? "up" : e.status === "高估" ? "down" : "flat";
     var l = (e.low * 0.8), span = (e.high * 1.2 - l) || 1;
     function at(v) { return Math.max(0, Math.min(100, (v - l) / span * 100)).toFixed(1) + "%"; }
@@ -132,7 +132,22 @@
       ? "近四季 EPS " + e.eps + " 元(股價 ÷ 本益比 " + e.pe + ")× 營收動能 " + e.growth + " 倍 = 預估 EPS <b>" + e.feps + "</b> 元;" +
         "× 過去 " + e.n + " 個月本益比中位數 " + e.band[1] + " 倍 = <b>" + e.fair + "</b> 元。合理區間用第 25~75 百分位(" + e.band[0] + "~" + e.band[2] + " 倍)。"
       : "公司虧損或本益比過高,改用淨值比:每股淨值 " + e.bvps + " 元 × 過去 " + e.n + " 個月淨值比中位數 " + e.band[1] + " 倍 = <b>" + e.fair + "</b> 元。";
-    return '<div class="fvbox"><h4>模型合理價</h4>' +
+    var w = e.fwd, t = e.tgt, fwdHtml = "";
+    if (w || t) {
+      var wcls = w ? (w.status === "低估" ? "up" : w.status === "高估" ? "down" : "flat") : "flat";
+      fwdHtml = '<div class="fvbox"><h4>前瞻估值 · 依分析師共識預估</h4>' +
+        (w ? '<div class="fvgrid"><div><span>未來 12 月 EPS</span><b>' + w.eps + "</b></div>" +
+          "<div><span>前瞻本益比</span><b>" + w.pe + " 倍</b></div>" +
+          "<div><span>前瞻合理價</span><b>" + w.fair + "</b></div>" +
+          '<div><span>前瞻空間</span><b class="' + MR.dir(w.up) + '">' + MR.sign(w.up, 1) + "%</b></div>" +
+          '<div><span>前瞻評價</span><b class="' + wcls + '">' + w.status + "</b></div></div>" +
+          '<p class="fvhow">今年 EPS 預估 ' + (w.eps0 == null ? "—" : w.eps0) + "、明年 " + w.eps1 + "(" + (w.n || "?") + " 位分析師),依月份加權成未來 12 個月 " + w.eps +
+          " 元;× 自身過去本益比中位數 " + w.band[1] + " 倍 = <b>" + w.fair + "</b> 元,合理區間 " + w.low + " ~ " + w.high + "(" + w.band[0] + "~" + w.band[2] + " 倍)。</p>"
+          : '<p class="fvhow">沒有足夠的分析師 EPS 預估。</p>') +
+        (t ? '<p class="fvhow">分析師平均目標價 <b>' + t.mean + "</b>(最低 " + (t.lo == null ? "—" : t.lo) + "、最高 " + (t.hi == null ? "—" : t.hi) + "),相對現價 " + MR.sign(t.up, 1) + "%。</p>" : "") +
+        '<p class="fvhow">資料來源 Yahoo Finance 匯總的分析師共識,通常偏樂觀;這個前瞻估值從 2026-10 才開始記錄,尚未經過回測。</p></div>';
+    }
+    return fwdHtml + '<div class="fvbox"><h4>歷史估值 · 依過去四季 EPS</h4>' +
       '<div class="fvgrid"><div><span>目前股價</span><b>' + px + "</b></div>" +
       "<div><span>模型合理價</span><b>" + e.fair + "</b></div>" +
       "<div><span>合理區間</span><b>" + e.low + " ~ " + e.high + "</b></div>" +

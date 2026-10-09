@@ -349,3 +349,10 @@ html.nosplash #splash, #splash.done { opacity: 0; visibility: hidden; pointer-ev
   .sp-sweep, .sp-blip, .sp-bar i, .skel i, .sp-in { animation: none; }
   .pc:hover, .pk:hover { transform: none; }
 }
+
+/* 資料狀態(頁尾) */
+.dstat { margin-top: 10px; font-size: 12.5px; color: var(--faint); }
+.dstat summary { cursor: pointer; }
+.dstat.bad summary { color: var(--down); font-weight: 600; }
+.dstat ul { margin: 6px 0 0; padding-left: 18px; columns: 2; }
+@media (max-width: 640px) { .dstat ul { columns: 1; } }

@@ -736,6 +736,25 @@
     el.addEventListener("click", hide);
   })();
 
+  // ---- 資料狀態(scripts/status.py 每次排程後檢查各來源是否按時更新),顯示在每頁底部 ----
+  function statusLine() {
+    var f = document.querySelector("footer");
+    if (!f) return;
+    MR.json("data/status.json").then(function (s) {
+      var bad = (s.items || []).filter(function (x) { return !x.ok; });
+      var when = esc(s.checked_at.slice(5, 16).replace("T", " "));
+      var el = document.createElement("div");
+      el.className = "dstat" + (bad.length ? " bad" : "");
+      el.innerHTML = bad.length
+        ? "<details><summary>⚠ 資料狀態:" + bad.length + " 項延遲(" + esc(bad.map(function (x) { return x.name; }).join("、")) + ")· 檢查 " + when + "</summary><ul>" +
+          (s.items || []).map(function (x) { return "<li>" + (x.ok ? "✓ " : "⚠ ") + esc(x.name) + ":" + esc(x.last || "—") + (x.note ? "(" + esc(x.note) + ")" : "") + "</li>"; }).join("") + "</ul></details>"
+        : '<details><summary>✓ 資料狀態:全部按時更新 · 檢查 ' + when + "</summary><ul>" +
+          (s.items || []).map(function (x) { return "<li>" + esc(x.name) + ":" + esc(x.last || "—") + "</li>"; }).join("") + "</ul></details>";
+      f.appendChild(el);
+    }).catch(function () {});
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", statusLine); else statusLine();
+
   // 頂端導覽列的高度(手機會換行變高),給表格決定最大高度,讓整個表格框放得進導覽列下方
   function barHeight() {
     var b = document.querySelector(".bar");

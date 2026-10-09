@@ -1,0 +1,69 @@
+{
+ "checked_at": "2026-10-09T19:13+08:00",
+ "ok": true,
+ "items": [
+  {
+   "key": "history",
+   "name": "個股日資料(收盤、法人)",
+   "last": "2026-10-08",
+   "ok": true,
+   "note": ""
+  },
+  {
+   "key": "quotes",
+   "name": "國際行情",
+   "last": "2026-10-09T15:47+08:00",
+   "ok": true,
+   "note": ""
+  },
+  {
+   "key": "revenue",
+   "name": "月營收",
+   "last": "2026-09",
+   "ok": true,
+   "note": ""
+  },
+  {
+   "key": "margin",
+   "name": "季度毛利率",
+   "last": "2026Q2",
+   "ok": true,
+   "note": ""
+  },
+  {
+   "key": "quality",
+   "name": "季報(地雷檢查)",
+   "last": "2026Q2",
+   "ok": true,
+   "note": ""
+  },
+  {
+   "key": "alerts",
+   "name": "處置 / 注意股",
+   "last": "2026-10-09T15:49+08:00",
+   "ok": true,
+   "note": ""
+  },
+  {
+   "key": "estimates",
+   "name": "分析師預估",
+   "last": "2026-10-09T18:42+08:00",
+   "ok": true,
+   "note": ""
+  },
+  {
+   "key": "radar",
+   "name": "起漲雷達與評級",
+   "last": "2026-10-08",
+   "ok": true,
+   "note": ""
+  },
+  {
+   "key": "report",
+   "name": "晨報",
+   "last": "2026-10-09",
+   "ok": true,
+   "note": ""
+  }
+ ]
+}

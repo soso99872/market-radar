@@ -377,7 +377,7 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
 
   // 點排行表的表頭排序:第一次大到小,再點一次小到大;用上方的排序按鈕會取消
   var colSort = null;
-  var RANK_COLS = [null, ["評級", function (x) { return starOf(x.code) * 1000 + (x.mom ? x.mom.score : 0); }], ["股價", function (x) { return x.close; }],
+  var RANK_COLS = [null, null, ["評級", function (x) { return starOf(x.code) * 1000 + (x.mom ? x.mom.score : 0); }], ["股價", function (x) { return x.close; }],
     ["動能分數", function (x) { return x.mom ? x.mom.score : null; }], ["統計中位", function (x) { return x.mom && x.mom.proj ? x.mom.proj.p50 / x.close : null; }],
     ["前瞻本益比", function (x) { return x.fv && x.fv.fwd ? x.fv.fwd.pe : null; }], ["前瞻合理價", function (x) { return x.fv && x.fv.fwd ? x.fv.fwd.fair : null; }],
     ["前瞻空間", function (x) { return x.fv && x.fv.fwd ? x.fv.fwd.up : null; }],
@@ -407,7 +407,8 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
     });
     var rows = items.slice(0, showAll.rank ? 999 : 40).map(function (x, i) {
       var e = x.fv || {}, m = x.mom, pj = m && m.proj, w = e.fwd, t = e.tgt;
-      return '<tr><td class="rk">' + (i + 1) + '</td><td class="l"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(x.name) + "</button> " + MR.stars(starOf(x.code)) + "</td>" +
+      return '<tr><td class="rk">' + (i + 1) + '</td><td class="l"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(x.name) + "</button></td>" +
+        "<td>" + MR.stars(starOf(x.code)) + "</td>" +
         '<td data-px="' + esc(x.code) + '">' + x.close + "</td>" +
         "<td><b>" + (m ? m.score : "—") + "</b></td>" +
         '<td class="sm">' + (pj ? pj.p25 + " ~ <b>" + pj.p50 + "</b> ~ " + pj.p75 : "—") + "</td>" +
@@ -423,9 +424,9 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       '<div class="tools"><span>排序</span>' + seg("rs", rankSort, [["score", "動能分數"], ["up", "前瞻空間"], ["streak", "營收連續創新高"], ["high", "接近 52 週高"]]) +
       "<span>只看</span>" + seg("rf", rankFilter, [["all", "全部"], ["sane", "有分析師預估"], ["ok", "前瞻不高估"], ["lo", "前瞻低估"]]) +
       '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label><span>共 " + items.length + " 檔</span></div>" +
-      '<div class="tkwrap"><table class="tk rank"><thead><tr>' + ["#", "個股 / 評級", "股價", "動能分數", "統計 60 日區間(25%~中位~75%)", "前瞻本益比 / 歷史中位", "前瞻合理價", "前瞻空間", "前瞻評價", "分析師目標價", "營收年增", "入選原因"].map(function (h, k) {
-        var cls = k === 1 || k === 11 ? ' class="l' : ' class="';
-        if (!RANK_COLS[k]) return "<th" + (k === 11 ? ' class="l"' : "") + ">" + h + "</th>";
+      '<div class="tkwrap"><table class="tk rank"><thead><tr>' + ["#", "個股", "評級", "股價", "動能分數", "統計 60 日區間(25%~中位~75%)", "前瞻本益比 / 歷史中位", "前瞻合理價", "前瞻空間", "前瞻評價", "分析師目標價", "營收年增", "入選原因"].map(function (h, k) {
+        var cls = k === 1 || k === 12 ? ' class="l' : ' class="';
+        if (!RANK_COLS[k]) return "<th" + (k === 1 || k === 12 ? ' class="l"' : "") + ">" + h + "</th>";
         var on = colSort && colSort.col === k;
         return "<th" + cls + ' srt"' + ' data-col="' + k + '" title="依' + RANK_COLS[k][0] + '排序" aria-sort="' + (on ? (colSort.dir < 0 ? "descending" : "ascending") : "none") + '">' + h + "</th>";
       }).join("") + "</tr></thead><tbody>" +

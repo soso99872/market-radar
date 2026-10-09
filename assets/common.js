@@ -64,6 +64,34 @@
     return MR.stars(r.stars) + '<span class="rt-why">' + esc(why) + (r.traps && r.traps.length ? ",有陷阱:" + esc(r.traps.join("、")) + "(扣 1 顆)" : "") + "</span>";
   };
 
+  // ---- 今天先看這 10 檔:data/radar/picks.json(排序規則在 scripts/radar.py write_picks) ----
+  MR.picks = function () { return MR.json("data/radar/picks.json"); };
+  MR.picksHtml = function (P, more) {
+    if (!P || !P.top || !P.top.length) return "";
+    var c = P.curve || {}, k = c["4★ 以上"], all = c["全部可交易股票"];
+    function why(x) {
+      var w = [];
+      if (x.rev_month) w.push(x.rev_month.slice(5).replace(/^0/, "") + " 月營收年增 " + MR.sign(x.yoy, 0) + "%");
+      if (x.ret60 != null) w.push("60 日 " + MR.sign(x.ret60, 0) + "%");
+      if (x.rev_new) w.push("新公告");
+      if (x.value20 != null && x.value20 < P.liq) w.push("成交偏少");
+      return w.join(" · ");
+    }
+    var card = function (x) {
+      return '<button type="button" class="pk" data-stock="' + esc(x.code) + '">' + '<span class="pk-h">' + MR.stars(x.stars) +
+        '<span class="pk-px" data-px="' + esc(x.code) + '">' + esc(x.close) + " " + MR.pct(x.chg) + "</span></span>" +
+        '<span class="pk-n"><b>' + esc(x.code) + "</b>" + esc(x.name) + (x.ind ? '<small>' + esc(x.ind) + "</small>" : "") + "</span>" +
+        '<span class="pk-w">' + esc(why(x)) + "</span></button>";
+    };
+    var rest = P.rest || [];
+    return '<section class="picks"><div class="pk-top"><h2>今天先看這 ' + P.top.length + " 檔</h2>" +
+      "<span>起漲雷達 4★ 以上共 " + P.n + " 檔,依 星等 → 本月新公告 → 好進出(20 日均成交 ≥ " + P.liq + " 億)→ 近 3 月營收年增 排序" + (P.ind_cap ? ",同一產業最多 " + P.ind_cap + " 檔" : "") + ",點了看健檢</span></div>" +
+      '<div class="pk-list">' + P.top.map(card).join("") + "</div>" +
+      (rest.length ? '<details class="pk-rest"><summary>其餘 ' + rest.length + " 檔 4★ 以上</summary>" + '<div class="pk-list">' + rest.map(card).join("") + "</div></details>" : "") +
+      '<p class="pk-foot">' + (k ? "回測:每月買全部 4★ 以上、持有一個月,年化 " + MR.sign(k.cagr, 0) + "%、最大回撤 " + k.mdd + "%(同期全部股票 " + MR.sign(all && all.cagr, 0) + "%)。" : "") +
+      "建議分散買、單檔不超過可投入金額的 1/10;評級是統計機率,不是保證。" + (more ? ' <a href="radar.html">看起漲雷達 →</a>' : "") + "</p></section>";
+  };
+
   // 查詢索引(全部股票,scripts/signals.py write_index),只載一次
   var idxP = null;
   MR.index = function () {
@@ -337,7 +365,7 @@
       '<div class="vd ' + v.cls + '"><b>' + esc(v.t) + "</b><span>" + esc(v.d) + "</span></div>" + regimeNote(h, r, S) +
       (rows.length ? '<table class="hc"><tbody>' + rows.map(function (x) {
         return "<tr><td>" + ic[String(x.ok)] + "</td><th>" + esc(x.name) + '</th><td class="hv">' + esc(x.val) + '</td><td class="hn">' + esc(x.note) +
-          '<span class="ev ' + (x.ev === "回測" ? "bt" : "") + '">' + (x.ev === "回測" ? "有回測依據" : "僅供參考") + "</span></td></tr>";
+          '<span class="evb ' + (x.ev === "回測" ? "bt" : "") + '">' + (x.ev === "回測" ? "有回測依據" : "僅供參考") + "</span></td></tr>";
       }).join("") + "</tbody></table>" : "") +
       starNote((r && r.stars) || 1, S) +
       '<p class="fvhow">要投入的話:依回測,從名單只買 1 檔,約 18% 的機率 60 日內虧超過 15%;分散買 10 檔降到約 5%。單檔建議不超過可投入金額的 1/10,並且只用虧得起的錢。這是依固定規則整理的統計結果,不是針對你個人的投資建議。</p></div>';

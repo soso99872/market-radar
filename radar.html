@@ -46,14 +46,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 .tag2 { font-size: 11.5px; font-weight: 700; border-radius: 4px; padding: 0 6px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); }
 .tag2.hot { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
 .tag2.tier { font-weight: 700; }
-.quick { margin: 10px 0 12px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: 10px; background: var(--panel); }
-.quick .qh { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin-bottom: 8px; }
-.quick .qh span { font-size: 12.5px; color: var(--muted); }
-.quick .qs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; contain: inline-size; }
-.quick .qc { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 6px 10px; min-height: 44px; border: 1px solid var(--line);
   border-radius: 8px; background: var(--panel-2); cursor: pointer; font-size: 13px; color: var(--text); }
-.quick .qc b { font-family: var(--mono); margin-right: 4px; }
-.quick .qc .stars { font-size: 11px; }
 details.verdict > summary { cursor: pointer; list-style: none; }
 details.verdict > summary h2 { display: inline; }
 details.verdict > summary::after { content: " ▾"; color: var(--faint); }
@@ -182,18 +175,9 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       (z.top10_share ? " · 報酬最好的 1/10 樣本貢獻了 " + Math.round(z.top10_share) + "% 的超額報酬" : "") + "</p></div>";
   }
 
-  // 最上方快捷列:今天 4★ 以上的股票,點了直接看健檢(不用往下捲)
-  function quick() {
-    var xs = (R.rev || []).filter(function (x) { return x.stars >= 4 && (!hideLow || !x.low_vol); })
-      .sort(function (a, b) { return (b.stars - a.stars) || ((b.ret60 || 0) - (a.ret60 || 0)); });
-    if (!xs.length) return "";
-    var c = (R.explosion || {}).curve || {}, k = c["4★ 以上"];
-    return '<div class="quick"><div class="qh"><b>今日 4★ 以上 · ' + xs.length + " 檔</b>" +
-      (k ? '<span>回測:每月買全部 4★ 以上、持有一個月,年化 ' + sign(k.cagr, 0) + "%、最大回撤 " + k.mdd + "%(同期全部股票 " + sign((c["全部可交易股票"] || {}).cagr, 0) + "%)</span>" : "") +
-      '</div><div class="qs">' + xs.map(function (x) {
-        return '<button type="button" class="qc" data-stock="' + esc(x.code) + '">' + MR.stars(x.stars) + "<b>" + esc(x.code) + "</b>" + esc(x.name) + "</button>";
-      }).join("") + "</div></div>";
-  }
+  // 最上方:今天先看這 10 檔(共用元件,資料 data/radar/picks.json)
+  var PICKS = null;
+  function quick() { return MR.picksHtml(PICKS, false); }
 
   function verdict() {
     var a = R.stats.rev_high.horizons["60"], b = R.base["60"], bo = R.stats.breakout.horizons["60"], br = R.stats.breakout_rev.horizons["60"], bn = R.stats.breakout_norev.horizons["60"];
@@ -635,9 +619,11 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
   Promise.all([MR.json("data/radar/latest.json"), MR.json("data/track/summary.json").catch(function () { return null; }),
     MR.json("data/track/audit.json").catch(function () { return null; }),
     MR.json("data/radar/fv_backtest.json").catch(function () { return null; }),
-    MR.json("data/radar/recall.json").catch(function () { return null; })])
+    MR.json("data/radar/recall.json").catch(function () { return null; }),
+    MR.picks().catch(function () { return null; })])
     .then(function (r) {
       R = r[0]; TK = r[1]; AU = r[2]; FVT = r[3]; RC = r[4];
+      PICKS = r[5];
       render();
       MR.startIntraday(function () { return app; }, R.date, function () { MR.patchPrices(app, LIVE, R.date); });
       // 證交所若已公布比網站更新的收盤資料,直接在瀏覽器更新上市股價格並判斷今日突破

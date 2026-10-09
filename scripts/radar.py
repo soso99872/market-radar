@@ -332,6 +332,8 @@ def build(L):
         x["fv"] = fv.get(x["code"])
         m = mg.get(x["code"])
         x["gm"] = {"p": m["p"], "gm": m["gm"], "d": m["d"]} if m else None
+    for x in rev_list:   # 「今天先看這 10 檔」排序要用流動性
+        x["value20"] = (SNAP.get(x["code"]) or {}).get("value20")
     for c, m in mg.items():
         if c in EXTRAS:
             EXTRAS[c]["gm"] = m["hist"]
@@ -368,6 +370,7 @@ def build(L):
     with open(os.path.join(OUT, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 
+    write_picks(rev_list, last, doc.get("explosion"))
     write_live(L, close, vyi, chg, D, last, names, vol60, vol_cut)
     track(L, rev_list, bo_list, close, opn, vyi, dates, mom)
     print("radar: rev %d, breakout %d" % (len(rev_list), len(bo_list)))
@@ -755,6 +758,36 @@ def ranking(rev_list, bo_list, mom):
         out.append(r)
     out.sort(key=lambda x: -(x["mom"]["score"] if x["mom"] else -1))
     return out
+
+
+PICK_N = 10
+PICK_IND = 3     # 同一產業最多幾檔
+PICK_LIQ = 1.0   # 億,20 日均成交達到這個數才算「好進出」,排序時優先
+
+
+def write_picks(rev_list, last, ex):
+    """「今天先看這 10 檔」:4★ 以上、排除低波動與成交太少,依 星等 → 本月新公告 → 好進出 → 近 3 月營收年增 排序。
+    首頁與起漲雷達共用這個小檔,排序規則只在這裡。"""
+    # 成交不到 MIN_VALUE(0.3 億)的不列:個股健檢會判「不適合」,清單不能自相矛盾
+    cand = [x for x in rev_list if x.get("stars", 0) >= 4 and not x.get("low_vol") and (x.get("value20") or 0) >= MIN_VALUE]
+    cand.sort(key=lambda x: (-x["stars"], not x.get("rev_new"), not ((x.get("value20") or 0) >= PICK_LIQ), -(x.get("yoy3") or 0)))
+    # 同一產業最多 PICK_IND 檔:前 10 檔常擠在同一個熱門題材(例:光通訊),那樣「分散」其實沒有分散到風險
+    top, rest, per = [], [], {}
+    for x in cand:
+        g = x.get("ind") or x["code"]
+        if len(top) < PICK_N and per.get(g, 0) < PICK_IND:
+            top.append(x)
+            per[g] = per.get(g, 0) + 1
+        else:
+            rest.append(x)
+    keep = ("code", "name", "stars", "tier", "close", "chg", "yoy", "yoy3", "rev_new", "rev_month", "value20", "ret60", "ind", "traps")
+
+    def slim(x):
+        return {k: x.get(k) for k in keep}
+    doc = {"date": last, "n": len(cand), "liq": PICK_LIQ, "ind_cap": PICK_IND, "top": [slim(x) for x in top], "rest": [slim(x) for x in rest],
+           "curve": (ex or {}).get("curve"), "stars": (ex or {}).get("stars")}
+    with open(os.path.join(OUT, "picks.json"), "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 
 
 def write_live(L, close, vyi, chg, D, last, names, vol60, vol_cut):

@@ -151,7 +151,7 @@ for y, g in R.groupby("year"):
 
 print("\n[6b] 每月營收公告隔天進場、持有到下一次公告(約 1 個月),等權、扣成本")
 pubs = sorted(R.i.unique())
-curves = {"4★ 以上": [], "5★": [], "全部可交易股票": []}
+curves = {"4★ 以上": [], "5★": [], "全部可交易股票": [], "加權指數": []}
 for k, i in enumerate(pubs[:-1]):
     e, x = i + 1, pubs[k + 1] + 1
     if x >= N:
@@ -163,6 +163,8 @@ for k, i in enumerate(pubs[:-1]):
         js = [cix[c] for c in sel.code if ok[cix[c]]]
         curves[lab].append((dates[e], float(np.mean(f[js])) if js else 0.0))
     curves["全部可交易股票"].append((dates[e], float(np.nanmean(f[ok]))))
+    # 加權指數(價格指數、不含股利;進出場用同樣兩天的收盤近似,沒有開盤價)
+    curves["加權指數"].append((dates[e], float(tx[x - 1] / tx[i] - 1) if tx[i] and not np.isnan(tx[x - 1]) else 0.0))
 out["curve"] = {}
 for lab, cv in curves.items():
     r = np.array([v for _, v in cv])

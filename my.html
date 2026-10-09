@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>我的自選</title>
+<meta name="description" content="自選股的評級、健檢結論、到價提醒,以及上次看過之後的變化">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="assets/common.css">
+<style>
+main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid; gap: 14px; }
+main > * { min-width: 0; }
+h1 { font-size: 22px; margin: 4px 0 0; }
+.sub { color: var(--muted); font-size: 14px; margin: 4px 0 0; line-height: 1.6; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { font-size: 13.5px; padding: 6px 12px; min-height: 34px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.chg { background: var(--panel); border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); border-radius: 10px; padding: 12px 14px; }
+.chg h2 { font-size: 16px; margin: 0 0 8px; }
+.chg ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.8; }
+.pill { display: inline-block; font-size: 12px; padding: 1px 8px; margin: 1px 4px 1px 0; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+.pill.up { color: var(--up); border-color: color-mix(in srgb, var(--up) 45%, transparent); }
+.pill.down { color: var(--down); border-color: color-mix(in srgb, var(--down) 45%, transparent); }
+.pill.info { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.tw { overflow: auto; max-height: calc(100vh - var(--bar-h, 110px) - 24px); border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+table.my { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; }
+.my th { position: sticky; top: 0; z-index: 2; background: var(--panel-2); font-size: 12px; color: var(--faint); font-weight: 500; text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.my td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: middle; }
+.my th.l, .my td.l { text-align: left; }
+.my td.n { font-family: var(--mono); }
+.my td.v { white-space: normal; min-width: 150px; font-size: 13px; }
+.my td.c { white-space: normal; min-width: 140px; text-align: left; }
+.my input { width: 76px; font: inherit; font-family: var(--mono); font-size: 13px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel-2); color: var(--text); }
+.my .x { border: 0; background: none; color: var(--faint); cursor: pointer; font-size: 18px; padding: 4px 8px; }
+.my .x:hover { color: var(--down); }
+.empty-box { background: var(--panel); border: 1px dashed var(--line); border-radius: 10px; padding: 18px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+textarea { width: 100%; box-sizing: border-box; min-height: 64px; font-family: var(--mono); font-size: 13px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel-2); color: var(--text); }
+details.io summary { cursor: pointer; font-size: 13.5px; color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="./">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+        <circle cx="13" cy="13" r="11.5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+        <circle cx="13" cy="13" r="6.5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+        <path d="M13 13 L13 1.5 A11.5 11.5 0 0 1 23.5 8.2 Z" fill="var(--accent)" opacity=".85"/>
+        <circle cx="18.5" cy="8.5" r="1.8" fill="var(--text)"/>
+      </svg>
+      <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 06:00</span></div>
+    </a>
+    <nav class="nav" aria-label="頁面">
+      <a href="./">晨報</a>
+      <a href="sectors.html">板塊資金</a>
+      <a href="radar.html">起漲雷達</a>
+      <a href="watch.html">觀察名單</a>
+      <a href="signals.html">訊號回測</a>
+      <a href="strategy.html">策略績效</a>
+      <a href="my.html" aria-current="page">我的自選</a>
+    </nav>
+    <div class="seg" role="group" aria-label="漲跌顏色">
+      <button type="button" id="conv-tw" aria-pressed="true">紅漲綠跌</button>
+      <button type="button" id="conv-us" aria-pressed="false">綠漲紅跌</button>
+    </div>
+  </div>
+</header>
+
+<main id="app"><p class="err">載入中…</p></main>
+
+<footer>
+  自選股只存在這個瀏覽器裡(不會上傳),換手機或電腦請用「匯出 / 匯入」。評級與健檢是依固定規則整理的統計結果,不構成任何投資建議。
+</footer>
+
+<script src="assets/common.js"></script>
+<script src="assets/live.js"></script>
+<script>
+(function () {
+  "use strict";
+  var MR = window.MR, esc = MR.esc;
+  var app = document.getElementById("app");
+  MR.setupConv();
+  var I = null, P = null, started = false;
+
+  function pills(ch) { return ch.map(function (c) { return '<span class="pill ' + c.k + '">' + esc(c.t) + "</span>"; }).join(""); }
+
+  function render() {
+    var s = MR.watch.load(), codes = s.codes.filter(function (c) { return I.s[c]; });
+    var head = '<div><h1>我的自選</h1><p class="sub">在任何個股面板按「☆ 加入自選」就會出現在這裡。每次打開,會列出從你上次按「已看過」之後的變化:評級升降、新營收公布、跌破 / 站上季線、出現陷阱,以及你設定的到價。資料日 ' + esc(I.date) + "。</p></div>";
+    if (!codes.length) {
+      app.innerHTML = head + '<div class="empty-box">還沒有自選股。用上方的搜尋框查一檔股票,在健檢面板按「☆ 加入自選」;或從下面今天先看的 10 檔開始。</div>' +
+        MR.picksHtml(P, true) + ioBox(s);
+      return;
+    }
+    var rows = codes.map(function (c) { return { c: c, x: I.s[c], ch: MR.watch.changes(c, I.s[c], s) }; });
+    var changed = rows.filter(function (r) { return r.ch.length; });
+    var chg = changed.length ? '<section class="chg"><h2>上次看過之後有變化 · ' + changed.length + " 檔</h2><ul>" + changed.map(function (r) {
+      return '<li><button type="button" class="stock-link" data-stock="' + esc(r.c) + '"><b>' + esc(r.c) + "</b> " + esc(r.x[0]) + "</button> " + pills(r.ch) + "</li>";
+    }).join("") + '</ul><div class="tools" style="margin-top:8px"><button type="button" class="btn" data-act="seen">全部標示為已看過</button>' +
+      '<span class="note">到價提醒會一直顯示,直到你修改或清掉目標價。</span></div></section>'
+      : '<p class="note">從上次按「已看過」之後,自選股沒有新的變化。</p>';
+    var body = rows.map(function (r) {
+      var x = r.x, h = x[12] || {}, v = MR.verdict(h, { stars: x[1], tier: x[2], traps: x[11] }), a = s.alerts[r.c] || {};
+      return '<tr><td class="l"><button type="button" class="stock-link" data-stock="' + esc(r.c) + '"><b>' + esc(r.c) + "</b> " + esc(x[0]) + "</button></td>" +
+        "<td>" + MR.stars(x[1]) + "</td>" +
+        '<td class="n" data-px="' + esc(r.c) + '">' + esc(x[3]) + "</td>" +
+        '<td class="n">' + MR.pct(x[4]) + "</td>" +
+        '<td class="n">' + MR.pct(x[5]) + "</td>" +
+        '<td class="n">' + (x[9] ? esc(x[9].slice(5).replace(/^0/, "")) + " 月 " : "") + MR.pct(x[7]) + "</td>" +
+        '<td class="v l">' + esc(v.t) + "</td>" +
+        '<td class="c">' + (r.ch.length ? pills(r.ch) : '<span class="note">—</span>') + "</td>" +
+        '<td><input type="number" step="any" inputmode="decimal" placeholder="≥" data-al="up" data-code="' + esc(r.c) + '" value="' + (a.up == null ? "" : a.up) + '" aria-label="漲到多少提醒"> ' +
+        '<input type="number" step="any" inputmode="decimal" placeholder="≤" data-al="dn" data-code="' + esc(r.c) + '" value="' + (a.dn == null ? "" : a.dn) + '" aria-label="跌到多少提醒"></td>' +
+        '<td><button type="button" class="x" data-rm="' + esc(r.c) + '" aria-label="從自選移除" title="移除">×</button></td></tr>';
+    }).join("");
+    app.innerHTML = head + chg +
+      '<div class="tw"><table class="my"><thead><tr><th class="l">個股</th><th>評級</th><th>股價</th><th>漲跌</th><th>60 日</th><th>最新營收年增</th><th class="l">健檢結論</th><th class="l">變化</th><th>到價提醒(≥ / ≤)</th><th></th></tr></thead><tbody>' +
+      body + "</tbody></table></div>" + ioBox(s);
+    MR.patchPrices(app, null, I.date);
+    if (!started) { started = true; MR.startIntraday(function () { return app; }, I.date, function () { MR.patchPrices(app, null, I.date); }); }
+  }
+
+  function ioBox(s) {
+    return '<details class="io"><summary>匯出 / 匯入(換手機或電腦時用)</summary><p class="note">複製下面的代號清單,到另一台裝置的這一頁貼上後按「匯入」(會加到現有清單,不會覆蓋)。</p>' +
+      '<textarea id="io" spellcheck="false">' + esc(s.codes.join(", ")) + '</textarea><div class="tools" style="margin-top:6px"><button type="button" class="btn" data-act="import">匯入</button>' +
+      '<button type="button" class="btn" data-act="copy">複製</button></div></details>';
+  }
+
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act],[data-rm]");
+    if (!b) return;
+    if (b.dataset.rm) { MR.watch.remove(b.dataset.rm); MR.navBadge(); render(); return; }
+    var act = b.dataset.act;
+    if (act === "seen") { MR.watch.seenAll(I); MR.navBadge(); render(); }
+    if (act === "copy") { var t = document.getElementById("io"); t.select(); try { navigator.clipboard.writeText(t.value); } catch (x) {} b.textContent = "已複製"; }
+    if (act === "import") {
+      var codes = (document.getElementById("io").value.match(/\d{4,6}[A-Z]?/g) || []).filter(function (c) { return I.s[c]; });
+      codes.forEach(function (c) { if (!MR.watch.has(c)) MR.watch.add(c, I.s[c]); });
+      MR.navBadge(); render();
+    }
+  });
+  app.addEventListener("change", function (e) {
+    var t = e.target;
+    if (!t.dataset || !t.dataset.al) return;
+    var s = MR.watch.load(), c = t.dataset.code, v = parseFloat(t.value);
+    s.alerts[c] = s.alerts[c] || {};
+    if (isNaN(v)) delete s.alerts[c][t.dataset.al]; else s.alerts[c][t.dataset.al] = v;
+    MR.watch.save(s); MR.navBadge(); render();
+  });
+  // 在面板裡加入 / 移除自選後重畫
+  document.addEventListener("mr-watch", function () { if (I) render(); });
+
+  Promise.all([MR.index(), MR.picks().catch(function () { return null; })]).then(function (r) {
+    I = r[0]; P = r[1];
+    if (!I) throw new Error("no index");
+    render();
+  }).catch(function () { app.innerHTML = '<p class="err">資料尚未產生。</p>'; });
+})();
+</script>
+</body>
+</html>

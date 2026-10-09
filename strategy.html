@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>策略績效</title>
+<meta name="description" content="照起漲雷達評級每月換股的回測績效、逐年報酬、回撤與實盤追蹤進度">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="assets/common.css">
+<style>
+main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid; gap: 16px; }
+main > * { min-width: 0; }
+/* 圖表色:4★ 以上藍、5★ 橘(已用 dataviz validate_palette 驗證兩種模式);兩條基準線用灰,刻意退後 */
+.viz { --s1: #3987e5; --s2: #d95926; --b1: #8b95a4; --b2: #5d6776; --grid: #242c37; }
+@media (prefers-color-scheme: light) { :root:where(:not([data-theme="dark"])) .viz { --s1: #2a78d6; --s2: #eb6834; --b1: #8b95a4; --b2: #5a6474; --grid: #e6e9ef; } }
+:root[data-theme="light"] .viz { --s1: #2a78d6; --s2: #eb6834; --b1: #8b95a4; --b2: #5a6474; --grid: #e6e9ef; }
+h1 { font-size: 22px; margin: 4px 0 0; }
+.sub { color: var(--muted); font-size: 14px; margin: 4px 0 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.card h2 { font-size: 16px; margin: 0 0 4px; }
+.card > p { font-size: 13.5px; color: var(--muted); margin: 4px 0 10px; line-height: 1.6; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.tile span { display: block; font-size: 12.5px; color: var(--muted); }
+.tile b { display: block; font-family: var(--mono); font-size: 26px; font-weight: 600; margin-top: 2px; }
+.tile small { display: block; font-size: 12px; color: var(--faint); margin-top: 2px; }
+@media (max-width: 720px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tile b { font-size: 22px; } }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+.legend i { display: inline-block; width: 16px; height: 2px; vertical-align: middle; margin-right: 6px; border-radius: 1px; }
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart text { font-size: 11.5px; fill: var(--muted); font-family: var(--mono); }
+.chart .lbl { font-family: var(--sans); fill: var(--text); font-size: 12px; }
+.tip { position: absolute; pointer-events: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font-size: 12.5px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25); white-space: nowrap; display: none; z-index: 3; }
+.tip b { font-family: var(--mono); }
+.tip i { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin-right: 6px; }
+table.yr { border-collapse: collapse; width: 100%; font-size: 14px; }
+.yr th, .yr td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.yr th:first-child, .yr td:first-child { text-align: left; }
+.yr th { font-size: 12px; color: var(--faint); font-weight: 500; }
+.yr td { font-family: var(--mono); }
+.wrap { overflow-x: auto; }
+.prog { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin: 6px 0; }
+.prog i { display: block; height: 100%; background: var(--accent); }
+ul.note { margin: 6px 0 0; padding-left: 20px; font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+details.tv summary { cursor: pointer; font-size: 13px; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="./">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+        <circle cx="13" cy="13" r="11.5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+        <circle cx="13" cy="13" r="6.5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+        <path d="M13 13 L13 1.5 A11.5 11.5 0 0 1 23.5 8.2 Z" fill="var(--accent)" opacity=".85"/>
+        <circle cx="18.5" cy="8.5" r="1.8" fill="var(--text)"/>
+      </svg>
+      <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 06:00</span></div>
+    </a>
+    <nav class="nav" aria-label="頁面">
+      <a href="./">晨報</a>
+      <a href="sectors.html">板塊資金</a>
+      <a href="radar.html">起漲雷達</a>
+      <a href="watch.html">觀察名單</a>
+      <a href="signals.html">訊號回測</a>
+      <a href="strategy.html" aria-current="page">策略績效</a>
+      <a href="my.html">我的自選</a>
+    </nav>
+    <div class="seg" role="group" aria-label="漲跌顏色">
+      <button type="button" id="conv-tw" aria-pressed="true">紅漲綠跌</button>
+      <button type="button" id="conv-us" aria-pressed="false">綠漲紅跌</button>
+    </div>
+  </div>
+</header>
+
+<main id="app"><p class="err">載入中…</p></main>
+
+<footer>
+  回測使用證交所、櫃買中心與公開資訊觀測站的公開資料,已扣交易成本、未含股利;不含已下市股票,規則是看過歷史資料後才定的,結果偏樂觀。歷史績效不代表未來,本頁只呈現事實,不構成任何投資建議。
+</footer>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  "use strict";
+  var MR = window.MR, esc = MR.esc, sign = MR.sign;
+  var app = document.getElementById("app");
+  MR.setupConv();
+  var A = null, TK = null, AU = null;
+  var SERIES = [["4★ 以上", "--s1", "每月買全部 4★ 以上"], ["5★", "--s2", "每月只買 5★"], ["加權指數", "--b2", "加權指數(不含股利)"], ["全部可交易股票", "--b1", "全部股票等權"]];
+
+  function pct(v, d) { return v == null ? "—" : sign(v, d == null ? 1 : d) + "%"; }
+
+  function tiles() {
+    var c = A.curve, k = c["4★ 以上"], t = c["加權指數"];
+    function tile(lbl, v, sub) { return '<div class="tile"><span>' + lbl + "</span><b>" + v + "</b><small>" + sub + "</small></div>"; }
+    return '<div class="tiles">' +
+      tile("年化報酬", pct(k.cagr, 0), "加權指數 " + pct(t.cagr, 0) + " · 全部股票 " + pct(c["全部可交易股票"].cagr, 0)) +
+      tile("最大回撤", k.mdd + "%", "加權指數 " + t.mdd + "%") +
+      tile("夏普值(月報酬年化)", k.sharpe.toFixed(2), "加權指數 " + t.sharpe.toFixed(2)) +
+      tile("月勝率", k.win.toFixed(0) + "%", k.months + " 個月 · 加權指數 " + t.win.toFixed(0) + "%") + "</div>";
+  }
+
+  // ---- 折線圖:x = 月份,y = 對數刻度的淨值(權益曲線)或百分比(回撤);十字線 + 提示 ----
+  function lineChart(id, series, opt) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var W = Math.max(300, el.clientWidth), H = opt.h, L = 46, Rm = opt.right, T = 10, B = 24;
+    var n = series[0].pts.length, dates = series[0].pts.map(function (p) { return p[0]; });
+    var all = [];
+    series.forEach(function (s) { s.pts.forEach(function (p) { all.push(p[1]); }); });
+    var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    var f = opt.log ? Math.log : function (v) { return v; };
+    if (opt.log) { lo = Math.min(lo, 1); } else { hi = Math.max(hi, 0); }
+    var a = f(lo), b = f(hi), pad = (b - a) * 0.04 || 1;
+    a -= opt.log ? pad : pad; b += pad;
+    function x(i) { return L + (W - L - Rm) * i / (n - 1); }
+    function y(v) { return T + (H - T - B) * (1 - (f(v) - a) / (b - a)); }
+    var g = [];
+    // 格線與刻度
+    var ticks = opt.log ? [0.5, 1, 2, 3, 5, 10, 20, 30, 50, 100].filter(function (v) { return v >= Math.exp(a) && v <= Math.exp(b); })
+      : [0, -10, -20, -30, -40, -50, -60].filter(function (v) { return v >= a && v <= b; });
+    ticks.forEach(function (v) {
+      g.push('<line x1="' + L + '" x2="' + (W - Rm) + '" y1="' + y(v).toFixed(1) + '" y2="' + y(v).toFixed(1) + '" stroke="var(--grid)" stroke-width="1"/>');
+      g.push('<text x="' + (L - 6) + '" y="' + (y(v) + 4).toFixed(1) + '" text-anchor="end">' + (opt.log ? v + "x" : v + "%") + "</text>");
+    });
+    var yrs = {};
+    dates.forEach(function (d, i) { var yy = d.slice(0, 4); if (!(yy in yrs)) yrs[yy] = i; });
+    Object.keys(yrs).forEach(function (yy) {
+      var i = yrs[yy];
+      if (i === 0 && dates[0].slice(5, 7) !== "01") return;
+      g.push('<text x="' + x(i).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle">' + yy + "</text>");
+    });
+    // 線(基準線先畫,主角後畫)
+    series.slice().reverse().forEach(function (s) {
+      var d = s.pts.map(function (p, i) { return (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p[1]).toFixed(1); }).join("");
+      g.push('<path d="' + d + '" fill="none" stroke="var(' + s.color + ')" stroke-width="' + (s.main ? 2.2 : 1.6) + '" stroke-linejoin="round"/>');
+    });
+    // 線尾直接標籤(主要兩條)
+    if (opt.labels) {
+      var ends = series.filter(function (s) { return s.main; }).map(function (s) { return { s: s, y: y(s.pts[n - 1][1]) }; }).sort(function (p, q) { return p.y - q.y; });
+      for (var k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 14) ends[k].y = ends[k - 1].y + 14;
+      ends.forEach(function (e) {
+        g.push('<line x1="' + (W - Rm + 2) + '" x2="' + (W - Rm + 8) + '" y1="' + y(e.s.pts[n - 1][1]).toFixed(1) + '" y2="' + e.y.toFixed(1) + '" stroke="var(' + e.s.color + ')"/>');
+        g.push('<text class="lbl" x="' + (W - Rm + 11) + '" y="' + (e.y + 4).toFixed(1) + '">' + esc(e.s.short) + " " + opt.fmt(e.s.pts[n - 1][1]) + "</text>");
+      });
+    }
+    g.push('<line class="xh" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="var(--muted)" stroke-width="1" visibility="hidden"/>');
+    g.push('<rect x="' + L + '" y="' + T + '" width="' + (W - L - Rm) + '" height="' + (H - T - B) + '" fill="transparent" class="hit"/>');
+    el.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" height="' + H + '" role="img" aria-label="' + esc(opt.aria) + '">' + g.join("") + "</svg><div class=\"tip\"></div>";
+    var svg = el.querySelector("svg"), tip = el.querySelector(".tip"), xh = el.querySelector(".xh");
+    function move(ev) {
+      var r = svg.getBoundingClientRect(), px = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
+      var i = Math.max(0, Math.min(n - 1, Math.round((px * W / r.width - L) / (W - L - Rm) * (n - 1))));
+      xh.setAttribute("x1", x(i)); xh.setAttribute("x2", x(i)); xh.setAttribute("visibility", "visible");
+      tip.innerHTML = "<div>" + esc(dates[i]) + " 進場那期結算後</div>" + series.map(function (s) {
+        return '<div><i style="background:var(' + s.color + ')"></i>' + esc(s.name) + " <b>" + opt.fmt(s.pts[i][1]) + "</b></div>";
+      }).join("");
+      tip.style.display = "block";
+      var tx = x(i) * r.width / W;
+      tip.style.left = Math.min(r.width - tip.offsetWidth - 4, Math.max(0, tx + 12)) + "px";
+      tip.style.top = "8px";
+    }
+    function out() { tip.style.display = "none"; xh.setAttribute("visibility", "hidden"); }
+    var hit = el.querySelector(".hit");
+    hit.addEventListener("mousemove", move);
+    hit.addEventListener("touchmove", move, { passive: true });
+    hit.addEventListener("touchstart", move, { passive: true });
+    hit.addEventListener("mouseleave", out);
+  }
+
+  function seriesFor(kind) {
+    return SERIES.map(function (s) {
+      var eq = A.curve[s[0]].eq, peak = 0;
+      var pts = eq.map(function (p) {
+        if (kind === "eq") return [p[0], p[1]];
+        peak = Math.max(peak, p[1]);
+        return [p[0], (p[1] / peak - 1) * 100];
+      });
+      return { name: s[2], short: s[0], color: s[1], main: s[0] === "4★ 以上" || s[0] === "加權指數", pts: pts };
+    });
+  }
+
+  function legend() {
+    return '<div class="legend">' + SERIES.map(function (s) { return '<span><i style="background:var(' + s[1] + ')"></i>' + esc(s[2]) + "</span>"; }).join("") + "</div>";
+  }
+
+  function yearly() {
+    var rows = {};
+    SERIES.forEach(function (s) {
+      var eq = A.curve[s[0]].eq, prev = 1, cur = null, y0 = null;
+      eq.forEach(function (p, i) {
+        var yy = p[0].slice(0, 4);
+        if (y0 !== null && yy !== y0) { rows[y0] = rows[y0] || {}; rows[y0][s[0]] = (cur / prev - 1) * 100; prev = cur; }
+        y0 = yy; cur = p[1];
+        if (i === eq.length - 1) { rows[yy] = rows[yy] || {}; rows[yy][s[0]] = (cur / prev - 1) * 100; }
+      });
+    });
+    var ys = Object.keys(rows).sort();
+    return '<div class="wrap"><table class="yr"><thead><tr><th>年度</th>' + SERIES.map(function (s) { return "<th>" + esc(s[2]) + "</th>"; }).join("") +
+      "<th>4★ 以上 − 加權指數</th></tr></thead><tbody>" + ys.map(function (y) {
+        var r = rows[y], d = r["4★ 以上"] - r["加權指數"];
+        return "<tr><td>" + y + (y === ys[ys.length - 1] ? "(至今)" : "") + (y === ys[0] ? "(2 月起)" : "") + "</td>" + SERIES.map(function (s) {
+          return '<td class="' + MR.dir(r[s[0]]) + '">' + pct(r[s[0]], 1) + "</td>";
+        }).join("") + '<td class="' + MR.dir(d) + '">' + pct(d, 1) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+
+  function live() {
+    var L = (TK && TK.lists) || {}, s4 = L.star45, s5 = L.star5, au = (AU && AU.live_star) || {}, bt = (AU && AU.backtest_star) || {};
+    var need = au.need || 10, n = au.n || 0;
+    function row(v, name) {
+      if (!v) return "";
+      var started = (v.rows || []).filter(function (r) { return r.n; });
+      return "<tr><td>" + esc(name) + "</td><td>" + (started.length ? esc(started[0].date) : "—") + "</td><td>" + started.length + " 天</td>" +
+        ["5", "20", "60"].map(function (h) { var x = v["avg_x" + h]; return '<td class="' + MR.dir(x) + '">' + (x == null ? "累積中" : pct(x, 2)) + "<br><small>" + v["n" + h] + " 天</small></td>"; }).join("") + "</tr>";
+    }
+    return '<section class="card"><h2>實盤追蹤:真正的檢驗</h2>' +
+      "<p>上面的曲線是回測。從 2026-10-09 起,每天收盤後把 4★ 以上與 5★ 名單存檔(之後不能修改),再用之後的實際股價結算;每 20 個交易日取一籃交給開源工具 anti-gambling-trader 判定是實力還是運氣。</p>" +
+      '<div class="prog" aria-label="實盤樣本進度"><i style="width:' + Math.min(100, n / need * 100).toFixed(0) + '%"></i></div>' +
+      '<p style="margin-top:0">第三方稽核:實盤 ' + n + " / " + need + " 籃" + (n < need ? "(約每月 1 籃,樣本不足前不判定)" : ":" + esc(au.headline || "")) +
+      (bt.headline ? ";回測 " + bt.n + " 籃 " + esc(bt.headline) : "") + "</p>" +
+      '<div class="wrap"><table class="yr"><thead><tr><th>名單</th><th>開始記錄</th><th>已記錄</th><th>5 日後比一般股</th><th>20 日後比一般股</th><th>60 日後比一般股</th></tr></thead><tbody>' +
+      row(s4, "評級 4★ 以上") + row(s5, "評級 5★") + row((L.rev || null), "營收動能名單(全部)") + "</tbody></table></div></section>";
+  }
+
+  function render() {
+    var c = A.curve, k = c["4★ 以上"], s5 = c["5★"];
+    app.innerHTML =
+      "<div><h1>策略績效</h1><p class=\"sub\">每月營收公告隔天開盤,等權買進當天評級 4★ 以上的全部股票,持有到下一次公告後換股(約一個月),已扣交易成本。" +
+      esc(k.eq[0][0]) + " ~ " + esc(k.eq[k.eq.length - 1][0]) + " 共 " + k.months + " 個月。</p></div>" + tiles() +
+      '<section class="card viz"><h2>權益曲線(1 元變成多少)</h2><p>對數刻度:同樣的垂直距離代表同樣的報酬率。只買 5★ 年化較高(' + pct(s5.cagr, 0) + "),但回撤 " + s5.mdd +
+      "%、夏普 " + s5.sharpe.toFixed(2) + ",波動大很多;買全部 4★ 以上分散,風險調整後較好。</p>" + legend() +
+      '<div class="chart" id="c-eq"></div>' +
+      '<details class="tv"><summary>表格檢視</summary><div class="wrap"><table class="yr"><thead><tr><th>進場月</th>' + SERIES.map(function (s) { return "<th>" + esc(s[2]) + "</th>"; }).join("") +
+      "</tr></thead><tbody>" + k.eq.map(function (p, i) {
+        return "<tr><td>" + esc(p[0]) + "</td>" + SERIES.map(function (s) { return "<td>" + A.curve[s[0]].eq[i][1].toFixed(2) + "x</td>"; }).join("") + "</tr>";
+      }).join("") + "</tbody></table></div></details></section>" +
+      '<section class="card viz"><h2>回撤(離前高跌了多少)</h2><p>4★ 以上最大回撤 ' + k.mdd + "%,加權指數 " + c["加權指數"].mdd + "%。要能接受帳面上虧掉四分之一,才適合照這個方法操作。</p>" + legend() +
+      '<div class="chart" id="c-dd"></div></section>' +
+      '<section class="card"><h2>逐年報酬</h2><p>每一年都有比較嗎?還是只靠一兩年大賺?</p>' + yearly() + "</section>" +
+      live() +
+      '<section class="card"><h2>這些數字為什麼偏樂觀</h2><ul class="note">' +
+      "<li><b>規則是看過資料才定的。</b>分層、星等試過好幾種版本才選定;2023 年後雖然當成樣本外,但其實也看過。真正可信的是上方的實盤追蹤。</li>" +
+      "<li><b>不含已下市股票。</b>回測期間下市、被併購的股票不在資料裡,偏樂觀。</li>" +
+      "<li><b>2025–2026 是極強的多頭。</b>4★ 以上在 2022 年只比一般股多 +1.9%;大盤空頭時 5★ 的 60 日中位數是 −5%。</li>" +
+      "<li><b>小型股、成交少的股票。</b>名單裡有成交不到 1 億的股票,大資金進出會有明顯價差,實際報酬會比回測低。</li>" +
+      "<li>回測腳本 scripts/accuracy_study.py,可以重跑驗證。</li></ul></section>";
+    lineChart("c-eq", seriesFor("eq"), { h: 300, right: 120, log: true, labels: true, aria: "權益曲線", fmt: function (v) { return v.toFixed(2) + "x"; } });
+    lineChart("c-dd", seriesFor("dd"), { h: 200, right: 120, log: false, labels: true, aria: "回撤", fmt: function (v) { return v.toFixed(1) + "%"; } });
+    document.title = "策略績效";
+  }
+
+  var rt = null;
+  window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(function () { if (A) render(); }, 150); });
+
+  Promise.all([MR.json("data/radar/accuracy.json"), MR.json("data/track/summary.json").catch(function () { return null; }),
+    MR.json("data/track/audit.json").catch(function () { return null; })])
+    .then(function (r) { A = r[0]; TK = r[1]; AU = r[2]; render(); })
+    .catch(function () { app.innerHTML = '<p class="err">績效資料尚未產生。</p>'; });
+})();
+</script>
+</body>
+</html>

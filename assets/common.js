@@ -64,6 +64,85 @@
     return MR.stars(r.stars) + '<span class="rt-why">' + esc(why) + (r.traps && r.traps.length ? ",有陷阱:" + esc(r.traps.join("、")) + "(扣 1 顆)" : "") + "</span>";
   };
 
+  // ---- 自選股:存在這個瀏覽器(localStorage),換裝置用匯出/匯入。提醒 = 和上次「已看過」時的狀態比較 ----
+  var WKEY = "mr.watch.v1";
+  MR.watch = {
+    load: function () {
+      try { var s = JSON.parse(localStorage.getItem(WKEY) || "null"); if (s && s.codes) return s; } catch (e) {}
+      return { codes: [], alerts: {}, seen: {} };
+    },
+    save: function (s) { try { localStorage.setItem(WKEY, JSON.stringify(s)); } catch (e) {} },
+    has: function (c) { return MR.watch.load().codes.indexOf(c) >= 0; },
+    // 加入時記下當下狀態,之後的變化才算「新」
+    add: function (c, row) {
+      var s = MR.watch.load();
+      if (s.codes.indexOf(c) < 0) s.codes.push(c);
+      if (row) s.seen[c] = MR.watch.snap(row);
+      MR.watch.save(s);
+    },
+    remove: function (c) {
+      var s = MR.watch.load();
+      s.codes = s.codes.filter(function (x) { return x !== c; });
+      delete s.alerts[c]; delete s.seen[c];
+      MR.watch.save(s);
+    },
+    snap: function (x) {
+      var h = x[12] || {};
+      return { stars: x[1], rev: x[9], above: h.above_ma60, traps: (x[11] || []).slice() };
+    },
+    // 回傳 [{t: 文字, k: "up"|"down"|"info"}];x 是 index.json 的一列
+    changes: function (c, x, s) {
+      s = s || MR.watch.load();
+      var out = [], o = s.seen[c], h = x[12] || {}, a = s.alerts[c] || {};
+      if (o) {
+        if (o.stars !== x[1]) out.push({ t: "評級 " + o.stars + "★ → " + x[1] + "★", k: x[1] > o.stars ? "up" : "down" });
+        if (x[9] && x[9] !== o.rev) out.push({ t: "公布 " + x[9].slice(5).replace(/^0/, "") + " 月營收,年增 " + MR.sign(x[7], 0) + "%", k: "info" });
+        if (o.above === true && h.above_ma60 === false) out.push({ t: "跌破季線", k: "down" });
+        if (o.above === false && h.above_ma60 === true) out.push({ t: "站上季線", k: "up" });
+        (x[11] || []).forEach(function (tr) { if ((o.traps || []).indexOf(tr) < 0) out.push({ t: "出現陷阱:" + tr, k: "down" }); });
+      }
+      if (a.up != null && x[3] >= a.up) out.push({ t: "到價:≥ " + a.up, k: "up" });
+      if (a.dn != null && x[3] <= a.dn) out.push({ t: "到價:≤ " + a.dn, k: "down" });
+      return out;
+    },
+    seenAll: function (I) {
+      var s = MR.watch.load();
+      s.codes.forEach(function (c) { if (I.s[c]) s.seen[c] = MR.watch.snap(I.s[c]); });
+      MR.watch.save(s);
+    }
+  };
+  MR.watchBtn = function (code) {
+    var on = MR.watch.has(code);
+    return '<button type="button" class="wbtn' + (on ? " on" : "") + '" data-watch="' + esc(code) + '" aria-pressed="' + on + '">' + (on ? "★ 已在自選" : "☆ 加入自選") + "</button>";
+  };
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-watch]");
+    if (!b) return;
+    e.preventDefault();
+    var c = b.getAttribute("data-watch");
+    if (MR.watch.has(c)) { MR.watch.remove(c); finish(); }
+    else MR.index().then(function (I) { MR.watch.add(c, I && I.s[c]); finish(); });
+    function finish() {
+      Array.prototype.forEach.call(document.querySelectorAll('[data-watch="' + c + '"]'), function (x) { x.outerHTML = MR.watchBtn(c); });
+      navBadge();
+      document.dispatchEvent(new CustomEvent("mr-watch"));
+    }
+  });
+  // 導覽列「我的自選」旁標出有變化的檔數
+  function navBadge() {
+    var a = document.querySelector('.nav a[href="my.html"]');
+    if (!a) return;
+    var s = MR.watch.load();
+    if (!s.codes.length) { a.textContent = "我的自選"; return; }
+    MR.index().then(function (I) {
+      if (!I) return;
+      var n = s.codes.filter(function (c) { return I.s[c] && MR.watch.changes(c, I.s[c], s).length; }).length;
+      a.innerHTML = "我的自選" + (n ? '<span class="nbadge" title="' + n + ' 檔有變化">' + n + "</span>" : "");
+    });
+  }
+  MR.navBadge = navBadge;
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", navBadge); else navBadge();
+
   // ---- 今天先看這 10 檔:data/radar/picks.json(排序規則在 scripts/radar.py write_picks) ----
   MR.picks = function () { return MR.json("data/radar/picks.json"); };
   MR.picksHtml = function (P, more) {
@@ -358,6 +437,8 @@
       "評級效果明顯變弱,宜降低投入或分批。</span></div>";
   }
 
+  MR.verdict = function (h, r) { return verdict(h, r); };
+
   function healthHtml(h, r, S) {
     var v = verdict(h, r), rows = h ? checks(h) : [];
     var ic = { "1": '<b class="ck ok">✓</b>', "0": '<b class="ck mid">–</b>', "-1": '<b class="ck no">✕</b>' };
@@ -376,7 +457,7 @@
     Object.keys(sigs).forEach(function (k) { names[k] = sigs[k].name; grades[k] = sigs[k].horizons["10"].grade; });
     var off = s.high250 ? (s.close / s.high250 - 1) * 100 : null;
     var recent = (doc.signals || []).slice(-8).reverse();
-    return '<div class="sh-head"><div><h3 id="stk-title"><span class="num">' + esc(doc.code) + "</span> " + esc(doc.name) + "</h3>" +
+    return '<div class="sh-head"><div><h3 id="stk-title"><span class="num">' + esc(doc.code) + "</span> " + esc(doc.name) + " " + MR.watchBtn(doc.code) + "</h3>" +
       '<div class="stk-head" id="stk-px"><span class="px">' + esc(s.close) + "</span>" + MR.pct(s.chg) +
       '<span class="flat" style="font-size:12px">' + esc(doc.date) + " 收盤</span></div>" +
       (doc.themes.length ? '<div class="chips">' + doc.themes.map(function (t) {
@@ -437,7 +518,7 @@
       var I = res[0], x = I && I.s[code], body = d.querySelector(".sh-body");
       if (!x) { body.innerHTML = '<p class="flat">查無這檔股票(只收錄上市櫃普通股)。</p>'; return; }
       var r = { stars: x[1], tier: x[2], traps: x[11] }, p = res[1] && res[1][code];
-      d.querySelector(".sh-head").innerHTML = '<div><h3 id="stk-title"><span class="num">' + esc(code) + "</span> " + esc(x[0]) + "</h3>" +
+      d.querySelector(".sh-head").innerHTML = '<div><h3 id="stk-title"><span class="num">' + esc(code) + "</span> " + esc(x[0]) + " " + MR.watchBtn(code) + "</h3>" +
         '<div class="stk-head" id="stk-px"><span class="px">' + esc(x[3]) + "</span>" + MR.pct(x[4]) + '<span class="flat" style="font-size:12px">' + esc(I.date) + " 收盤</span></div></div>" +
         '<button type="button" class="x" data-close aria-label="關閉">×</button>';
       body.innerHTML = healthHtml(x[12], r, res[2]) +

@@ -21,7 +21,6 @@ import json
 import math
 import os
 import sys
-import urllib.request
 
 import numpy as np
 import pandas as pd
@@ -44,8 +43,7 @@ def industries():
                             ("https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O", "SecuritiesCompanyCode",
                              "SecuritiesIndustryCode", "IssueShares")):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            rows = json.loads(urllib.request.urlopen(req, timeout=60).read().decode("utf-8"))
+            rows = history.get(url)   # 失敗會重試
         except Exception as e:  # noqa: BLE001
             print("industry fetch failed", url, e, file=sys.stderr)
             continue
@@ -55,6 +53,11 @@ def industries():
             v = history.num(r.get(kp, ""))
             if v:
                 cap[c] = v
+    try:   # 產業別以每日排程存下的檔案為準(與雷達一致)
+        with open(os.path.join(history.ROOT, "data", "profile", "industry.json"), encoding="utf-8") as f:
+            out.update(json.load(f))
+    except (OSError, ValueError):
+        pass
     return out, cap
 
 
@@ -443,7 +446,9 @@ for j, c in enumerate(codes):
             i += 1
 print("\n[召回] 低點起 120 日內翻倍的波段 %d 段" % len(eps))
 out["recall"] = {"episodes": len(eps)}
-for col, label in (("rev_only", "只看營收"), ("pick", "組合規則")):
+
+
+def recall_of(col):
     flagged = R[R[col]]
     by = {c: g for c, g in flagged.groupby("code")}
     early = caught = 0
@@ -463,14 +468,40 @@ for col, label in (("rev_only", "只看營收"), ("pick", "組合規則")):
         left.append(hi_ / p - 1)
         if at <= (hi_ / lo_ - 1) / 3:
             early += 1
-    out["recall"][label] = {"caught": round(caught / len(eps) * 100, 1), "early": round(early / len(eps) * 100, 1),
-                           "at_med": round(float(np.median(gains_at)) * 100) if gains_at else None,
-                           "left_med": round(float(np.median(left)) * 100) if left else None,
-                           "per_month": round(flagged.groupby("i").size().mean(), 1)}
-    v = out["recall"][label]
+    return {"caught": round(caught / len(eps) * 100, 1), "early": round(early / len(eps) * 100, 1),
+            "at_med": round(float(np.median(gains_at)) * 100) if gains_at else None,
+            "left_med": round(float(np.median(left)) * 100) if left else None,
+            "per_month": round(flagged.groupby("i").size().mean(), 1) if len(flagged) else 0}
+
+
+for col, label in (("rev_only", "只看營收"), ("pick", "組合規則")):
+    out["recall"][label] = v = recall_of(col)
     print("  %-8s 抓到 %4.1f%% 的波段,其中在前 1/3 漲幅內就列入 %4.1f%%;列入時已漲中位數 %s%%、之後還剩中位數 %s%%;平均每月名單 %s 檔" % (
         label, v["caught"], v["early"], v["at_med"], v["left_med"], v["per_month"]))
 
+# ---- 分層:不同邏輯各自列入,畫面上分開標示 ----
+# A 三項都有  B 營收 + 動能或題材其一  C 只有營收(最早期)  D 沒有營收、但動能 + 題材(題材股行情,營收還沒跟上)
+TIERS = [("A", "營收＋動能＋題材"), ("B", "營收＋動能或題材其一"), ("C", "只有營收(最早期)"), ("D", "沒有營收,動能＋題材")]
+for df in (R, ALL):
+    m, p_ = mom(df).fillna(False), peer(df).fillna(False)
+    df["tier"] = np.select([df.rev & m & p_, df.rev & (m | p_), df.rev, ~df.rev & m & p_], ["A", "B", "C", "D"], "")
+print("\n[分層]  同一檔只會落在一層;累計 = 由上往下合起來抓到的翻倍波段比例")
+out["tiers"] = []
+acc = set()
+for k, label in TIERS:
+    IS_t, OOS_t = R[R.date < SPLIT], R[R.date >= SPLIT]
+    a, b = evaluate(IS_t.tier == k, IS_t), evaluate(OOS_t.tier == k, OOS_t)
+    acc.add(k)
+    R["_acc"] = R.tier.isin(acc)
+    R["_one"] = R.tier == k
+    one, cum_ = recall_of("_one"), recall_of("_acc")
+    out["tiers"].append({"tier": k, "label": label, "is": a, "oos": b, "recall": one, "recall_cum": cum_})
+    for tag, s in (("2019–22", a), ("2023– ", b)):
+        if "hit" in s:
+            print("  %s %-18s %s 每月 %5.1f 檔  飆股 %5.2f%%  大漲 %4.1f%%  60日比一般股 %+6.2f%%  中位 %+6.2f%%  曾跌25%% %4.1f%%  t=%s" % (
+                k, label, tag, s["per_month"], s["hit"], s["big"], s["x60"], s["med60"], s["crash"], s["t"]))
+    print("    單層抓到 %4.1f%% 波段(列入時已漲 %s%%、之後剩 %s%%);累計 %4.1f%%" % (one["caught"], one["at_med"], one["left_med"], cum_["caught"]))
+R = R.drop(columns=["_acc", "_one"])
 
 def clean(o):
     if isinstance(o, dict):

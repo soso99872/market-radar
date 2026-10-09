@@ -236,10 +236,28 @@ def build(L):
         x["mom_ok"] = bool(not pd.isna(r60) and r60 * 100 >= MOM60)
         x["peer_ok"] = bool(x["peer60"] is not None and x["peer60"] >= PEER60)
         x["tri"] = x["mom_ok"] and x["peer_ok"]
+        x["tier"] = "A" if x["tri"] else "B" if (x["mom_ok"] or x["peer_ok"]) else "C"
         x["decel"] = bool(x["accel"] is not None and x["accel"] <= DECEL)
         x["why"] = rev_reasons(x)
         rev_list.append(x)
     rev_list.sort(key=lambda x: (not x["rev_new"], -(x["yoy3"] or 0)))
+
+    # D 層:營收還沒確認、但股價動能 + 同產業一起漲(題材股行情)。歷史上優勢不穩定,只供觀察
+    in_rev = {x["code"] for x in rev_list}
+    theme_list = []
+    r60_last = ret60.loc[last]
+    for c in codes:
+        if c in in_rev or not tradable.at[last, c] or pd.isna(r60_last[c]):
+            continue
+        if r60_last[c] * 100 < MOM60 or (peer.get(c) is None) or peer[c] < PEER60:
+            continue
+        x = stock_row(c)
+        mi = rp["rev"][c].last_valid_index()
+        x.update({"ret60": _f(r60_last[c] * 100, 1), "ind": IND_NAME.get(ind.get(c), ind.get(c)), "peer60": _f(peer.get(c), 1),
+                  "yoy": None if mi is None else _f(rp["yoy"].at[mi, c], 1), "yoy3": None if mi is None else _f(rp["yoy3"].at[mi, c], 1),
+                  "tier": "D", "low_vol": bool(not pd.isna(x["vol60"]) and x["vol60"] < vol_cut)})
+        theme_list.append(x)
+    theme_list.sort(key=lambda x: (-(x["peer60"] or 0), -(x["ret60"] or 0)))
 
     # 近 10 個交易日的爆量突破
     recent = dates[-10:]
@@ -293,9 +311,10 @@ def build(L):
         meta["explosion"]["rules"] = {k: v for k, v in ex.get("rules", {}).items()
                                       if k in ("只看營收(目前的起漲雷達)", "營收 + 起漲初期", "營收 + 動能", "營收 + 同產業股價強", "營收 + 動能 + 同產業股價強")}
         meta["explosion"]["streak"] = ex.get("streak")
+        meta["explosion"]["tiers"] = ex.get("tiers")
     except (OSError, ValueError):
         pass
-    doc = dict(meta, stats=stats, base=base, rev=rev_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank,
+    doc = dict(meta, stats=stats, base=base, rev=rev_list, theme=theme_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank,
                momentum={k: v for k, v in mom.items() if k != "today"})
     with open(os.path.join(OUT, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))

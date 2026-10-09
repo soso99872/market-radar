@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-08T09:27+08:00",
+ "generated_at": "2026-10-09T11:19+08:00",
  "tool": "anti-gambling-trader-tw",
  "tool_sha": "d7c5abb6c935f4e623972b4fc3f2f89ad9f74f92",
  "unit": "每月一籃,投入 100 萬,損益 = 名單等權報酬 − 同日一般股平均報酬(已扣交易成本)",
@@ -9,17 +9,38 @@
   "level": "statistical_edge",
   "headline": "✅ 具統計優勢:在現有樣本下,你的正期望值通過了顯著性檢定。",
   "win_rate": 0.7582417582417582,
-  "expectancy": 21593.879120879123,
-  "p_t": 4.558513022374584e-09,
+  "expectancy": 21334.307692307688,
+  "p_t": 5.084637955109856e-09,
   "p_boot": 0.0001999600079984003,
   "ci": [
-   15374.57142857143,
-   29000.89010989011
+   15165.736263736264,
+   28615.406593406595
   ],
   "oos_persisted": true,
   "oos_summary": null
  },
  "live": {
+  "n": 0,
+  "status": "樣本不足",
+  "need": 10
+ },
+ "backtest_star": {
+  "n": 75,
+  "status": "ok",
+  "level": "statistical_edge",
+  "headline": "✅ 具統計優勢:在現有樣本下,你的正期望值通過了顯著性檢定。",
+  "win_rate": 0.7733333333333333,
+  "expectancy": 37426.33333333333,
+  "p_t": 6.599026843928703e-08,
+  "p_boot": 0.0001999600079984003,
+  "ci": [
+   25157.44,
+   49789.426666666666
+  ],
+  "oos_persisted": true,
+  "oos_summary": null
+ },
+ "live_star": {
   "n": 0,
   "status": "樣本不足",
   "need": 10

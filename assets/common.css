@@ -216,3 +216,19 @@ th.srt:hover { color: var(--text); }
 th.srt::after { content: " ↕"; color: var(--line); font-size: 11px; }
 th.srt[aria-sort="descending"]::after { content: " ▼"; color: var(--accent); }
 th.srt[aria-sort="ascending"]::after { content: " ▲"; color: var(--accent); }
+
+/* 手機:導覽列壓縮(原本約 230px 高),品牌一列、分頁一列可左右滑,搜尋放在品牌那列 */
+.health .vd.warn { border-left-color: var(--down); }
+.health .vd.warn b { color: var(--down); }
+@media (max-width: 640px) {
+  .bar-in { padding: 6px 12px; gap: 6px 8px; }
+  .brand span { display: none; }
+  .brand b { font-size: 15px; }
+  .brand svg { width: 22px; height: 22px; }
+  .bar-in > .seg button { height: 26px; padding: 0 6px; font-size: 12px; }
+  .srch { order: 0; flex: 1 1 120px; }
+  .srch input { width: 100%; padding: 5px 8px; }
+  .nav { order: 5; flex: 1 1 100%; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a { flex: none; padding: 6px 9px; font-size: 13.5px; }
+}

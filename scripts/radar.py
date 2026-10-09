@@ -276,6 +276,8 @@ def build(L):
         RATING[x["code"]] = {"stars": x["stars"], "tier": "D", "traps": []}
     SNAP.clear()
     r60_all = ret60.loc[last]
+    tx = L["taiex"].astype(float)
+    bull = bool(tx.iloc[-1] > tx.rolling(60, min_periods=40).mean().iloc[-1]) if tx.notna().sum() > 60 else None
     for c in codes:
         col = rp["rev"][c]
         mi = col.last_valid_index()
@@ -292,7 +294,8 @@ def build(L):
                    "value20": _f(vyi[c].iloc[-20:].mean(), 2),
                    "vol60": _f(vol60.at[last, c], 2), "low_vol": bool(not pd.isna(vol60.at[last, c]) and vol60.at[last, c] < vol_cut),
                    "hi250": None if pd.isna(hi250_now.at[last, c]) else _f((close.at[last, c] / hi250_now.at[last, c] - 1) * 100, 1),
-                   "above_ma60": None if pd.isna(ma60.at[last, c]) else bool(close.at[last, c] > ma60.at[last, c])}
+                   "above_ma60": None if pd.isna(ma60.at[last, c]) else bool(close.at[last, c] > ma60.at[last, c]),
+                   "bull": bull}
 
     # 近 10 個交易日的爆量突破
     recent = dates[-10:]
@@ -354,6 +357,10 @@ def build(L):
         meta["explosion"]["streak"] = ex.get("streak")
         meta["explosion"]["tiers"] = ex.get("tiers")
         meta["explosion"]["stars"] = ex.get("stars")
+        with open(os.path.join(OUT, "accuracy.json"), encoding="utf-8") as f:   # scripts/accuracy_study.py
+            acc = json.load(f)
+        meta["explosion"]["regime"] = acc.get("regime")
+        meta["explosion"]["curve"] = {k: {x: v[x] for x in ("cagr", "mdd", "sharpe", "win", "months")} for k, v in acc.get("curve", {}).items()}
     except (OSError, ValueError):
         pass
     doc = dict(meta, stats=stats, base=base, rev=rev_list, theme=theme_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank,

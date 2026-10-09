@@ -268,7 +268,11 @@
   // 評級說明:每一級歷史上的表現(起漲雷達 latest.json 帶研究結果)
   var starStatsP = null;
   function starStats() {
-    if (!starStatsP) starStatsP = MR.json("data/radar/latest.json").then(function (r) { return (r.explosion || {}).stars || null; }).catch(function () { return null; });
+    if (!starStatsP) starStatsP = MR.json("data/radar/latest.json").then(function (r) {
+      var s = (r.explosion || {}).stars || null;
+      if (s) s.regime = (r.explosion || {}).regime;
+      return s;
+    }).catch(function () { return null; });
     return starStatsP;
   }
   function starNote(n, S) {
@@ -317,11 +321,20 @@
     return { cls: "no", t: "目前不符合起漲條件", d: "不在起漲雷達任何名單。歷史上這類股票之後平均比一般股略差;不代表公司不好,只是現在沒有起漲的訊號。" };
   }
 
+  // 大盤空頭時評級效果明顯變弱(scripts/accuracy_study.py [3])
+  function regimeNote(h, r, S) {
+    if (!h || h.bull !== false || !r || (r.stars || 1) < 4) return "";
+    var g = S && S.regime && S.regime["5★ · 大盤空頭"], s = g && g.is;
+    return '<div class="vd warn"><b>⚠ 目前大盤在 60 日均線下(空頭)</b><span>' +
+      (s && s.hit != null ? "歷史上空頭時的 5★,60 日中位數 " + MR.sign(s.med60, 1) + "%、60 日內曾跌 25% 的有 " + s.crash.toFixed(0) + "%(多頭時約 14–23%)," : "") +
+      "評級效果明顯變弱,宜降低投入或分批。</span></div>";
+  }
+
   function healthHtml(h, r, S) {
     var v = verdict(h, r), rows = h ? checks(h) : [];
     var ic = { "1": '<b class="ck ok">✓</b>', "0": '<b class="ck mid">–</b>', "-1": '<b class="ck no">✕</b>' };
     return '<div class="fvbox health"><h4>個股健檢</h4><div class="rt">' + MR.ratingLine(r) + "</div>" +
-      '<div class="vd ' + v.cls + '"><b>' + esc(v.t) + "</b><span>" + esc(v.d) + "</span></div>" +
+      '<div class="vd ' + v.cls + '"><b>' + esc(v.t) + "</b><span>" + esc(v.d) + "</span></div>" + regimeNote(h, r, S) +
       (rows.length ? '<table class="hc"><tbody>' + rows.map(function (x) {
         return "<tr><td>" + ic[String(x.ok)] + "</td><th>" + esc(x.name) + '</th><td class="hv">' + esc(x.val) + '</td><td class="hn">' + esc(x.note) +
           '<span class="ev ' + (x.ev === "回測" ? "bt" : "") + '">' + (x.ev === "回測" ? "有回測依據" : "僅供參考") + "</span></td></tr>";

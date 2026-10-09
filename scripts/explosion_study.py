@@ -566,3 +566,6 @@ with open(os.path.join(history.ROOT, "data", "track", "basket_backtest_star.csv"
     w.writerows(rows_b)
 print("\n[稽核用] 4★ 以上每月一籃 %d 筆,平均每籃比一般股 %+.2f%%,月勝率 %.0f%%" % (
     len(rows_b), np.mean([r[3] for r in rows_b]) / 1e4, np.mean([r[3] > 0 for r in rows_b]) * 100))
+
+# 給 accuracy_study.py 用的樣本(不提交)
+R.to_pickle(os.path.join(os.environ.get("TEMP", "/tmp"), "mr_samples.pkl"))

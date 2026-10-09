@@ -439,6 +439,18 @@
       "了解獲利品質用;回測顯示毛利率升降對之後股價沒有預測力", "參考");
     add("估值", 0, h.fpe == null ? "無前瞻估值" : "前瞻本益比 " + h.fpe + " 倍" + (h.fpe_src === "自行推估" ? "(自行推估)" : "") + "(自身歷史中位 " + h.fpe_med + " 倍)" + (h.fwd_status ? "," + h.fwd_status : "") +
       (h.tgt_up == null ? "" : ",目標價空間 " + MR.sign(h.tgt_up, 0) + "%"), "分析師共識 2026-10 才開始記錄,尚未回測;歷史本益比估值回測沒有預測力", "參考");
+    // 技術面(scripts/technical.py):順勢訊號歷史上偏好,抄底訊號(超賣、低檔黃金交叉)反而偏差
+    var ta = h.ta;
+    if (ta) {
+      var EV = { "均線多頭排列": 1, "均線空頭排列": -1, "站上年線": 1, "跌破年線": -1, "KD 低檔黃金交叉": -1, "KD 高檔鈍化": 1, "RSI > 70": 1, "RSI < 30": -1,
+        "MACD 柱狀翻正": 0, "MACD 在零軸上": 1, "突破布林上軌": 1, "布林通道收窄": -1, "價漲量增": 1, "價跌量增": -1, "向上跳空缺口": 1 };
+      var pos = ta.on.filter(function (k) { return EV[k] > 0; }), neg = ta.on.filter(function (k) { return EV[k] < 0; });
+      var v = ta.v || {};
+      add("技術面", pos.length > neg.length ? 1 : neg.length > pos.length ? -1 : 0,
+        "KD " + (v.K == null ? "—" : v.K.toFixed(0) + "/" + v.D.toFixed(0)) + " · RSI " + (v.RSI == null ? "—" : v.RSI.toFixed(0)) +
+          (pos.length ? " · 偏多:" + pos.join("、") : "") + (neg.length ? " · 偏空:" + neg.join("、") : ""),
+        "回測(2020–2026)顯示台股順勢訊號(均線多頭、RSI 過熱、KD 高檔鈍化、突破)之後較好;抄底訊號(RSI 超賣、KD 低檔黃金交叉)反而較差", "回測");
+    }
     var mines = h.mines;
     if (mines) {
       var ks = Object.keys(mines), strong = ks.filter(function (k) { return MINE_STRONG.indexOf(k) >= 0; });

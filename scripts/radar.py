@@ -348,6 +348,7 @@ def build(L):
     peer_rank(ind)
     estimate_revisions()
     landmines_now(last)
+    technical_now(L, F)
     mom = momentum(L, rp, close, opn, tradable, usable, newpub, rev_list)
     rank = ranking(rev_list, bo_list, mom)
     try:   # 毛利率回測結果(scripts/margin_test.py 產生,研究用、不在排程跑)
@@ -526,6 +527,14 @@ IND_NAME = {"01": "水泥", "02": "食品", "03": "塑膠", "04": "紡織", "05"
 
 
 MIXED_IND = {"19", "20", "80"}   # 綜合、其他、管理股票:不是同一種生意,不算「同產業」
+
+
+def technical_now(L, F):
+    """每檔最後一天的技術訊號(scripts/technical.py,與回測同一套公式)。"""
+    import technical
+    for c, x in technical.last_row(F["close"], L["hi"], L["lo"], F["value"]).items():
+        if c in SNAP:
+            SNAP[c]["ta"] = x
 
 
 def landmines_now(last):

@@ -5,90 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>盤前雷達</title>
 <meta name="description" content="每個交易日 06:00 自動更新的台美股盤前重點、經濟日曆與影響分析">
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>try { if (sessionStorage.getItem("mr.splash")) document.documentElement.classList.add("nosplash"); } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="assets/common.css">
 <style>
-:root {
-  color-scheme: dark;
-  --bg: #0d1117;
-  --panel: #141a22;
-  --panel-2: #1a212b;
-  --line: #242c37;
-  --text: #e5e9ef;
-  --muted: #8b95a4;
-  --faint: #5d6776;
-  --accent: #e6ad3e;
-  --accent-ink: #1a1305;
-  --red: #f0524f;
-  --green: #23b27f;
-  --amber: #e6ad3e;
-  --up: var(--red);
-  --down: var(--green);
-  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
-}
-:root[data-convention="us"] { --up: var(--green); --down: var(--red); }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    color-scheme: light;
-    --bg: #f3f5f8; --panel: #ffffff; --panel-2: #f6f8fb; --line: #dde2ea;
-    --text: #141a22; --muted: #5a6474; --faint: #8b95a4;
-    --accent: #b97d0a; --accent-ink: #ffffff;
-    --red: #d63a37; --green: #108a5e; --amber: #b97d0a;
-  }
-}
-:root[data-theme="light"] {
-  color-scheme: light;
-  --bg: #f3f5f8; --panel: #ffffff; --panel-2: #f6f8fb; --line: #dde2ea;
-  --text: #141a22; --muted: #5a6474; --faint: #8b95a4;
-  --accent: #b97d0a; --accent-ink: #ffffff;
-  --red: #d63a37; --green: #108a5e; --amber: #b97d0a;
-}
-
-* { box-sizing: border-box; }
-html, body { margin: 0; }
-body {
-  background: var(--bg); color: var(--text);
-  font: 15px/1.6 var(--sans);
-  -webkit-font-smoothing: antialiased;
-}
-a { color: inherit; }
-button, select { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-.up { color: var(--up); }
-.down { color: var(--down); }
-.flat { color: var(--muted); }
-
-/* top bar */
-.bar {
-  position: sticky; top: 0; z-index: 5;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
-}
-.bar-in {
-  max-width: 1280px; margin: 0 auto; padding: 10px 16px;
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-}
-.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
-.brand svg { flex: none; }
-.brand b { font-weight: 900; font-size: 17px; letter-spacing: .04em; }
-.brand span { color: var(--muted); font-size: 12px; letter-spacing: .08em; }
-.nav { display: flex; gap: 2px; }
-.nav a { text-decoration: none; font-size: 14px; color: var(--muted); padding: 5px 10px; border-radius: 6px; }
-.nav a:hover { color: var(--text); }
-.nav a[aria-current="page"] { color: var(--text); font-weight: 700; background: var(--panel); box-shadow: inset 0 -2px 0 var(--accent); }
-@media (max-width: 640px) {   /* 手機:導覽列壓縮,分頁一列可左右滑 */
-  .bar-in { padding: 6px 12px; gap: 6px 8px; }
-  .brand span { display: none; }
-  .brand b { font-size: 15px; }
-  .nav { order: 5; flex: 1 1 100%; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
-  .nav::-webkit-scrollbar { display: none; }
-  .nav a { flex: none; padding: 6px 9px; font-size: 13.5px; }
-}
 .ctrl { display: flex; align-items: center; gap: 6px; }
 .ctrl button, .ctrl select {
   background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
@@ -97,9 +25,6 @@ button, select { font: inherit; color: inherit; }
 .ctrl button:hover, .ctrl select:hover { border-color: var(--faint); }
 .ctrl button:disabled { opacity: .35; cursor: default; }
 .ctrl select { font-family: var(--mono); }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
-.seg button { border: 0; border-radius: 0; height: 30px; font-size: 12px; background: var(--panel); }
-.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
 
 main { max-width: 1280px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 20px; }
 
@@ -201,14 +126,32 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <div class="sp-in">
+    <svg class="sp-logo" viewBox="0 0 64 64" width="96" height="96">
+      <defs><linearGradient id="spsw" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#e7b04a" stop-opacity="0"/><stop offset="1" stop-color="#f3c96b" stop-opacity=".95"/></linearGradient></defs>
+      <circle cx="32" cy="32" r="21" fill="none" stroke="#2c3647" stroke-width="1.6"/>
+      <circle cx="32" cy="32" r="12" fill="none" stroke="#2c3647" stroke-width="1.6"/>
+      <g class="sp-sweep"><path d="M32 32 L32 11 A21 21 0 0 1 51.2 23.4 Z" fill="url(#spsw)"/><line x1="32" y1="32" x2="51.2" y2="23.4" stroke="#f3c96b" stroke-width="1.6" stroke-linecap="round"/></g>
+      <circle class="sp-blip" cx="44" cy="20.5" r="2.6" fill="#fff"/>
+      <circle cx="32" cy="32" r="2.2" fill="#f3c96b"/>
+    </svg>
+    <div class="sp-name">盤前雷達</div>
+    <div class="sp-tag">營收 · 動能 · 題材 ── 每個交易日 06:00 更新</div>
+    <div class="sp-bar"><i></i></div>
+  </div>
+</div>
 <header class="bar">
   <div class="bar-in">
     <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
-        <circle cx="13" cy="13" r="11.5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-        <circle cx="13" cy="13" r="6.5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-        <path d="M13 13 L13 1.5 A11.5 11.5 0 0 1 23.5 8.2 Z" fill="var(--accent)" opacity=".85"/>
-        <circle cx="18.5" cy="8.5" r="1.8" fill="var(--text)"/>
+      <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true" class="logo">
+        <defs><linearGradient id="lgsw" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#e7b04a" stop-opacity="0"/><stop offset="1" stop-color="#f3c96b" stop-opacity=".95"/></linearGradient></defs>
+        <rect width="64" height="64" rx="15" fill="#121926"/>
+        <circle cx="32" cy="32" r="21" fill="none" stroke="#2c3647" stroke-width="3"/>
+        <circle cx="32" cy="32" r="12" fill="none" stroke="#2c3647" stroke-width="3"/>
+        <path d="M32 32 L32 11 A21 21 0 0 1 51.2 23.4 Z" fill="url(#lgsw)"/>
+        <circle cx="44" cy="20.5" r="3.4" fill="#fff"/>
+        <circle cx="32" cy="32" r="3" fill="#f3c96b"/>
       </svg>
       <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 06:00</span></div>
     </div>
@@ -233,7 +176,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
   </div>
 </header>
 
-<main id="app"><p class="err">載入中…</p></main>
+<main id="app"><div class="skel" aria-busy="true" aria-label="載入中"><i></i><i></i><i></i><i></i></div></main>
 
 <footer>
   本網站內容由 AI 每日自動彙整公開資訊產生，可能有延遲或錯誤，僅供參考，不構成任何投資建議。行情為前一交易日收盤資料。

@@ -3,7 +3,7 @@
 輸出 data/estimates/latest.json,並每天存一份 data/estimates/YYYY-MM-DD.json 快照
 (免費來源沒有歷史共識,只能從現在開始累積,之後才能回測)。
   {代號: {"eps0": 今年 EPS 預估, "eps1": 明年, "n0", "n1": 分析師數, "tgt": 平均目標價, "tgt_lo", "tgt_hi", "n_tgt", "sym"}}
-只抓起漲雷達名單、觀察名單與板塊成分股(全市場一檔一檔抓太久)。
+起漲雷達名單、觀察名單與板塊成分股每 12 小時更新;其他股票每次輪流補最舊的 300 檔(全市場一次抓完會超過排程時限)。
 
 用法:python scripts/estimates.py
 """
@@ -77,6 +77,11 @@ def fetch(code, known_sym=None):
     return None
 
 
+EXTRA_PER_RUN = int(os.environ.get("EST_EXTRA", 300))    # 重點股以外,每次輪流補幾檔(全市場約 1950 檔,一次抓完會超過排程時限)
+FRESH = timedelta(hours=12)
+KEEP = timedelta(days=30)   # 超過 30 天沒更新到的資料不再使用
+
+
 def main():
     warnings.filterwarnings("ignore")
     logging.getLogger("yfinance").setLevel(logging.CRITICAL)
@@ -85,26 +90,52 @@ def main():
         old = json.load(open(os.path.join(OUT, "latest.json"), encoding="utf-8"))
     except FileNotFoundError:
         old = {}
+    now = datetime.now(TZ)
     prev = old.get("s", {})
-    # 共識一天變動不大,12 小時內抓過就不重抓(排程一天跑好幾次)
-    fresh = old.get("fetched_at") and datetime.now(TZ) - datetime.fromisoformat(old["fetched_at"]) < timedelta(hours=12)
-    if fresh and "--force" not in sys.argv:
-        print("estimates: 12 小時內已更新,略過", file=sys.stderr)
+    old_at = old.get("fetched_at")
+    for c, v in prev.items():   # 舊格式沒有每檔時間,用整份的抓取時間
+        v.setdefault("at", old_at)
+    for c, a_ in (old.get("checked") or {}).items():   # 查過但沒有分析師的也要記住,不然每次都重查
+        prev.setdefault(c, {"at": a_, "none": True})
+
+    def age(c):
+        a = (prev.get(c) or {}).get("at")
+        return now - datetime.fromisoformat(a) if a else timedelta(days=999)
+
+    core = universe()
+    try:   # 全市場(查詢索引)
+        allc = sorted(json.load(open(os.path.join(ROOT, "data/stocks/index.json"), encoding="utf-8"))["s"])
+    except (OSError, ValueError, KeyError):
+        allc = []
+    force = "--force" in sys.argv
+    todo = [c for c in core if force or age(c) > FRESH]
+    rest = sorted((c for c in allc if c not in set(core) and (force or age(c) > FRESH)), key=lambda c: -age(c).total_seconds())
+    todo += rest[:EXTRA_PER_RUN]
+    if not todo:
+        print("estimates: 全部 12 小時內已更新,略過", file=sys.stderr)
         return
-    codes = universe()
-    out, t0 = {}, time.time()
-    for c in codes:
+    out, t0, got = dict(prev), time.time(), 0
+    for c in todo:
         rec = fetch(c, (prev.get(c) or {}).get("sym"))
         if rec:
+            rec["at"] = now.isoformat(timespec="minutes")
             out[c] = rec
+            got += 1
+        elif c in out:
+            out[c]["at"] = now.isoformat(timespec="minutes")   # 查過但沒有分析師,記下時間避免一直重查
+            out[c]["none"] = True
+        else:
+            out[c] = {"at": now.isoformat(timespec="minutes"), "none": True}
         time.sleep(0.3)
-    now = datetime.now(TZ)
-    doc = {"fetched_at": now.isoformat(timespec="minutes"), "source": "Yahoo Finance(分析師共識)", "n": len(codes), "s": out}
+    out = {c: v for c, v in out.items() if v.get("at") and now - datetime.fromisoformat(v["at"]) < KEEP}
+    has = {c: v for c, v in out.items() if not v.get("none")}
+    doc = {"fetched_at": now.isoformat(timespec="minutes"), "source": "Yahoo Finance(分析師共識)", "n": len(out), "s": has,
+           "checked": {c: v["at"] for c, v in out.items() if v.get("none")}}
     for name in ("latest.json", now.strftime("%Y-%m-%d") + ".json"):
         with open(os.path.join(OUT, name), "w", encoding="utf-8") as f:
             json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
-    print("estimates: %d / %d 檔有資料,%.0f 秒" % (len(out), len(codes), time.time() - t0), file=sys.stderr)
-
+    print("estimates: 本次 %d 檔(重點 %d),有預估 %d;累計有預估 %d / 已查 %d,%.0f 秒" % (
+        len(todo), len([c for c in todo if c in set(core)]), got, len(has), len(out), time.time() - t0), file=sys.stderr)
 
 if __name__ == "__main__":
     main()

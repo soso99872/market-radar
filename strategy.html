@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>策略績效</title>
 <meta name="description" content="照起漲雷達評級每月換股的回測績效、逐年報酬、回撤與實盤追蹤進度">
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>try { if (sessionStorage.getItem("mr.splash")) document.documentElement.classList.add("nosplash"); } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
@@ -50,14 +57,32 @@ details.tv summary { cursor: pointer; font-size: 13px; color: var(--muted); marg
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <div class="sp-in">
+    <svg class="sp-logo" viewBox="0 0 64 64" width="96" height="96">
+      <defs><linearGradient id="spsw" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#e7b04a" stop-opacity="0"/><stop offset="1" stop-color="#f3c96b" stop-opacity=".95"/></linearGradient></defs>
+      <circle cx="32" cy="32" r="21" fill="none" stroke="#2c3647" stroke-width="1.6"/>
+      <circle cx="32" cy="32" r="12" fill="none" stroke="#2c3647" stroke-width="1.6"/>
+      <g class="sp-sweep"><path d="M32 32 L32 11 A21 21 0 0 1 51.2 23.4 Z" fill="url(#spsw)"/><line x1="32" y1="32" x2="51.2" y2="23.4" stroke="#f3c96b" stroke-width="1.6" stroke-linecap="round"/></g>
+      <circle class="sp-blip" cx="44" cy="20.5" r="2.6" fill="#fff"/>
+      <circle cx="32" cy="32" r="2.2" fill="#f3c96b"/>
+    </svg>
+    <div class="sp-name">盤前雷達</div>
+    <div class="sp-tag">營收 · 動能 · 題材 ── 每個交易日 06:00 更新</div>
+    <div class="sp-bar"><i></i></div>
+  </div>
+</div>
 <header class="bar">
   <div class="bar-in">
     <a class="brand" href="./">
-      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
-        <circle cx="13" cy="13" r="11.5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-        <circle cx="13" cy="13" r="6.5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-        <path d="M13 13 L13 1.5 A11.5 11.5 0 0 1 23.5 8.2 Z" fill="var(--accent)" opacity=".85"/>
-        <circle cx="18.5" cy="8.5" r="1.8" fill="var(--text)"/>
+      <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true" class="logo">
+        <defs><linearGradient id="lgsw" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#e7b04a" stop-opacity="0"/><stop offset="1" stop-color="#f3c96b" stop-opacity=".95"/></linearGradient></defs>
+        <rect width="64" height="64" rx="15" fill="#121926"/>
+        <circle cx="32" cy="32" r="21" fill="none" stroke="#2c3647" stroke-width="3"/>
+        <circle cx="32" cy="32" r="12" fill="none" stroke="#2c3647" stroke-width="3"/>
+        <path d="M32 32 L32 11 A21 21 0 0 1 51.2 23.4 Z" fill="url(#lgsw)"/>
+        <circle cx="44" cy="20.5" r="3.4" fill="#fff"/>
+        <circle cx="32" cy="32" r="3" fill="#f3c96b"/>
       </svg>
       <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 06:00</span></div>
     </a>
@@ -77,7 +102,7 @@ details.tv summary { cursor: pointer; font-size: 13px; color: var(--muted); marg
   </div>
 </header>
 
-<main id="app"><p class="err">載入中…</p></main>
+<main id="app"><div class="skel" aria-busy="true" aria-label="載入中"><i></i><i></i><i></i><i></i></div></main>
 
 <footer>
   回測使用證交所、櫃買中心與公開資訊觀測站的公開資料,已扣交易成本、未含股利;不含已下市股票,規則是看過歷史資料後才定的,結果偏樂觀。歷史績效不代表未來,本頁只呈現事實,不構成任何投資建議。

@@ -342,8 +342,9 @@ def build(L):
             SNAP[c]["gm"], SNAP[c]["dgm"], SNAP[c]["gm_p"] = m["gm"], m["d"], m["p"]
     for c, e in fv.items():   # 估值只供參考(前瞻估值尚未回測、歷史估值回測沒有預測力)
         if c in SNAP:
-            w, tg = e.get("fwd") or {}, e.get("tgt") or {}
-            SNAP[c].update(fpe=w.get("pe"), fpe_med=(w.get("band") or [None, None])[1], fwd_status=w.get("status"), tgt_up=tg.get("up"))
+            w, tg = e.get("fwd") or e.get("proj") or {}, e.get("tgt") or {}
+            SNAP[c].update(fpe=w.get("pe"), fpe_med=(w.get("band") or [None, None])[1], fwd_status=w.get("status"), tgt_up=tg.get("up"),
+                           fpe_src="分析師" if e.get("fwd") else "自行推估" if e.get("proj") else None)
     peer_rank(ind)
     estimate_revisions()
     landmines_now(last)
@@ -684,6 +685,38 @@ def margin_now():
     return out
 
 
+_Q = {}
+
+
+def run_rate_eps(c, r3, cur_m, ttm=None, yoy3=None):
+    """近 3 月營收 × 4 × 最新一季淨利率 ÷ 股數。r3 = 近 3 個月營收合計(千元)。只用當下已過申報期限的季報。"""
+    import margin
+    import quality
+    if not _Q:
+        _Q["pl"], _Q["bs"], _Q["rev"] = quality.load("pl"), quality.load("bs"), margin.load()
+        today = "%d-%02d-28" % cur_m
+        ps = sorted({p for v in _Q["pl"].values() for p in v})
+        known = [p for p in ps if margin.available(p) <= today]
+        _Q["p"] = known[-1] if known else None
+    p = _Q["p"]
+    pl, bs, rv = _Q["pl"].get(c), _Q["bs"].get(c), _Q["rev"].get(c)
+    if not (p and pl and bs and rv and p in bs):
+        return None
+    q = quality.quarterly_pl(pl).get(p)
+    qr = margin.quarterly(rv).get(p)
+    cap = bs[p][4]
+    if not q or not qr or not qr[0] or qr[0] <= 0 or not cap or cap <= 0:
+        return None
+    nm = q[3] / qr[0]                      # 最新一季稅後淨利率
+    shares = cap * 1000 / 10               # 股本(千元)÷ 面額 10 元
+    out = {"eps": r3 * 4 * nm * 1000 / shares, "nm": _f(nm * 100, 1), "rev12": _f(r3 * 4 / 1e5, 1), "p": p}
+    # 成長情境:過去 12 個月營收 × (1 + 近 3 月年增率),再乘同樣的淨利率(年增率限制在 −50% ~ +100%)
+    if ttm and yoy3 is not None and not pd.isna(yoy3):
+        g = min(max(float(yoy3), -50.0), 100.0)
+        out.update(g_yoy=_f(g, 1), g_rev12=_f(ttm * (1 + g / 100) / 1e5, 1), g_eps=ttm * (1 + g / 100) * nm * 1000 / shares)
+    return out
+
+
 def fair_all(rp, close, last):
     """每檔股票的模型合理價(公式見 fairvalue.py)。同時把個股面板要用的歷史資料放進 EXTRAS。"""
     import fairvalue as FV
@@ -739,6 +772,22 @@ def fair_all(rp, close, last):
                                 "low": _f(feps12 * lo_), "high": _f(feps12 * hi_), "up": _f((feps12 * mid_ / price - 1) * 100, 1),
                                 "n": k.get("n1"), "eps0": k.get("eps0"), "eps1": k["eps1"], "band": [_f(b, 1) for b in pe_band[:3]]}
                     e["fwd"]["status"] = "低估" if price < feps12 * lo_ else "高估" if price > feps12 * hi_ else "合理"
+            # 沒有分析師預估時:自行推估未來 12 個月 EPS = 近 3 月營收 × 4 × 最新一季稅後淨利率 ÷ 股數
+            # (用最新的營收與獲利率,不是過去四季平均;假設接下來 12 個月維持這個水準,不外推成長)
+            if "fwd" not in e and pe_band and r3:
+                y3 = rp["yoy3"][c].dropna()
+                pj = run_rate_eps(c, r3, cur_m, ttm, y3.iloc[-1] if len(y3) else None)
+                if pj and pj["eps"] > 0 and price / pj["eps"] >= 2:
+                    lo_, mid_, hi_ = pe_band[:3]
+                    pj.update(fair=_f(pj["eps"] * mid_), low=_f(pj["eps"] * lo_), high=_f(pj["eps"] * hi_), pe=_f(price / pj["eps"], 1),
+                              up=_f((pj["eps"] * mid_ / price - 1) * 100, 1), band=[_f(b_, 1) for b_ in pe_band[:3]])
+                    pj["status"] = "低估" if price < pj["eps"] * lo_ else "高估" if price > pj["eps"] * hi_ else "合理"
+                    pj["eps"] = _f(pj["eps"])
+                    if pj.get("g_eps") and pj["g_eps"] > 0:
+                        pj.update(g_fair=_f(pj["g_eps"] * mid_), g_up=_f((pj["g_eps"] * mid_ / price - 1) * 100, 1), g_eps=_f(pj["g_eps"]))
+                    else:
+                        pj.pop("g_eps", None)
+                    e["proj"] = pj
             if k.get("tgt"):
                 e["tgt"] = {"mean": k["tgt"], "lo": k.get("tgt_lo"), "hi": k.get("tgt_hi"),
                             "up": _f((k["tgt"] / price - 1) * 100, 1)}

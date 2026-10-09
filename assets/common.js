@@ -267,8 +267,22 @@
       ? "近四季 EPS " + e.eps + " 元(股價 ÷ 本益比 " + e.pe + ")× 營收動能 " + e.growth + " 倍 = 預估 EPS <b>" + e.feps + "</b> 元;" +
         "× 過去 " + e.n + " 個月本益比中位數 " + e.band[1] + " 倍 = <b>" + e.fair + "</b> 元。合理區間用第 25~75 百分位(" + e.band[0] + "~" + e.band[2] + " 倍)。"
       : "公司虧損或本益比過高,改用淨值比:每股淨值 " + e.bvps + " 元 × 過去 " + e.n + " 個月淨值比中位數 " + e.band[1] + " 倍 = <b>" + e.fair + "</b> 元。";
-    var w = e.fwd, t = e.tgt, fwdHtml = "";
-    if (w || t) {
+    var w = e.fwd, t = e.tgt, fwdHtml = "", pj = e.proj;
+    // 沒有分析師預估:用最新營收與最新一季淨利率自行推估未來 12 個月 EPS(scripts/radar.py run_rate_eps)
+    if (!w && pj) {
+      var pc = pj.status === "低估" ? "up" : pj.status === "高估" ? "down" : "flat";
+      fwdHtml = '<div class="fvbox"><h4>前瞻估值 · 自行推估(沒有分析師預估)</h4><div class="fvgrid">' +
+        "<div><span>未來 12 月 EPS</span><b>" + pj.eps + "</b></div><div><span>前瞻本益比</span><b>" + pj.pe + " 倍</b></div>" +
+        "<div><span>前瞻合理價</span><b>" + pj.fair + '</b></div><div><span>前瞻空間</span><b class="' + MR.dir(pj.up) + '">' + MR.sign(pj.up, 1) + "%</b></div>" +
+        '<div><span>前瞻評價</span><b class="' + pc + '">' + pj.status + "</b></div></div>" +
+        '<p class="fvhow">近 3 月營收 × 4 = 年化 ' + pj.rev12 + " 億 × 最新一季(" + esc(pj.p) + ")稅後淨利率 " + pj.nm + "% ÷ 股數 = 未來 12 個月 EPS <b>" + pj.eps +
+        "</b> 元;× 自身過去本益比中位數 " + pj.band[1] + " 倍 = <b>" + pj.fair + "</b> 元,合理區間 " + pj.low + " ~ " + pj.high + "(" + pj.band[0] + "~" + pj.band[2] + " 倍)。</p>" +
+        (pj.g_eps ? '<p class="fvhow"><b>成長情境</b>:如果近 3 月營收年增 ' + MR.sign(pj.g_yoy, 0) + "% 再延續 12 個月,營收 " + pj.g_rev12 + " 億 × 同樣淨利率 = EPS <b>" + pj.g_eps +
+          "</b> 元,× " + pj.band[1] + " 倍 = <b>" + pj.g_fair + "</b> 元(空間 " + MR.sign(pj.g_up, 1) + "%)。</p>" : "") +
+        '<p class="fvhow">上面是「維持現狀」:假設接下來 12 個月維持目前的營收與獲利率。成長情境假設成長率延續,實際常會放緩。單季淨利率可能有一次性損益。這個算法是 2026-10 新增,尚未回測。</p>' +
+        (t ? '<p class="fvhow">分析師平均目標價 <b>' + t.mean + "</b>,相對現價 " + MR.sign(t.up, 1) + "%。</p>" : "") + "</div>";
+    }
+    if (w || (t && !pj)) {
       var wcls = w ? (w.status === "低估" ? "up" : w.status === "高估" ? "down" : "flat") : "flat";
       fwdHtml = '<div class="fvbox"><h4>前瞻估值 · 依分析師共識預估</h4>' +
         (w ? '<div class="fvgrid"><div><span>未來 12 月 EPS</span><b>' + w.eps + "</b></div>" +
@@ -287,7 +301,7 @@
           "目標價的共識從 2026-10 才開始記錄,哪一邊比較準還無法回測。</p>" : "") +
         '<p class="fvhow">資料來源 Yahoo Finance 匯總的分析師共識,通常偏樂觀;這個前瞻估值從 2026-10 才開始記錄,尚未經過回測。</p></div>';
     }
-    return fwdHtml + '<div class="fvbox"><h4>歷史估值 · 依過去四季 EPS</h4>' +
+    return fwdHtml + '<div class="fvbox"><h4>保守價位 · 依過去四季 EPS</h4>' +
       '<div class="fvgrid"><div><span>目前股價</span><b>' + px + "</b></div>" +
       "<div><span>模型合理價</span><b>" + e.fair + "</b></div>" +
       "<div><span>合理區間</span><b>" + e.low + " ~ " + e.high + "</b></div>" +
@@ -423,7 +437,7 @@
       h.value20 < 0.3 ? "成交太少,買賣容易被價差吃掉、出不掉" : h.value20 < 1 ? "成交偏少,大額進出要小心" : "足夠", "回測");
     add("毛利率", 0, h.gm == null ? "—" : (h.gm_p || "") + " " + h.gm + "%" + (h.dgm == null ? "" : ",比去年同季 " + MR.sign(h.dgm, 1) + " 個百分點"),
       "了解獲利品質用;回測顯示毛利率升降對之後股價沒有預測力", "參考");
-    add("估值", 0, h.fpe == null ? "無分析師預估" : "前瞻本益比 " + h.fpe + " 倍(自身歷史中位 " + h.fpe_med + " 倍)" + (h.fwd_status ? "," + h.fwd_status : "") +
+    add("估值", 0, h.fpe == null ? "無前瞻估值" : "前瞻本益比 " + h.fpe + " 倍" + (h.fpe_src === "自行推估" ? "(自行推估)" : "") + "(自身歷史中位 " + h.fpe_med + " 倍)" + (h.fwd_status ? "," + h.fwd_status : "") +
       (h.tgt_up == null ? "" : ",目標價空間 " + MR.sign(h.tgt_up, 0) + "%"), "分析師共識 2026-10 才開始記錄,尚未回測;歷史本益比估值回測沒有預測力", "參考");
     var mines = h.mines;
     if (mines) {
@@ -682,6 +696,33 @@
       Array.prototype.forEach.call(tb.tHead.rows[0].cells, function (c) { if (c.textContent.trim()) { c.classList.add("srt"); c.title = c.title || "點一下排序"; } });
     });
   }).observe(document.documentElement, { childList: true, subtree: true });
+
+  // ---- 啟動畫面:每個瀏覽器分頁第一次開啟時顯示;頁面資料畫好(骨架消失)就淡出,最少 0.7 秒、最多 3 秒 ----
+  (function splash() {
+    var el = document.getElementById("splash");
+    if (!el) return;
+    if (document.documentElement.classList.contains("nosplash")) { el.remove(); return; }
+    var t0 = Date.now(), gone = false;
+    function hide() {
+      if (gone) return;
+      gone = true;
+      setTimeout(function () {
+        el.classList.add("done");
+        try { sessionStorage.setItem("mr.splash", "1"); } catch (e) {}
+        setTimeout(function () { el.remove(); }, 600);
+      }, Math.max(0, 700 - (Date.now() - t0)));
+    }
+    function ready() { var app = document.getElementById("app"); return !app || !app.querySelector(".skel"); }
+    var mo = new MutationObserver(function () { if (ready()) { mo.disconnect(); hide(); } });
+    function start() {
+      var app = document.getElementById("app");
+      if (ready()) return hide();
+      mo.observe(app, { childList: true });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+    setTimeout(hide, 3000);
+    el.addEventListener("click", hide);
+  })();
 
   // 頂端導覽列的高度(手機會換行變高),給表格決定最大高度,讓整個表格框放得進導覽列下方
   function barHeight() {

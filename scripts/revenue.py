@@ -107,3 +107,14 @@ if __name__ == "__main__":
         y, m = last_month()
         stop = (y, m - 2) if m > 2 else (y - 1, m + 10)
         print("done", run(stop, refresh=2))
+        # 歷史中間若有缺月(例如回補時那個月抓失敗),每次補最多 3 個月;缺月會讓「創 12 個月新高」錯位
+        have = sorted(n[:7] for n in os.listdir(DIR) if n.endswith(".json"))
+        if have:
+            gaps = [(p_.year, p_.month) for p_ in __import__("pandas").period_range(have[0], have[-1], freq="M")
+                    if "%04d-%02d" % (p_.year, p_.month) not in set(have)]
+            for y, m in gaps[:3]:
+                d, ok = fetch_month(y, m)
+                if ok and len(d) >= 500:
+                    with open(path_for(y, m), "w", encoding="utf-8") as f:
+                        json.dump(d, f, separators=(",", ":"))
+                    print("gap filled", y, m, len(d), file=sys.stderr)

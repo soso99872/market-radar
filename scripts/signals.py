@@ -90,6 +90,22 @@ def frames(days):
     taiex = pd.Series({d["date"]: (d.get("taiex") or [None])[0] for d in days}).reindex(dates).astype(float)
     hi = pd.DataFrame({d["date"]: {c: r[history.HIGH] for c, r in d["s"].items()} for d in days}).T.reindex(dates)
     lo = pd.DataFrame({d["date"]: {c: r[history.LOW] for c, r in d["s"].items()} for d in days}).T.reindex(dates)
+    # 還原權值:交易所的漲跌價差是對除權息、減資、分割後的參考價算的,用它逐日串起來就是還原股價。
+    # 不還原的話,國巨 2025/08 一拆四會被當成跌 74%、減資恢復交易會被當成暴漲。縮放成最後一天 = 實際股價。
+    # 除權息、恢復交易當天交易所的漲跌標「X」、價差為 0,這天改用實際價差;但實際價差超過 ±10%(超過漲跌幅限制)
+    # 一定是分割或減資,當天報酬視為 0。所以股利沒有還原(與原本相同),只排除股本變動造成的假漲跌。
+    raw = cols["close"]
+    rr = raw / raw.ffill().shift(1) - 1
+    ret = cols["chg"] / 100
+    xday = (cols["chg"] == 0) & (rr != 0)
+    ret = ret.where(~xday, rr.where(rr.abs() <= 0.10, 0.0))
+    idx_ = (1 + ret.where(raw.notna())).fillna(1).cumprod().where(raw.notna())
+    k = (idx_ / raw).ffill().iloc[-1] if len(raw) else 1
+    factor = idx_ / raw / k
+    cols["close_raw"] = raw
+    cols["close"] = raw * factor
+    cols["open"] = cols["open"] * factor
+    hi, lo = hi * factor, lo * factor
     return cols, hi, lo, taiex, names
 
 

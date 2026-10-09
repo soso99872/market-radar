@@ -519,3 +519,29 @@ def clean(o):
 
 with open(OUT, "w", encoding="utf-8") as fh:
     json.dump(clean(out), fh, ensure_ascii=False, separators=(",", ":"))
+
+
+# ---- 星等評級:分層 + 陷阱扣分。驗證星等越高、歷史表現越好(單調),才用在網頁 ----
+# 5★ A 層沒有陷阱;4★ B 層沒有陷阱,或 A 層有陷阱;3★ C 層(最早期)或 D 層(題材動能、營收未跟上),或 B 層有陷阱;
+# 2★ C 層有陷阱;1★ 不在任何名單。C 與 D 都列 3★:D 飆股率較高但 2019–22 平均較差,兩者排序不穩定
+def stars(df):
+    trap = (df["年增加速"].fillna(0) <= -20) | (df["外資20日買超佔成交"].fillna(0) <= -10)
+    base = df.tier.map({"A": 5, "B": 4, "C": 3, "D": 3}).fillna(1)
+    s = base - (trap & df.tier.isin(["A", "B", "C"])).astype(int)
+    return s.astype(int)
+
+
+for df in (R, ALL):
+    df["stars"] = stars(df)
+print("\n[星等]  5★ = A 層無陷阱 … 1★ = 不在任何名單(陷阱:營收減速、外資 20 日大賣)")
+out["stars"] = []
+for k in (5, 4, 3, 2, 1):
+    IS_t, OOS_t = R[R.date < SPLIT], R[R.date >= SPLIT]
+    a, b = evaluate(IS_t.stars == k, IS_t), evaluate(OOS_t.stars == k, OOS_t)
+    out["stars"].append({"stars": k, "is": a, "oos": b})
+    for tag, s in (("2019–22", a), ("2023– ", b)):
+        if "hit" in s:
+            print("  %d★ %s 每月 %6.1f 檔  飆股 %5.2f%%  大漲 %4.1f%%  60日比一般股 %+6.2f%%  中位 %+6.2f%%  曾跌25%% %4.1f%%  t=%s" % (
+                k, tag, s["per_month"], s["hit"], s["big"], s["x60"], s["med60"], s["crash"], s["t"]))
+with open(OUT, "w", encoding="utf-8") as fh:
+    json.dump(clean(out), fh, ensure_ascii=False, separators=(",", ":"))

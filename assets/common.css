@@ -172,3 +172,20 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
 .gmbars { gap: 6px; height: 70px; margin-top: 16px; }
 .gmbars i { position: relative; background: var(--accent); opacity: .7; }
 .gmbars em { position: absolute; top: -16px; left: 0; right: 0; text-align: center; font-style: normal; font-size: 10.5px; font-family: var(--mono); color: var(--muted); }
+
+/* 星等評級 */
+.stars { color: var(--accent); letter-spacing: 1px; font-size: 15px; white-space: nowrap; }
+.stars i { font-style: normal; color: var(--line); }
+.rating .rt { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.rt-why { font-size: 13px; color: var(--muted); }
+/* 個股查詢 */
+.srch { position: relative; }
+.srch input { width: 190px; font: inherit; font-size: 14px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); }
+.srch input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.srch ul { position: absolute; top: 100%; left: 0; right: 0; min-width: 240px; margin: 4px 0 0; padding: 4px; list-style: none; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18); z-index: 20; }
+.srch li { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+.srch li[aria-selected="true"], .srch li:hover { background: var(--panel-2); }
+.srch .sg-r { margin-left: auto; }
+.srch .stars { font-size: 12px; }
+@media (max-width: 640px) { .srch { order: 3; flex: 1 1 100%; } .srch input { width: 100%; } }

@@ -137,10 +137,16 @@ def main():
             db = json.load(f)
     except (OSError, ValueError):
         db = {}
-    codes = sorted(fn[:-5] for fn in os.listdir(STOCKS) if fn.endswith(".json"))
+    codes = sorted(fn[:-5] for fn in os.listdir(STOCKS) if fn.endswith(".json") and fn != "index.json")
+    try:   # 查詢索引裡的其他股票也補(排在有面板的股票之後)
+        with open(os.path.join(STOCKS, "index.json"), encoding="utf-8") as f:
+            codes += sorted(set(json.load(f)["s"]) - set(codes))
+    except (OSError, ValueError, KeyError):
+        pass
     cutoff = (datetime.now(history.TZ) - timedelta(days=STALE_DAYS)).strftime("%Y-%m-%d")
     todo = [c for c in codes if db.get(c, {}).get("upd", "") < cutoff]
-    todo.sort(key=lambda c: db.get(c, {}).get("upd", ""))   # 從沒抓過、最舊的優先
+    order = {c: k for k, c in enumerate(codes)}
+    todo.sort(key=lambda c: (db.get(c, {}).get("upd", ""), order[c]))   # 從沒抓過、最舊的優先;同樣沒抓過時有面板的先
     limit = int(sys.argv[1]) if len(sys.argv) > 1 else MAX_PER_RUN
     today = datetime.now(history.TZ).strftime("%Y-%m-%d")
     done = 0

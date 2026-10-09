@@ -51,6 +51,26 @@
     return profP;
   };
 
+  // ---- 星等評級(依 scripts/explosion_study.py 回測:分層 + 陷阱扣分) ----
+  var TIER_NAME = { A: "營收＋動能＋題材", B: "營收＋動能或題材其一", C: "只有營收(最早期)", D: "題材動能、營收未跟上" };
+  MR.stars = function (n) {
+    n = n || 1;
+    return '<span class="stars s' + n + '" title="評級 ' + n + ' 顆星(依歷史回測,不是保證)" aria-label="' + n + ' 顆星">' +
+      "★★★★★".slice(0, n) + "<i>" + "★★★★★".slice(n) + "</i></span>";
+  };
+  MR.ratingLine = function (r) {
+    r = r || { stars: 1 };
+    var why = r.tier ? r.tier + " 層:" + TIER_NAME[r.tier] : "不在起漲雷達任何名單";
+    return MR.stars(r.stars) + '<span class="rt-why">' + esc(why) + (r.traps && r.traps.length ? ",有陷阱:" + esc(r.traps.join("、")) + "(扣 1 顆)" : "") + "</span>";
+  };
+
+  // 查詢索引(全部股票,scripts/signals.py write_index),只載一次
+  var idxP = null;
+  MR.index = function () {
+    if (!idxP) idxP = MR.json("data/stocks/index.json").catch(function () { return null; });
+    return idxP;
+  };
+
   MR.gradeTag = function (g) {
     var cls = { "強": "g3", "中": "g2", "反向": "gneg", "弱": "g1" }[g] || "g0";
     return '<span class="grade ' + cls + '" title="證據強度">證據' + esc(g) + "</span>";
@@ -245,6 +265,20 @@
       '<div class="cap"><span>' + esc(h[0][0]) + "</span><span>中位數 " + e.band[1] + " 倍 · 目前 " + (e.pe == null ? "—" : e.pe + " 倍") + "</span><span>" + esc(h[h.length - 1][0]) + "</span></div></div>";
   }
 
+  // 評級說明:每一級歷史上的表現(起漲雷達 latest.json 帶研究結果)
+  var starStatsP = null;
+  function starStats() {
+    if (!starStatsP) starStatsP = MR.json("data/radar/latest.json").then(function (r) { return (r.explosion || {}).stars || null; }).catch(function () { return null; });
+    return starStatsP;
+  }
+  function starNote(n, S) {
+    var s = S && S.filter(function (x) { return x.stars === n; })[0];
+    if (!s || !s.oos || s.oos.hit == null || !s.is || s.is.hit == null) return "";
+    return '<p class="fvhow">歷史上同樣 ' + n + " 顆星的股票:之後 120 日內翻倍的比例 " + s.is.hit.toFixed(1) + "%(2019–22)/ " + s.oos.hit.toFixed(1) +
+      "%(2023 後),60 日平均比一般股 " + MR.sign(s.is.x60, 1) + "% / " + MR.sign(s.oos.x60, 1) + "%,60 日內曾跌 25% 的有 " + s.is.crash.toFixed(0) + "% / " + s.oos.crash.toFixed(0) +
+      "%。評級是統計上的機率,不是保證會漲,也不是個人化的投資建議;請分散、控制投入金額。</p>";
+  }
+
   function stockHtml(doc, stats, prof) {
     var s = doc.summary, sigs = (stats && stats.signals) || {}, names = {}, grades = {};
     Object.keys(sigs).forEach(function (k) { names[k] = sigs[k].name; grades[k] = sigs[k].horizons["10"].grade; });
@@ -257,7 +291,8 @@
         return '<a class="th-chip" href="sectors.html#' + esc(t.id) + '">' + esc(t.name) + "</a>";
       }).join("") + "</div>" : "") +
       '</div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
-      '<div class="sh-body">' + profileHtml(prof && prof[doc.code]) + fvHtml(doc) +
+      '<div class="sh-body">' + '<div class="fvbox rating"><h4>評級</h4><div class="rt">' + MR.ratingLine(doc.rating) + '</div><div id="star-note"></div></div>' +
+      profileHtml(prof && prof[doc.code]) + fvHtml(doc) +
       '<div class="kgrid">' +
       "<div><span>5 日漲跌</span><b>" + MR.pct(s.ret5) + "</b></div>" +
       "<div><span>20 日漲跌</span><b>" + MR.pct(s.ret20) + "</b></div>" +
@@ -292,6 +327,7 @@
     Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile()])
       .then(function (res) {
         d.innerHTML = stockHtml(res[0], res[1], res[2]);
+        starStats().then(function (S) { var n = d.querySelector("#star-note"); if (n) n.innerHTML = starNote((res[0].rating || {}).stars || 1, S); });
         // 盤中或今日收盤後:用即時報價取代排程資料的收盤價(live.js 有載入且已設定 Worker 才會有)
         if (MR.intradayOne) MR.intradayOne(code, res[0].date).then(function (lv) {
           var el = d.querySelector("#stk-px");
@@ -300,10 +336,96 @@
             (lv.open ? "盤中即時 " + esc(String(lv.q[4]).slice(0, 5)) : esc(lv.date) + " 收盤") + "</span>";
         });
       })
-      .catch(function () {
-        d.querySelector(".sh-body").innerHTML = '<p class="flat">這檔股票目前沒有詳細資料(只收錄板塊成分股與近期觸發訊號的個股)。</p>';
-      });
+      .catch(function () { brief(d, code); });
   };
+
+  // 沒有詳細面板的股票:用查詢索引顯示精簡資料
+  function brief(d, code) {
+    Promise.all([MR.index(), MR.profile(), starStats()]).then(function (res) {
+      var I = res[0], x = I && I.s[code], body = d.querySelector(".sh-body");
+      if (!x) { body.innerHTML = '<p class="flat">查無這檔股票(只收錄上市櫃普通股)。</p>'; return; }
+      var r = { stars: x[1], tier: x[2], traps: x[11] }, p = res[1] && res[1][code];
+      d.querySelector(".sh-head").innerHTML = '<div><h3 id="stk-title"><span class="num">' + esc(code) + "</span> " + esc(x[0]) + "</h3>" +
+        '<div class="stk-head" id="stk-px"><span class="px">' + esc(x[3]) + "</span>" + MR.pct(x[4]) + '<span class="flat" style="font-size:12px">' + esc(I.date) + " 收盤</span></div></div>" +
+        '<button type="button" class="x" data-close aria-label="關閉">×</button>';
+      body.innerHTML = '<div class="fvbox rating"><h4>評級</h4><div class="rt">' + MR.ratingLine(r) + "</div>" + starNote(r.stars, res[2]) + "</div>" +
+        profileHtml(p) +
+        '<div class="kgrid"><div><span>60 日漲跌</span><b>' + MR.pct(x[5]) + "</b></div><div><span>產業</span><b>" + esc(x[6] || "—") + "</b></div>" +
+        "<div><span>最新營收年增" + (x[9] ? "(" + esc(x[9].slice(5).replace(/^0/, "")) + " 月)" : "") + "</span><b>" + MR.pct(x[7]) + "</b></div>" +
+        "<div><span>近 3 月營收年增</span><b>" + MR.pct(x[8]) + "</b></div></div>" +
+        '<p class="foot">這檔不在起漲雷達、觀察名單或板塊成分股裡,所以沒有 K 線、法人與估值的詳細資料。只呈現事實,不構成投資建議。</p>';
+      if (MR.intradayOne) MR.intradayOne(code, I.date).then(function (lv) {
+        var el = d.querySelector("#stk-px");
+        if (!lv || !el || !d.open) return;
+        el.innerHTML = '<span class="px">' + lv.q[1] + "</span>" + MR.pct(lv.q[2]) + '<span class="flat" style="font-size:12px">' +
+          (lv.open ? "盤中即時 " + esc(String(lv.q[4]).slice(0, 5)) : esc(lv.date) + " 收盤") + "</span>";
+      });
+    });
+  }
+
+  // ---- 個股查詢:導覽列上的搜尋框,輸入代號或名稱 ----
+  function setupSearch() {
+    var inner = document.querySelector(".bar-in");
+    if (!inner || document.getElementById("stk-q")) return;
+    var box = document.createElement("div");
+    box.className = "srch";
+    box.innerHTML = '<input id="stk-q" type="search" placeholder="查個股:代號或名稱" autocomplete="off" aria-label="查詢個股">' +
+      '<ul id="stk-sug" role="listbox" hidden></ul>';
+    inner.insertBefore(box, inner.querySelector(".nav"));
+    var q = box.querySelector("input"), ul = box.querySelector("ul"), items = [], sel = -1;
+    function render() {
+      ul.innerHTML = items.map(function (it, k) {
+        return '<li role="option" data-code="' + esc(it[0]) + '"' + (k === sel ? ' aria-selected="true"' : "") + '><b class="num">' + esc(it[0]) + "</b> " + esc(it[1][0]) +
+          '<span class="sg-r">' + MR.stars(it[1][1]) + "</span></li>";
+      }).join("");
+      ul.hidden = !items.length;
+    }
+    q.addEventListener("input", function () {
+      var v = q.value.trim().toLowerCase();
+      if (!v) { items = []; render(); return; }
+      MR.index().then(function (I) {
+        if (!I) return;
+        var exact = [], pre = [], has = [];
+        Object.keys(I.s).forEach(function (c) {
+          var n = I.s[c][0].toLowerCase();
+          if (c === v || n === v) exact.push([c, I.s[c]]);
+          else if (c.indexOf(v) === 0 || n.indexOf(v) === 0) pre.push([c, I.s[c]]);
+          else if (n.indexOf(v) >= 0) has.push([c, I.s[c]]);
+        });
+        items = exact.concat(pre, has).slice(0, 8);
+        sel = items.length ? 0 : -1;
+        render();
+      });
+    });
+    function pick(code) {
+      q.value = ""; items = []; render(); q.blur();
+      MR.openStock(code);
+    }
+    q.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (!items.length) return;
+        e.preventDefault();
+        sel = (sel + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length;
+        render();
+      } else if (e.key === "Enter" && sel >= 0 && items[sel]) {
+        e.preventDefault(); pick(items[sel][0]);
+      } else if (e.key === "Escape") { items = []; render(); }
+    });
+    ul.addEventListener("mousedown", function (e) {
+      var li = e.target.closest("li[data-code]");
+      if (li) { e.preventDefault(); pick(li.getAttribute("data-code")); }
+    });
+    q.addEventListener("blur", function () { setTimeout(function () { items = []; render(); }, 150); });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setupSearch); else setupSearch();
+
+  // 頂端導覽列的高度(手機會換行變高),給表格決定最大高度,讓整個表格框放得進導覽列下方
+  function barHeight() {
+    var b = document.querySelector(".bar");
+    if (b) document.documentElement.style.setProperty("--bar-h", b.offsetHeight + "px");
+  }
+  window.addEventListener("resize", barHeight);
+  document.addEventListener("DOMContentLoaded", barHeight);
 
   // 任何帶 data-stock 的元素點了就開個股面板
   document.addEventListener("click", function (e) {

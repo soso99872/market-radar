@@ -259,6 +259,30 @@ def build(L):
         theme_list.append(x)
     theme_list.sort(key=lambda x: (-(x["peer60"] or 0), -(x["ret60"] or 0)))
 
+    # 星等評級
+    fo20 = ((F["fo"] * F["close_raw"]).iloc[-20:].sum() / F["value"].iloc[-20:].sum() * 100) if "close_raw" in F else pd.Series(dtype=float)
+    RATING.clear()
+    for x in rev_list:
+        traps = []
+        if x.get("decel"):
+            traps.append("營收減速")
+        if not pd.isna(fo20.get(x["code"], np.nan)) and fo20[x["code"]] <= FO_DUMP:
+            traps.append("外資 20 日大賣")
+        x["traps"], x["stars"] = traps, STARS_BASE[x["tier"]] - (1 if traps else 0)
+        RATING[x["code"]] = {"stars": x["stars"], "tier": x["tier"], "traps": traps}
+    for x in theme_list:
+        x["traps"], x["stars"] = [], STARS_BASE["D"]
+        RATING[x["code"]] = {"stars": x["stars"], "tier": "D", "traps": []}
+    SNAP.clear()
+    r60_all = ret60.loc[last]
+    for c in codes:
+        col = rp["rev"][c]
+        mi = col.last_valid_index()
+        SNAP[c] = {"ret60": _f(r60_all[c] * 100, 1), "ind": IND_NAME.get(ind.get(c), ind.get(c)),
+                   "yoy": None if mi is None else _f(rp["yoy"].at[mi, c], 1),
+                   "yoy3": None if mi is None else _f(rp["yoy3"].at[mi, c], 1),
+                   "rev_month": None if mi is None else "%d-%02d" % mi}
+
     # 近 10 個交易日的爆量突破
     recent = dates[-10:]
     bo_list = []
@@ -312,6 +336,7 @@ def build(L):
                                       if k in ("只看營收(目前的起漲雷達)", "營收 + 起漲初期", "營收 + 動能", "營收 + 同產業股價強", "營收 + 動能 + 同產業股價強")}
         meta["explosion"]["streak"] = ex.get("streak")
         meta["explosion"]["tiers"] = ex.get("tiers")
+        meta["explosion"]["stars"] = ex.get("stars")
     except (OSError, ValueError):
         pass
     doc = dict(meta, stats=stats, base=base, rev=rev_list, theme=theme_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank,
@@ -520,6 +545,10 @@ def bo_reasons(x):
     return out
 
 
+RATING = {}   # 代號 → 星等評級(signals.py 寫進個股檔與查詢索引);不在任何名單的是 1★
+SNAP = {}     # 代號 → 查詢索引用的最新營收、產業、60 日漲幅(全部股票)
+STARS_BASE = {"A": 5, "B": 4, "C": 3, "D": 3}   # 陷阱(營收減速、外資 20 日大賣)A/B/C 各扣 1 顆;回測見 explosion_study.py
+FO_DUMP = -10            # 外資 20 日買賣超佔成交金額 ≤ −10% 視為大賣
 EXTRAS = {}   # 代號 → 個股面板用的估值、營收、本益比歷史(signals.py 寫個股檔時帶入)
 
 

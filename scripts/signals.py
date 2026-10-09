@@ -387,7 +387,7 @@ def main():
     # 個股頁:板塊成分股 + 近 20 日有訊號的股票 + 觀察名單 + 起漲雷達
     recent = dates[-20:]
     universe = set(themes) | {x["code"] for k in ("picks", "dump", "stretch") for x in watch[k]}
-    universe |= {x["code"] for k in ("rev", "breakout") for x in rd[k]}
+    universe |= {x["code"] for k in ("rev", "breakout", "theme") for x in rd.get(k, [])}
     for sid in EVENTS:
         m = sig[sid].loc[recent].fillna(False).astype(bool)
         universe |= set(m.columns[m.any()])
@@ -425,6 +425,7 @@ def main():
             "rows": [[x if isinstance(x, str) else (None if pd.isna(x) else float(x)) for x in r] for r in rows],
             "signals": marks,
             "extra": radar.EXTRAS.get(c),
+            "rating": radar.RATING.get(c) or {"stars": 1, "tier": None, "traps": []},
             "summary": {
                 "close": float(close.at[last, c]), "chg": float(F["chg"].at[last, c]),
                 "ret5": None if pd.isna(ret5.at[last, c]) else round(float(ret5.at[last, c]) * 100, 2),
@@ -439,9 +440,27 @@ def main():
             json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
         keep.add(c + ".json")
     for n in os.listdir(STOCK_DIR):
-        if n.endswith(".json") and n not in keep:
+        if n.endswith(".json") and n not in keep and n != "index.json":
             os.remove(os.path.join(STOCK_DIR, n))
+    write_index(close, F, names, last, keep)
     print("OK", span, "signals", {k: len(v) for k, v in hits.items()}, "stocks", len(keep))
+
+
+def write_index(close, F, names, last, keep):
+    """查詢用索引:全部有收盤價的股票,含星等與幾個關鍵數字;有詳細面板的標 p=1。"""
+    s = {}
+    for c in close.columns:
+        px = close.at[last, c]
+        if pd.isna(px):
+            continue
+        r = radar.RATING.get(c) or {}
+        n = radar.SNAP.get(c, {})
+        s[c] = [names.get(c, c), r.get("stars", 1), r.get("tier"), _f(F["close_raw"].at[last, c]), _f(F["chg"].at[last, c]),
+                n.get("ret60"), n.get("ind"), n.get("yoy"), n.get("yoy3"), n.get("rev_month"), 1 if c + ".json" in keep else 0,
+                r.get("traps") or []]
+    with open(os.path.join(STOCK_DIR, "index.json"), "w", encoding="utf-8") as f:
+        json.dump({"date": last, "fields": ["name", "stars", "tier", "close", "chg", "ret60", "ind", "yoy", "yoy3", "rev_month", "panel", "traps"],
+                   "s": s}, f, ensure_ascii=False, separators=(",", ":"))
 
 
 def _streak(series, sign=1):

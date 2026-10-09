@@ -33,7 +33,8 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 .evi div > span { display: block; color: var(--text); font-weight: 700; font-size: 13.5px; margin-bottom: 2px; }
 .evi b { font-family: var(--mono); font-weight: 600; }
 
-.tablewrap { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+.tablewrap { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: auto; max-height: calc(100vh - var(--bar-h, 110px) - 24px); scroll-margin-top: calc(var(--bar-h, 110px) + 12px); }
+.tablewrap thead th { position: sticky; top: 0; z-index: 2; background: var(--panel-2); }
 table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 860px; }
 .th th { font-size: 12px; color: var(--faint); font-weight: 500; text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .th th.l, .th td.l { text-align: left; }
@@ -84,7 +85,7 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
         <path d="M13 13 L13 1.5 A11.5 11.5 0 0 1 23.5 8.2 Z" fill="var(--accent)" opacity=".85"/>
         <circle cx="18.5" cy="8.5" r="1.8" fill="var(--text)"/>
       </svg>
-      <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 07:30</span></div>
+      <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 06:00</span></div>
     </a>
     <nav class="nav" aria-label="頁面">
       <a href="./">晨報</a>

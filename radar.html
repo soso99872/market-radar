@@ -364,10 +364,29 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       "但這個組合是看過兩段資料才定的,實績追蹤才是真正的檢驗。統計 60 日區間 = 目前股價 × 歷史上同分組股票 60 日後報酬的 25% / 中位數 / 75% 百分位;它是過去同類股票的實際分布,不是預測,而且即使是最高分組,中位數也只比 0 高一點、四分之一會跌超過 14%。</p></div>";
   }
 
+  // 點排行表的表頭排序:第一次大到小,再點一次小到大;用上方的排序按鈕會取消
+  var colSort = null;
+  var RANK_COLS = [null, ["評級", function (x) { return starOf(x.code) * 1000 + (x.mom ? x.mom.score : 0); }], ["股價", function (x) { return x.close; }],
+    ["動能分數", function (x) { return x.mom ? x.mom.score : null; }], ["統計中位", function (x) { return x.mom && x.mom.proj ? x.mom.proj.p50 / x.close : null; }],
+    ["前瞻本益比", function (x) { return x.fv && x.fv.fwd ? x.fv.fwd.pe : null; }], ["前瞻合理價", function (x) { return x.fv && x.fv.fwd ? x.fv.fwd.fair : null; }],
+    ["前瞻空間", function (x) { return x.fv && x.fv.fwd ? x.fv.fwd.up : null; }],
+    ["前瞻評價", function (x) { var w = x.fv && x.fv.fwd; return w ? { "低估": 3, "合理": 2, "高估": 1 }[w.status] : null; }],
+    ["目標價空間", function (x) { return x.fv && x.fv.tgt ? x.fv.tgt.up : null; }], ["營收年增", function (x) { return x.yoy; }], null];
+
   function rankView() {
     var key = { score: function (x) { return -(x.mom ? x.mom.score : -1); }, up: function (x) { return x.fv && x.fv.fwd ? -x.fv.fwd.up : 999; }, streak: function (x) { return -(x.rev_streak || 0) * 1000 - (x.fv.up || 0) / 1000; },
       high: function (x) { return x.hi250 == null ? 999 : -x.hi250; } }[rankSort];
-    var items = (R.rank || []).slice().sort(function (a, b) { return key(a) - key(b); }).filter(function (x) {
+    var items = (R.rank || []).slice().sort(function (a, b) { return key(a) - key(b); });
+    if (colSort) {
+      var f = RANK_COLS[colSort.col][1], s = colSort.dir;
+      items.sort(function (a, b) {   // 沒有數值的一律排最後
+        var va = f(a), vb = f(b);
+        if (va == null || isNaN(va)) return vb == null || isNaN(vb) ? 0 : 1;
+        if (vb == null || isNaN(vb)) return -1;
+        return (va - vb) * s;
+      });
+    }
+    items = items.filter(function (x) {
       if (hideLow && x.low_vol) return false;
       var w = x.fv && x.fv.fwd;
       if (rankFilter === "lo") return w && w.status === "低估";
@@ -393,7 +412,12 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       '<div class="tools"><span>排序</span>' + seg("rs", rankSort, [["score", "動能分數"], ["up", "前瞻空間"], ["streak", "營收連續創新高"], ["high", "接近 52 週高"]]) +
       "<span>只看</span>" + seg("rf", rankFilter, [["all", "全部"], ["sane", "有分析師預估"], ["ok", "前瞻不高估"], ["lo", "前瞻低估"]]) +
       '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label><span>共 " + items.length + " 檔</span></div>" +
-      '<div class="tkwrap"><table class="tk rank"><thead><tr><th>#</th><th class="l">個股</th><th>股價</th><th>動能分數</th><th>統計 60 日區間(25%~中位~75%)</th><th>前瞻本益比 / 歷史中位</th><th>前瞻合理價</th><th>前瞻空間</th><th>前瞻評價</th><th>分析師目標價</th><th>營收年增</th><th class="l">入選原因</th></tr></thead><tbody>' +
+      '<div class="tkwrap"><table class="tk rank"><thead><tr>' + ["#", "個股 / 評級", "股價", "動能分數", "統計 60 日區間(25%~中位~75%)", "前瞻本益比 / 歷史中位", "前瞻合理價", "前瞻空間", "前瞻評價", "分析師目標價", "營收年增", "入選原因"].map(function (h, k) {
+        var cls = k === 1 || k === 11 ? ' class="l' : ' class="';
+        if (!RANK_COLS[k]) return "<th" + (k === 11 ? ' class="l"' : "") + ">" + h + "</th>";
+        var on = colSort && colSort.col === k;
+        return "<th" + cls + ' srt"' + ' data-col="' + k + '" title="依' + RANK_COLS[k][0] + '排序" aria-sort="' + (on ? (colSort.dir < 0 ? "descending" : "ascending") : "none") + '">' + h + "</th>";
+      }).join("") + "</tr></thead><tbody>" +
       rows + "</tbody></table></div>" +
       (items.length > 40 ? '<button type="button" class="more" data-all="rank">' + (showAll.rank ? "收合" : "顯示全部 " + items.length + " 檔") + "</button>" : "") +
       '<p class="note">前瞻合理價 = 分析師共識的未來 12 個月 EPS × 這檔股票自己過去 5 年本益比中位數;前瞻評價依前瞻本益比落在自身歷史第 25~75 百分位的哪裡判斷(歷史本益比分布很寬的股票,空間可能很大但仍屬「合理」)。沒有分析師預估的股票,點開可看依過去四季 EPS 算的版本。這些都是固定公式算出的參考值,不是目標價或買賣建議。</p>';
@@ -561,13 +585,17 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
   }
 
   app.addEventListener("click", function (e) {
-    var b = e.target.closest("[data-view],[data-sort],[data-all],[data-rf],[data-rs],[data-tier]");
+    var b = e.target.closest("[data-view],[data-sort],[data-all],[data-rf],[data-rs],[data-tier],th[data-col]");
     if (!b) return;
     if (b.dataset.view) { view = b.dataset.view; history.replaceState(null, "", "#" + view); }
     if (b.dataset.sort) sortBy = b.dataset.sort;
     if (b.dataset.rf) rankFilter = b.dataset.rf;
     if (b.dataset.tier) tierF = b.dataset.tier;
-    if (b.dataset.rs) rankSort = b.dataset.rs;
+    if (b.dataset.rs) { rankSort = b.dataset.rs; colSort = null; }
+    if (b.dataset.col) {
+      var c = +b.dataset.col;
+      colSort = colSort && colSort.col === c ? { col: c, dir: -colSort.dir } : { col: c, dir: -1 };
+    }
     if (b.dataset.all) showAll[b.dataset.all] = !showAll[b.dataset.all];
     render();
     if (b.dataset.view || b.dataset.all) MR.refreshIntraday();

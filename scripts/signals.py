@@ -426,6 +426,7 @@ def main():
             "signals": marks,
             "extra": radar.EXTRAS.get(c),
             "rating": radar.RATING.get(c) or {"stars": 1, "tier": None, "traps": []},
+            "health": radar.SNAP.get(c),
             "summary": {
                 "close": float(close.at[last, c]), "chg": float(F["chg"].at[last, c]),
                 "ret5": None if pd.isna(ret5.at[last, c]) else round(float(ret5.at[last, c]) * 100, 2),
@@ -457,9 +458,9 @@ def write_index(close, F, names, last, keep):
         n = radar.SNAP.get(c, {})
         s[c] = [names.get(c, c), r.get("stars", 1), r.get("tier"), _f(F["close_raw"].at[last, c]), _f(F["chg"].at[last, c]),
                 n.get("ret60"), n.get("ind"), n.get("yoy"), n.get("yoy3"), n.get("rev_month"), 1 if c + ".json" in keep else 0,
-                r.get("traps") or []]
+                r.get("traps") or [], n]
     with open(os.path.join(STOCK_DIR, "index.json"), "w", encoding="utf-8") as f:
-        json.dump({"date": last, "fields": ["name", "stars", "tier", "close", "chg", "ret60", "ind", "yoy", "yoy3", "rev_month", "panel", "traps"],
+        json.dump({"date": last, "fields": ["name", "stars", "tier", "close", "chg", "ret60", "ind", "yoy", "yoy3", "rev_month", "panel", "traps", "health"],
                    "s": s}, f, ensure_ascii=False, separators=(",", ":"))
 
 

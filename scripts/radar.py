@@ -282,7 +282,17 @@ def build(L):
         SNAP[c] = {"ret60": _f(r60_all[c] * 100, 1), "ind": IND_NAME.get(ind.get(c), ind.get(c)),
                    "yoy": None if mi is None else _f(rp["yoy"].at[mi, c], 1),
                    "yoy3": None if mi is None else _f(rp["yoy3"].at[mi, c], 1),
-                   "rev_month": None if mi is None else "%d-%02d" % mi}
+                   "rev_month": None if mi is None else "%d-%02d" % mi,
+                   # 個股健檢用
+                   "rev_ok": bool(mi is not None and rp["good"].at[mi, c] and len(rp["months"]) > 1 and mi >= rp["months"][-2]),
+                   "accel": None if mi is None else _f(accel.at[mi, c], 1),
+                   "streak": None if mi is None else int(rp["streak"].at[mi, c]),
+                   "peer60": _f(peer.get(c), 1),
+                   "fo20": _f(fo20.get(c, np.nan), 1),
+                   "value20": _f(vyi[c].iloc[-20:].mean(), 2),
+                   "vol60": _f(vol60.at[last, c], 2), "low_vol": bool(not pd.isna(vol60.at[last, c]) and vol60.at[last, c] < vol_cut),
+                   "hi250": None if pd.isna(hi250_now.at[last, c]) else _f((close.at[last, c] / hi250_now.at[last, c] - 1) * 100, 1),
+                   "above_ma60": None if pd.isna(ma60.at[last, c]) else bool(close.at[last, c] > ma60.at[last, c])}
 
     # 近 10 個交易日的爆量突破
     recent = dates[-10:]
@@ -322,6 +332,12 @@ def build(L):
     for c, m in mg.items():
         if c in EXTRAS:
             EXTRAS[c]["gm"] = m["hist"]
+        if c in SNAP:
+            SNAP[c]["gm"], SNAP[c]["dgm"], SNAP[c]["gm_p"] = m["gm"], m["d"], m["p"]
+    for c, e in fv.items():   # 估值只供參考(前瞻估值尚未回測、歷史估值回測沒有預測力)
+        if c in SNAP:
+            w, tg = e.get("fwd") or {}, e.get("tgt") or {}
+            SNAP[c].update(fpe=w.get("pe"), fpe_med=(w.get("band") or [None, None])[1], fwd_status=w.get("status"), tgt_up=tg.get("up"))
     mom = momentum(L, rp, close, opn, tradable, usable, newpub, rev_list)
     rank = ranking(rev_list, bo_list, mom)
     try:   # 毛利率回測結果(scripts/margin_test.py 產生,研究用、不在排程跑)
@@ -618,7 +634,8 @@ def fair_all(rp, close, last):
             if est_ok(k) and pe_band:
                 e0, e1 = k.get("eps0") or k["eps1"], k["eps1"]
                 feps12 = e0 * (1 - w1) + e1 * w1
-                if feps12 > 0:
+                # 預估本益比低於 2 倍(EPS 超過股價一半)幾乎一定是資料錯誤(例:廣穎 1 位分析師 EPS 149、股價 149),不採用
+                if feps12 > 0 and price / feps12 >= 2:
                     lo_, mid_, hi_ = pe_band[:3]
                     e["fwd"] = {"eps": _f(feps12), "pe": _f(price / feps12, 1), "fair": _f(feps12 * mid_),
                                 "low": _f(feps12 * lo_), "high": _f(feps12 * hi_), "up": _f((feps12 * mid_ / price - 1) * 100, 1),

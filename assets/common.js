@@ -279,6 +279,57 @@
       "%。評級是統計上的機率,不是保證會漲,也不是個人化的投資建議;請分散、控制投入金額。</p>";
   }
 
+  // ---- 個股健檢:逐項列出條件、是否符合、這一項在回測裡有沒有預測力,最後依規則給結論 ----
+  // ok: 1 符合 / 0 中性 / -1 不符合或陷阱;ev: "回測" 有回測依據、"參考" 沒有預測力或尚未回測
+  function checks(h) {
+    var L = [];
+    function add(name, ok, val, note, ev) { L.push({ name: name, ok: ok, val: val, note: note, ev: ev }); }
+    function pc(v, d) { return v == null ? "—" : MR.sign(v, d == null ? 0 : d) + "%"; }
+    add("營收動能", h.rev_ok ? 1 : 0, (h.rev_month ? h.rev_month.slice(5).replace(/^0/, "") + " 月年增 " : "年增 ") + pc(h.yoy) + (h.streak ? ",連續創新高 " + h.streak + " 個月" : ""),
+      h.rev_ok ? "月營收創 12 個月新高且年增夠高" : "最新營收沒有創 12 個月新高(或年增不夠)", "回測");
+    add("營收趨勢", h.accel == null ? 0 : h.accel <= -20 ? -1 : h.accel > 0 ? 1 : 0, "近 3 月年增 " + pc(h.yoy3) + "(比 3 個月前 " + (h.accel == null ? "—" : MR.sign(h.accel, 0) + " 個百分點") + ")",
+      h.accel != null && h.accel <= -20 ? "陷阱:成長在減速,歷史上之後表現較差" : h.accel > 0 ? "成長在加速" : "持平", "回測");
+    add("股價動能", h.ret60 == null ? 0 : h.ret60 >= 20 ? 1 : h.ret60 < 0 ? -1 : 0, "60 日 " + pc(h.ret60) + (h.above_ma60 === false ? ",在季線下" : ""),
+      h.ret60 >= 20 ? "已經開始漲(動能是翻倍股最強的共同點)" : h.ret60 < 0 ? "股價還在跌" : "動能不足", "回測");
+    add("題材(同產業)", h.peer60 == null ? 0 : h.peer60 >= 15 ? 1 : 0, (h.ind || "同產業") + " 60 日平均 " + pc(h.peer60),
+      h.peer60 >= 15 ? "同產業一起走強" : "同產業沒有一起漲", "回測");
+    add("外資", h.fo20 != null && h.fo20 <= -10 ? -1 : 0, "20 日買賣超佔成交 " + pc(h.fo20, 1),
+      h.fo20 != null && h.fo20 <= -10 ? "陷阱:外資大賣,歷史上很少飆" : "沒有大賣(外資大買在回測裡也沒有比較好)", "回測");
+    var risk = h.ret60 != null && h.ret60 >= 100 ? -1 : h.low_vol ? 0 : 0;
+    add("位置與波動", risk, (h.hi250 != null && h.hi250 >= 0 ? "創 52 週新高(高於前高 " + pc(h.hi250) + ")" : "距 52 週高 " + pc(h.hi250)) + (h.low_vol ? ",低波動股" : ""),
+      h.ret60 >= 100 ? "60 日已漲超過一倍,之後中途大跌的機率約 3–4 成" : h.low_vol ? "波動低,很難有爆發力" : "—", "回測");
+    add("流動性", h.value20 == null ? 0 : h.value20 < 0.3 ? -1 : h.value20 < 1 ? 0 : 1, "20 日均成交 " + (h.value20 == null ? "—" : h.value20.toFixed(2) + " 億"),
+      h.value20 < 0.3 ? "成交太少,買賣容易被價差吃掉、出不掉" : h.value20 < 1 ? "成交偏少,大額進出要小心" : "足夠", "回測");
+    add("毛利率", 0, h.gm == null ? "—" : (h.gm_p || "") + " " + h.gm + "%" + (h.dgm == null ? "" : ",比去年同季 " + MR.sign(h.dgm, 1) + " 個百分點"),
+      "了解獲利品質用;回測顯示毛利率升降對之後股價沒有預測力", "參考");
+    add("估值", 0, h.fpe == null ? "無分析師預估" : "前瞻本益比 " + h.fpe + " 倍(自身歷史中位 " + h.fpe_med + " 倍)" + (h.fwd_status ? "," + h.fwd_status : "") +
+      (h.tgt_up == null ? "" : ",目標價空間 " + MR.sign(h.tgt_up, 0) + "%"), "分析師共識 2026-10 才開始記錄,尚未回測;歷史本益比估值回測沒有預測力", "參考");
+    return L;
+  }
+
+  function verdict(h, r) {
+    var n = (r && r.stars) || 1;
+    if (h && h.value20 != null && h.value20 < 0.3) return { cls: "no", t: "不適合:成交量太小", d: "20 日平均成交不到 0.3 億,回測也排除這類股票,進出成本與風險都高。" };
+    if (n >= 5) return { cls: "yes", t: "符合條件最多:可列入分散組合的候選", d: "營收、動能、題材都有,沒有已知陷阱。這是統計上機率較高,不代表這一檔一定會漲。" };
+    if (n === 4) return { cls: "yes", t: "可列入分散組合的候選", d: r.traps && r.traps.length ? "條件齊全但有陷阱(" + r.traps.join("、") + "),已扣一顆星。" : "營收成立,動能與題材其中一項還沒到。" };
+    if (n === 3) return { cls: "mid", t: "觀察:條件還沒到齊", d: r.tier === "C" ? "營收已經轉強,但股價和同產業都還沒動;最早期、空間最大,但多數不會飆。" : r.tier === "D" ? "股價與同產業都在漲,但營收還沒跟上;同類股很多,多數只是跟漲。" : "有陷阱,已扣一顆星。" };
+    if (n === 2) return { cls: "no", t: "暫不符合:有陷阱", d: "營收雖然轉強,但有陷阱(" + ((r.traps || []).join("、") || "—") + "),歷史上之後表現接近一般股。" };
+    return { cls: "no", t: "目前不符合起漲條件", d: "不在起漲雷達任何名單。歷史上這類股票之後平均比一般股略差;不代表公司不好,只是現在沒有起漲的訊號。" };
+  }
+
+  function healthHtml(h, r, S) {
+    var v = verdict(h, r), rows = h ? checks(h) : [];
+    var ic = { "1": '<b class="ck ok">✓</b>', "0": '<b class="ck mid">–</b>', "-1": '<b class="ck no">✕</b>' };
+    return '<div class="fvbox health"><h4>個股健檢</h4><div class="rt">' + MR.ratingLine(r) + "</div>" +
+      '<div class="vd ' + v.cls + '"><b>' + esc(v.t) + "</b><span>" + esc(v.d) + "</span></div>" +
+      (rows.length ? '<table class="hc"><tbody>' + rows.map(function (x) {
+        return "<tr><td>" + ic[String(x.ok)] + "</td><th>" + esc(x.name) + '</th><td class="hv">' + esc(x.val) + '</td><td class="hn">' + esc(x.note) +
+          '<span class="ev ' + (x.ev === "回測" ? "bt" : "") + '">' + (x.ev === "回測" ? "有回測依據" : "僅供參考") + "</span></td></tr>";
+      }).join("") + "</tbody></table>" : "") +
+      starNote((r && r.stars) || 1, S) +
+      '<p class="fvhow">要投入的話:依回測,從名單只買 1 檔,約 18% 的機率 60 日內虧超過 15%;分散買 10 檔降到約 5%。單檔建議不超過可投入金額的 1/10,並且只用虧得起的錢。這是依固定規則整理的統計結果,不是針對你個人的投資建議。</p></div>';
+  }
+
   function stockHtml(doc, stats, prof) {
     var s = doc.summary, sigs = (stats && stats.signals) || {}, names = {}, grades = {};
     Object.keys(sigs).forEach(function (k) { names[k] = sigs[k].name; grades[k] = sigs[k].horizons["10"].grade; });
@@ -291,7 +342,7 @@
         return '<a class="th-chip" href="sectors.html#' + esc(t.id) + '">' + esc(t.name) + "</a>";
       }).join("") + "</div>" : "") +
       '</div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
-      '<div class="sh-body">' + '<div class="fvbox rating"><h4>評級</h4><div class="rt">' + MR.ratingLine(doc.rating) + '</div><div id="star-note"></div></div>' +
+      '<div class="sh-body">' + '<div id="health">' + healthHtml(doc.health, doc.rating, null) + "</div>" +
       profileHtml(prof && prof[doc.code]) + fvHtml(doc) +
       '<div class="kgrid">' +
       "<div><span>5 日漲跌</span><b>" + MR.pct(s.ret5) + "</b></div>" +
@@ -327,7 +378,7 @@
     Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile()])
       .then(function (res) {
         d.innerHTML = stockHtml(res[0], res[1], res[2]);
-        starStats().then(function (S) { var n = d.querySelector("#star-note"); if (n) n.innerHTML = starNote((res[0].rating || {}).stars || 1, S); });
+        starStats().then(function (S) { var n = d.querySelector("#health"); if (n) n.innerHTML = healthHtml(res[0].health, res[0].rating, S); });
         // 盤中或今日收盤後:用即時報價取代排程資料的收盤價(live.js 有載入且已設定 Worker 才會有)
         if (MR.intradayOne) MR.intradayOne(code, res[0].date).then(function (lv) {
           var el = d.querySelector("#stk-px");
@@ -348,7 +399,7 @@
       d.querySelector(".sh-head").innerHTML = '<div><h3 id="stk-title"><span class="num">' + esc(code) + "</span> " + esc(x[0]) + "</h3>" +
         '<div class="stk-head" id="stk-px"><span class="px">' + esc(x[3]) + "</span>" + MR.pct(x[4]) + '<span class="flat" style="font-size:12px">' + esc(I.date) + " 收盤</span></div></div>" +
         '<button type="button" class="x" data-close aria-label="關閉">×</button>';
-      body.innerHTML = '<div class="fvbox rating"><h4>評級</h4><div class="rt">' + MR.ratingLine(r) + "</div>" + starNote(r.stars, res[2]) + "</div>" +
+      body.innerHTML = healthHtml(x[12], r, res[2]) +
         profileHtml(p) +
         '<div class="kgrid"><div><span>60 日漲跌</span><b>' + MR.pct(x[5]) + "</b></div><div><span>產業</span><b>" + esc(x[6] || "—") + "</b></div>" +
         "<div><span>最新營收年增" + (x[9] ? "(" + esc(x[9].slice(5).replace(/^0/, "")) + " 月)" : "") + "</span><b>" + MR.pct(x[7]) + "</b></div>" +
@@ -418,6 +469,46 @@
     q.addEventListener("blur", function () { setTimeout(function () { items = []; render(); }, 150); });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setupSearch); else setupSearch();
+
+  // ---- 表格點表頭排序(通用):排畫面上的列;第一次大到小,再點一次小到大。數字依大小、文字依筆畫,空值排最後 ----
+  // 起漲雷達的排行表(.rank)只顯示前幾十筆,改由頁面自己對完整資料排序,這裡略過;多列表頭(有合併欄)的表也略過
+  function cellVal(td) {
+    var s = (td ? td.textContent : "").replace(/[−–]/g, "-").replace(/,/g, "").trim();
+    if (!s || s === "—" || s === "-" || /累積中|樣本不足/.test(s)) return null;
+    var m = s.match(/[-+]?\d+(\.\d+)?/);
+    return m && /^[-+]?[\d.]/.test(s) ? parseFloat(m[0]) : s;
+  }
+  function sortable(table) {
+    var th = table.tHead;
+    return th && th.rows.length === 1 && !table.classList.contains("rank") && table.tBodies[0] && table.tBodies[0].rows.length > 1;
+  }
+  document.addEventListener("click", function (e) {
+    var th = e.target.closest("thead th");
+    if (!th || e.target.closest("button,a,input")) return;
+    var table = th.closest("table");
+    if (!sortable(table)) return;
+    var col = Array.prototype.indexOf.call(th.parentNode.children, th);
+    var dir = th.getAttribute("aria-sort") === "descending" ? 1 : -1;
+    Array.prototype.forEach.call(th.parentNode.children, function (x) { x.removeAttribute("aria-sort"); });
+    th.setAttribute("aria-sort", dir < 0 ? "descending" : "ascending");
+    var body = table.tBodies[0], rows = Array.prototype.slice.call(body.rows);
+    rows.sort(function (ra, rb) {
+      var a = cellVal(ra.cells[col]), b = cellVal(rb.cells[col]);
+      if (a == null) return b == null ? 0 : 1;
+      if (b == null) return -1;
+      if (typeof a === "number" && typeof b === "number") return (a - b) * dir;
+      return String(a).localeCompare(String(b), "zh-Hant") * dir;
+    });
+    rows.forEach(function (r) { body.appendChild(r); });
+  });
+  // 可以排序的表頭加上樣式提示
+  new MutationObserver(function () {
+    Array.prototype.forEach.call(document.querySelectorAll("table:not(.srt-ok)"), function (tb) {
+      if (!sortable(tb)) return;
+      tb.classList.add("srt-ok");
+      Array.prototype.forEach.call(tb.tHead.rows[0].cells, function (c) { if (c.textContent.trim()) { c.classList.add("srt"); c.title = c.title || "點一下排序"; } });
+    });
+  }).observe(document.documentElement, { childList: true, subtree: true });
 
   // 頂端導覽列的高度(手機會換行變高),給表格決定最大高度,讓整個表格框放得進導覽列下方
   function barHeight() {

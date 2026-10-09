@@ -189,3 +189,30 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
 .srch .sg-r { margin-left: auto; }
 .srch .stars { font-size: 12px; }
 @media (max-width: 640px) { .srch { order: 3; flex: 1 1 100%; } .srch input { width: 100%; } }
+
+/* 個股健檢 */
+.health .vd { margin: 8px 0; padding: 8px 10px; border-radius: 6px; border-left: 4px solid var(--line); background: var(--panel); }
+.health .vd b { display: block; font-size: 15px; }
+.health .vd span { font-size: 13px; color: var(--muted); }
+.health .vd.yes { border-left-color: var(--accent); }
+.health .vd.yes b { color: var(--accent); }
+.health .vd.no { border-left-color: var(--faint); }
+table.hc { width: 100%; border-collapse: collapse; font-size: 13px; margin: 4px 0; }
+.hc th { text-align: left; font-weight: 600; white-space: nowrap; padding: 5px 8px 5px 2px; vertical-align: top; }
+.hc td { padding: 5px 4px; border-top: 1px solid var(--line); vertical-align: top; }
+.hc tr:first-child td, .hc tr:first-child th { border-top: 0; }
+.hc th { border-top: 1px solid var(--line); }
+.hc .hv { font-family: var(--mono); white-space: nowrap; }
+.hc .hn { color: var(--muted); }
+.ck { display: inline-block; width: 18px; text-align: center; }
+.ck.ok { color: var(--accent); } .ck.no { color: var(--down); } .ck.mid { color: var(--faint); }
+.ev { display: inline-block; margin-left: 6px; font-size: 11px; padding: 0 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--faint); white-space: nowrap; }
+.ev.bt { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+@media (max-width: 560px) { .hc .hv { white-space: normal; } }
+
+/* 可排序的表頭 */
+th.srt { cursor: pointer; user-select: none; }
+th.srt:hover { color: var(--text); }
+th.srt::after { content: " ↕"; color: var(--line); font-size: 11px; }
+th.srt[aria-sort="descending"]::after { content: " ▼"; color: var(--accent); }
+th.srt[aria-sort="ascending"]::after { content: " ▲"; color: var(--accent); }

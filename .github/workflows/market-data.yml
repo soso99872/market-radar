@@ -23,6 +23,7 @@ on:
       - scripts/estimates.py
       - scripts/profile.py
       - scripts/margin.py
+      - scripts/quality.py
       - data/sectors/themes.json
 
 permissions:
@@ -55,6 +56,8 @@ jobs:
         run: python scripts/estimates.py || echo "::warning::estimates 失敗"
       - name: 季度毛利率(公開資訊觀測站,補缺期別 + 重抓最近兩季)
         run: python scripts/margin.py || echo "::warning::margin 失敗"
+      - name: 財報品質(地雷檢查)與處置 / 注意股
+        run: python scripts/quality.py || echo "::warning::quality 失敗"
       - name: 個股基本資料(30 天內抓過就略過)
         run: python scripts/profile.py || echo "::warning::profile 失敗"
       - name: 本益比每月快照
@@ -71,7 +74,7 @@ jobs:
             git reset -q --mixed origin/main
             # --ignore-removal:執行期間若有人推了新檔案,reset 到最新 main 後工作目錄裡沒有它,不能當成刪除提交
             # (曾因此刪掉 data/track/basket_backtest_star.csv)。只有個股檔會真的被移除,另外處理
-            git add --ignore-removal data/quotes.json data/flows data/sectors/latest.json data/screens data/history data/signals data/watch data/fundamentals data/revenue data/valuation data/estimates data/profile data/margin data/radar data/track
+            git add --ignore-removal data/quotes.json data/flows data/sectors/latest.json data/screens data/history data/signals data/watch data/fundamentals data/revenue data/valuation data/estimates data/profile data/margin data/quality data/radar data/track
             git add -A data/stocks
             if git diff --cached --quiet; then echo "沒有變更"; exit 0; fi
             git commit -q -m "資料更新 $(TZ=Asia/Taipei date '+%F %H:%M')"

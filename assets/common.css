@@ -262,3 +262,12 @@ th.srt[aria-sort="ascending"]::after { content: " ▲"; color: var(--accent); }
 .wbtn.on { color: var(--accent); border-color: var(--accent); }
 .nbadge { display: inline-block; min-width: 16px; height: 16px; line-height: 16px; margin-left: 4px; padding: 0 4px; border-radius: 8px; background: var(--accent);
   color: var(--accent-ink); font-size: 11px; font-weight: 700; text-align: center; vertical-align: 1px; }
+
+/* 同業比較 */
+.peer { margin: 10px 0 4px; }
+.peer h5 { margin: 0 0 6px; font-size: 13px; }
+.peer .pr { display: grid; grid-template-columns: minmax(0, 11em) 1fr 5.5em; gap: 8px; align-items: center; font-size: 12.5px; margin: 3px 0; }
+.peer .pr-n { color: var(--muted); }
+.peer .pr-b { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.peer .pr-b i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.peer .pr-v { font-family: var(--mono); text-align: right; }

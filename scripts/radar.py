@@ -13,6 +13,7 @@ import csv
 from datetime import datetime
 import json
 import os
+import re
 
 import numpy as np
 import pandas as pd
@@ -343,6 +344,9 @@ def build(L):
         if c in SNAP:
             w, tg = e.get("fwd") or {}, e.get("tgt") or {}
             SNAP[c].update(fpe=w.get("pe"), fpe_med=(w.get("band") or [None, None])[1], fwd_status=w.get("status"), tgt_up=tg.get("up"))
+    peer_rank(ind)
+    estimate_revisions()
+    landmines_now(last)
     mom = momentum(L, rp, close, opn, tradable, usable, newpub, rev_list)
     rank = ranking(rev_list, bo_list, mom)
     try:   # 毛利率回測結果(scripts/margin_test.py 產生,研究用、不在排程跑)
@@ -362,6 +366,11 @@ def build(L):
         with open(os.path.join(OUT, "accuracy.json"), encoding="utf-8") as f:   # scripts/accuracy_study.py
             acc = json.load(f)
         meta["explosion"]["regime"] = acc.get("regime")
+        try:   # 地雷條件回測(scripts/landmine_test.py):只帶 4★ 以上的大跌機率
+            lm = json.load(open(os.path.join(OUT, "landmine.json"), encoding="utf-8"))["test"]["4★ 以上"]
+            meta["explosion"]["landmine"] = {k: {t: [v[t]["yes"].get("crash"), v[t]["no"].get("crash")] for t in ("is", "oos")} for k, v in lm.items()}
+        except (OSError, ValueError, KeyError):
+            pass
         meta["explosion"]["curve"] = {k: {x: v[x] for x in ("cagr", "mdd", "sharpe", "win", "months")} for k, v in acc.get("curve", {}).items()}
     except (OSError, ValueError):
         pass
@@ -516,6 +525,85 @@ IND_NAME = {"01": "水泥", "02": "食品", "03": "塑膠", "04": "紡織", "05"
 
 
 MIXED_IND = {"19", "20", "80"}   # 綜合、其他、管理股票:不是同一種生意,不算「同產業」
+
+
+def landmines_now(last):
+    """每檔目前的地雷條件(scripts/quality.py flags,用今天已過申報期限的最新一季)與處置 / 注意股公告。"""
+    import margin
+    import quality
+    pl, bs = quality.load("pl"), quality.load("bs")
+    periods = sorted({p for v in pl.values() for p in v})
+    known = [p for p in periods if margin.available(p) <= last]
+    p = known[-1] if known else None
+    try:
+        al = json.load(open(os.path.join(history.ROOT, "data", "quality", "alerts.json"), encoding="utf-8"))
+    except (OSError, ValueError):
+        al = {}
+    for c, s in SNAP.items():
+        if p and c in pl and p in pl[c]:
+            s["mines"] = quality.flags(quality.quarterly_pl(pl[c]), bs.get(c, {}), p)
+            s["mines_p"] = p
+        if c in (al.get("punish") or {}):
+            s["punish"] = al["punish"][c]
+        if c in (al.get("notice") or {}):
+            s["notice"] = al["notice"][c]
+
+
+REV_LOOKBACK = 30   # 天:和多久以前的分析師預估比較(快照不夠久時用最早的一份,至少 5 天)
+
+
+def estimate_revisions():
+    """分析師預估上修 / 下修(Zacks 式):最新一份共識快照 vs 約 30 天前。快照從 2026-10-07 才開始存,還不能回測。
+    跨年時「今年 / 明年」指的年度會換,所以兩份快照跨過 1 月 1 日就不比。"""
+    d = os.path.join(history.ROOT, "data", "estimates")
+    snaps = sorted(n[:10] for n in os.listdir(d) if re.match(r"\d{4}-\d{2}-\d{2}\.json$", n)) if os.path.isdir(d) else []
+    if len(snaps) < 2:
+        return
+    new = snaps[-1]
+    target = (datetime.strptime(new, "%Y-%m-%d") - pd.Timedelta(days=REV_LOOKBACK)).strftime("%Y-%m-%d")
+    older = [s for s in snaps if s <= target] or snaps[:1]
+    old = older[-1]
+    days = (datetime.strptime(new, "%Y-%m-%d") - datetime.strptime(old, "%Y-%m-%d")).days
+    if days < 5 or old[:4] != new[:4]:
+        return
+    A = json.load(open(os.path.join(d, new + ".json"), encoding="utf-8")).get("s", {})
+    B = json.load(open(os.path.join(d, old + ".json"), encoding="utf-8")).get("s", {})
+    for c, a in A.items():
+        b = B.get(c)
+        if c not in SNAP or not b:
+            continue
+        r = {"days": days, "from": old}
+        if a.get("eps1") and b.get("eps1") and b["eps1"] > 0:
+            r["eps1"] = _f((a["eps1"] / b["eps1"] - 1) * 100, 1)
+        if a.get("tgt") and b.get("tgt"):
+            r["tgt"] = _f((a["tgt"] / b["tgt"] - 1) * 100, 1)
+        if len(r) > 2:
+            SNAP[c]["revision"] = r
+
+
+PEER_KEYS = (("yoy3", 1), ("ret60", 1), ("gm", 1), ("dgm", 1), ("fpe", -1))   # -1:越低越好(本益比越低越便宜)
+
+
+def peer_rank(ind):
+    """同業百分位(Yahoo 股市式「贏過 X% 同業」):同一證交所產業別裡,這檔贏過多少比例的同業。只供參考,沒有回測。"""
+    groups = {}
+    for c, s in SNAP.items():
+        g = ind.get(c)
+        if g and g not in MIXED_IND:
+            groups.setdefault(g, []).append(c)
+    for g, cs in groups.items():
+        out = {c: {"n": len(cs), "ind": IND_NAME.get(g, g)} for c in cs}
+        for k, sgn in PEER_KEYS:
+            vals = [(c, SNAP[c].get(k)) for c in cs if SNAP[c].get(k) is not None and not (k == "fpe" and SNAP[c][k] <= 0)]
+            if len(vals) < 5:
+                continue
+            arr = np.array([v for _, v in vals], dtype=float) * sgn
+            for c, v in vals:
+                out[c][k] = int(round(((arr < v * sgn).sum()) / (len(arr) - 1) * 100)) if len(arr) > 1 else None
+            for c in cs:
+                out[c].setdefault("m_" + k, len(vals))
+        for c in cs:
+            SNAP[c]["peer"] = out[c]
 
 
 def peer_momentum(r60_last, trad_last):
@@ -760,6 +848,7 @@ def ranking(rev_list, bo_list, mom):
     return out
 
 
+MINE_STRONG = ("本業虧損", "累積虧損", "淨值跌破面額")   # scripts/landmine_test.py:這三項大跌機率在兩段時期都明顯較高
 PICK_N = 10
 PICK_IND = 3     # 同一產業最多幾檔
 PICK_LIQ = 1.0   # 億,20 日均成交達到這個數才算「好進出」,排序時優先
@@ -769,8 +858,15 @@ def write_picks(rev_list, last, ex):
     """「今天先看這 10 檔」:4★ 以上、排除低波動與成交太少,依 星等 → 本月新公告 → 好進出 → 近 3 月營收年增 排序。
     首頁與起漲雷達共用這個小檔,排序規則只在這裡。"""
     # 成交不到 MIN_VALUE(0.3 億)的不列:個股健檢會判「不適合」,清單不能自相矛盾
-    cand = [x for x in rev_list if x.get("stars", 0) >= 4 and not x.get("low_vol") and (x.get("value20") or 0) >= MIN_VALUE]
-    cand.sort(key=lambda x: (-x["stars"], not x.get("rev_new"), not ((x.get("value20") or 0) >= PICK_LIQ), -(x.get("yoy3") or 0)))
+    # 交易所處置中的不列(人工撮合、可能預收款券);有大跌風險較高的財務地雷(MINE_STRONG)排在同星等的後面
+    def risk(x):
+        s = SNAP.get(x["code"]) or {}
+        return [k for k in (s.get("mines") or {}) if k in MINE_STRONG]
+    cand = [x for x in rev_list if x.get("stars", 0) >= 4 and not x.get("low_vol") and (x.get("value20") or 0) >= MIN_VALUE
+            and not (SNAP.get(x["code"]) or {}).get("punish")]
+    for x in cand:
+        x["risk"] = risk(x)
+    cand.sort(key=lambda x: (-x["stars"], bool(x["risk"]), not x.get("rev_new"), not ((x.get("value20") or 0) >= PICK_LIQ), -(x.get("yoy3") or 0)))
     # 同一產業最多 PICK_IND 檔:前 10 檔常擠在同一個熱門題材(例:光通訊),那樣「分散」其實沒有分散到風險
     top, rest, per = [], [], {}
     for x in cand:
@@ -780,7 +876,7 @@ def write_picks(rev_list, last, ex):
             per[g] = per.get(g, 0) + 1
         else:
             rest.append(x)
-    keep = ("code", "name", "stars", "tier", "close", "chg", "yoy", "yoy3", "rev_new", "rev_month", "value20", "ret60", "ind", "traps")
+    keep = ("code", "name", "stars", "tier", "close", "chg", "yoy", "yoy3", "rev_new", "rev_month", "value20", "ret60", "ind", "traps", "risk")
 
     def slim(x):
         return {k: x.get(k) for k in keep}

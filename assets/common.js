@@ -154,6 +154,7 @@
       if (x.ret60 != null) w.push("60 日 " + MR.sign(x.ret60, 0) + "%");
       if (x.rev_new) w.push("新公告");
       if (x.value20 != null && x.value20 < P.liq) w.push("成交偏少");
+      if (x.risk && x.risk.length) w.push("⚠ " + x.risk.join("、"));
       return w.join(" · ");
     }
     var card = function (x) {
@@ -164,7 +165,7 @@
     };
     var rest = P.rest || [];
     return '<section class="picks"><div class="pk-top"><h2>今天先看這 ' + P.top.length + " 檔</h2>" +
-      "<span>起漲雷達 4★ 以上共 " + P.n + " 檔,依 星等 → 本月新公告 → 好進出(20 日均成交 ≥ " + P.liq + " 億)→ 近 3 月營收年增 排序" + (P.ind_cap ? ",同一產業最多 " + P.ind_cap + " 檔" : "") + ",點了看健檢</span></div>" +
+      "<span>起漲雷達 4★ 以上共 " + P.n + " 檔,依 星等 → 本月新公告 → 好進出(20 日均成交 ≥ " + P.liq + " 億)→ 近 3 月營收年增 排序" + (P.ind_cap ? ",同一產業最多 " + P.ind_cap + " 檔" : "") + ";處置中的不列、有財務地雷的排後面,點了看健檢</span></div>" +
       '<div class="pk-list">' + P.top.map(card).join("") + "</div>" +
       (rest.length ? '<details class="pk-rest"><summary>其餘 ' + rest.length + " 檔 4★ 以上</summary>" + '<div class="pk-list">' + rest.map(card).join("") + "</div></details>" : "") +
       '<p class="pk-foot">' + (k ? "回測:每月買全部 4★ 以上、持有一個月,年化 " + MR.sign(k.cagr, 0) + "%、最大回撤 " + k.mdd + "%(同期全部股票 " + MR.sign(all && all.cagr, 0) + "%)。" : "") +
@@ -377,7 +378,7 @@
   function starStats() {
     if (!starStatsP) starStatsP = MR.json("data/radar/latest.json").then(function (r) {
       var s = (r.explosion || {}).stars || null;
-      if (s) s.regime = (r.explosion || {}).regime;
+      if (s) { s.regime = (r.explosion || {}).regime; s.landmine = (r.explosion || {}).landmine; }
       return s;
     }).catch(function () { return null; });
     return starStatsP;
@@ -392,6 +393,15 @@
 
   // ---- 個股健檢:逐項列出條件、是否符合、這一項在回測裡有沒有預測力,最後依規則給結論 ----
   // ok: 1 符合 / 0 中性 / -1 不符合或陷阱;ev: "回測" 有回測依據、"參考" 沒有預測力或尚未回測
+  // 地雷條件(scripts/quality.py flags):回測(scripts/landmine_test.py)顯示前三項在兩段時期大跌機率都明顯較高,
+  // 其餘三項沒有一致影響;平均報酬則都沒有一致影響,所以只當「風險」提示,不影響星等
+  var MINE_STRONG = ["本業虧損", "累積虧損", "淨值跌破面額"];
+  var MINE_TXT = { "本業虧損": function (v) { return "近 4 季營業利益合計 " + (v / 1e5).toFixed(1) + " 億"; },
+    "獲利靠業外": function (v) { return "業外佔稅前淨利 " + v + "%"; }, "負債比偏高": function (v) { return "負債比 " + v + "%"; },
+    "流動比率 < 100%": function (v) { return "流動比率 " + v + "%"; }, "淨值跌破面額": function (v) { return "每股淨值 " + v + " 元"; },
+    "累積虧損": function (v) { return "保留盈餘 " + (v / 1e5).toFixed(1) + " 億"; } };
+  var MINE_STATS = null;
+
   function checks(h) {
     var L = [];
     function add(name, ok, val, note, ev) { L.push({ name: name, ok: ok, val: val, note: note, ev: ev }); }
@@ -415,13 +425,32 @@
       "了解獲利品質用;回測顯示毛利率升降對之後股價沒有預測力", "參考");
     add("估值", 0, h.fpe == null ? "無分析師預估" : "前瞻本益比 " + h.fpe + " 倍(自身歷史中位 " + h.fpe_med + " 倍)" + (h.fwd_status ? "," + h.fwd_status : "") +
       (h.tgt_up == null ? "" : ",目標價空間 " + MR.sign(h.tgt_up, 0) + "%"), "分析師共識 2026-10 才開始記錄,尚未回測;歷史本益比估值回測沒有預測力", "參考");
+    var mines = h.mines;
+    if (mines) {
+      var ks = Object.keys(mines), strong = ks.filter(function (k) { return MINE_STRONG.indexOf(k) >= 0; });
+      var st = strong.map(function (k) { var s = MINE_STATS && MINE_STATS[k]; return s && s.is[0] != null ? k + " 的股票 60 日內曾跌 25% 的有 " + s.is[0] + "% / " + s.oos[0] + "%(沒有的 " + s.is[1] + "% / " + s.oos[1] + "%)" : ""; }).filter(Boolean);
+      add("財務地雷(" + esc(h.mines_p || "") + ")", strong.length ? -1 : ks.length ? 0 : 1,
+        ks.length ? ks.map(function (k) { return k + ":" + MINE_TXT[k](mines[k]); }).join(";") : "6 項都沒有",
+        strong.length ? "大跌風險較高。4★ 以上裡," + (st.join(";") || "這些條件的大跌機率約高 1.5–2.5 倍") + "(2019–22 / 2023 後);平均報酬則沒有一致變差"
+          : ks.length ? "這幾項在回測裡對之後的表現沒有一致影響" : "本業有賺、沒有累積虧損、負債與流動比率正常(財報狗式地雷條件)",
+        strong.length || !ks.length ? "回測" : "參考");
+    }
+    if (h.punish || h.notice) {
+      add("交易所處置 / 注意", h.punish ? -1 : 0, h.punish ? "處置中 " + (h.punish.period || "") : "列注意股 " + (h.notice.date || ""),
+        h.punish ? "交易所處置:" + (h.punish.why || "") + "。處置期間改人工撮合、可能要預收款券,進出困難" : "交易所公告注意:" + (h.notice.why || "").slice(0, 60), "參考");
+    }
+    var rv = h.revision;
+    add("分析師預估調整", rv && rv.eps1 != null ? (rv.eps1 > 1 ? 1 : rv.eps1 < -1 ? -1 : 0) : 0,
+      rv ? "近 " + rv.days + " 天 明年 EPS 預估 " + (rv.eps1 == null ? "—" : MR.sign(rv.eps1, 1) + "%") + (rv.tgt == null ? "" : ",目標價 " + MR.sign(rv.tgt, 1) + "%") : "資料累積中",
+      rv ? (rv.eps1 > 1 ? "分析師在上修" : rv.eps1 < -1 ? "分析師在下修" : "幾乎沒變") + "(Zacks 評級的核心訊號;我們的快照 2026-10 才開始存,半年後才能回測)" : "每天存一份分析師共識,累積 5 天以上才開始比較", "參考");
     return L;
   }
 
   function verdict(h, r) {
     var n = (r && r.stars) || 1;
     if (h && h.value20 != null && h.value20 < 0.3) return { cls: "no", t: "不適合:成交量太小", d: "20 日平均成交不到 0.3 億,回測也排除這類股票,進出成本與風險都高。" };
-    if (n >= 5) return { cls: "yes", t: "符合條件最多:可列入分散組合的候選", d: "營收、動能、題材都有,沒有已知陷阱。這是統計上機率較高,不代表這一檔一定會漲。" };
+    if (h && h.punish && n >= 3) return { cls: "mid", t: "暫緩:交易所處置中", d: "評級 " + n + "★,但處置期間(" + (h.punish.period || "") + ")改人工撮合、可能要預收款券,進出受限;處置結束後再看。" };
+    if (n >= 5) return { cls: "yes", t: "符合條件最多:可列入分散組合的候選", d: "營收、動能、題材都有,沒有營收減速或外資大賣的陷阱。這是統計上機率較高,不代表這一檔一定會漲。" };
     if (n === 4) return { cls: "yes", t: "可列入分散組合的候選", d: r.traps && r.traps.length ? "條件齊全但有陷阱(" + r.traps.join("、") + "),已扣一顆星。" : "營收成立,動能與題材其中一項還沒到。" };
     if (n === 3) return { cls: "mid", t: "觀察:條件還沒到齊", d: r.tier === "C" ? "營收已經轉強,但股價和同產業都還沒動;最早期、空間最大,但多數不會飆。" : r.tier === "D" ? "股價與同產業都在漲,但營收還沒跟上;同類股很多,多數只是跟漲。" : "有陷阱,已扣一顆星。" };
     if (n === 2) return { cls: "no", t: "暫不符合:有陷阱", d: "營收雖然轉強,但有陷阱(" + ((r.traps || []).join("、") || "—") + "),歷史上之後表現接近一般股。" };
@@ -439,16 +468,38 @@
 
   MR.verdict = function (h, r) { return verdict(h, r); };
 
+  // 同業百分位(scripts/radar.py peer_rank):這檔在同產業裡贏過多少比例的公司
+  function peerHtml(h) {
+    var p = h && h.peer;
+    if (!p) return "";
+    var items = [["yoy3", "營收成長(近 3 月年增)"], ["ret60", "股價動能(60 日)"], ["gm", "毛利率"], ["dgm", "毛利率改善"], ["fpe", "前瞻本益比便宜程度"]]
+      .filter(function (k) { return p[k[0]] != null; });
+    if (!items.length) return "";
+    return '<div class="peer"><h5>同業比較 · ' + esc(p.ind) + " " + p.n + ' 家<span class="evb">僅供參考</span></h5>' + items.map(function (k) {
+      var v = p[k[0]];
+      return '<div class="pr"><span class="pr-n">' + esc(k[1]) + '</span><span class="pr-b"><i style="width:' + v + '%"></i></span><span class="pr-v">贏過 ' + v + "%</span></div>";
+    }).join("") + '<p class="fvhow">和同一證交所產業別的公司比(本益比只比有分析師預估的 ' + (p.m_fpe || 0) + " 家)。同業排名本身沒有經過回測,評級與結論不使用它。</p></div>";
+  }
+
+  function mineNote(h, r) {
+    var m = h && h.mines;
+    if (!m || !r || (r.stars || 1) < 3) return "";
+    var strong = Object.keys(m).filter(function (k) { return MINE_STRONG.indexOf(k) >= 0; });
+    if (!strong.length) return "";
+    return '<div class="vd warn"><b>⚠ 財務地雷:' + esc(strong.join("、")) + "</b><span>回測顯示這類股票中途大跌的機率約高 1.5–2.5 倍;評級看的是報酬,沒有扣分,但投入金額宜更少。</span></div>";
+  }
+
   function healthHtml(h, r, S) {
+    if (S && S.landmine) MINE_STATS = S.landmine;
     var v = verdict(h, r), rows = h ? checks(h) : [];
     var ic = { "1": '<b class="ck ok">✓</b>', "0": '<b class="ck mid">–</b>', "-1": '<b class="ck no">✕</b>' };
     return '<div class="fvbox health"><h4>個股健檢</h4><div class="rt">' + MR.ratingLine(r) + "</div>" +
-      '<div class="vd ' + v.cls + '"><b>' + esc(v.t) + "</b><span>" + esc(v.d) + "</span></div>" + regimeNote(h, r, S) +
+      '<div class="vd ' + v.cls + '"><b>' + esc(v.t) + "</b><span>" + esc(v.d) + "</span></div>" + regimeNote(h, r, S) + mineNote(h, r) +
       (rows.length ? '<table class="hc"><tbody>' + rows.map(function (x) {
         return "<tr><td>" + ic[String(x.ok)] + "</td><th>" + esc(x.name) + '</th><td class="hv">' + esc(x.val) + '</td><td class="hn">' + esc(x.note) +
           '<span class="evb ' + (x.ev === "回測" ? "bt" : "") + '">' + (x.ev === "回測" ? "有回測依據" : "僅供參考") + "</span></td></tr>";
       }).join("") + "</tbody></table>" : "") +
-      starNote((r && r.stars) || 1, S) +
+      peerHtml(h) + starNote((r && r.stars) || 1, S) +
       '<p class="fvhow">要投入的話:依回測,從名單只買 1 檔,約 18% 的機率 60 日內虧超過 15%;分散買 10 檔降到約 5%。單檔建議不超過可投入金額的 1/10,並且只用虧得起的錢。這是依固定規則整理的統計結果,不是針對你個人的投資建議。</p></div>';
   }
 

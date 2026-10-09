@@ -139,7 +139,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   var R = null, TK = null, AU = null, RC = null, LIVE = null, LIVEHITS = [];
   var view = (location.hash || "#rank").slice(1);
   if (["rank", "rev", "cycle", "breakout", "track"].indexOf(view) < 0) view = "rank";
-  var hideLow = true, onlyNew = false, sortBy = "new", showAll = {}, rankFilter = "all", rankSort = "score", FVT = null;
+  var hideLow = true, onlyNew = false, onlyTri = false, sortBy = "new", showAll = {}, rankFilter = "all", rankSort = "score", FVT = null;
   try { hideLow = localStorage.getItem("radar.hideLow") !== "0"; } catch (e) {}
   MR.setupConv();
 
@@ -212,7 +212,9 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   }
 
   function tags(x) {
-    return (x.above_ma60 === true ? '<span class="tag2">站上季線</span>' : x.above_ma60 === false ? '<span class="tag2 dim">季線下</span>' : "") +
+    return (x.tri ? '<span class="tag2 hot" title="營收創新高、近 60 日漲 ≥ 20%、同產業 60 日平均漲 ≥ 15%">營收＋動能＋題材</span>' : "") +
+      (x.decel ? '<span class="tag2 warn" title="近 3 月平均年增比 3 個月前少 20 個百分點以上">營收減速</span>' : "") +
+      (x.above_ma60 === true ? '<span class="tag2">站上季線</span>' : x.above_ma60 === false ? '<span class="tag2 dim">季線下</span>' : "") +
       (x.dumped ? '<span class="tag2 warn">法人大賣</span>' : "") +
       (x.low_vol ? '<span class="tag2 dim">低波動</span>' : "") + gmTag(x);
   }
@@ -263,7 +265,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
   }
 
   function revView() {
-    var items = R.rev.filter(function (x) { return (!hideLow || !x.low_vol) && (!onlyNew || x.rev_new); });
+    var items = R.rev.filter(function (x) { return (!hideLow || !x.low_vol) && (!onlyNew || x.rev_new) && (!onlyTri || x.tri); });
     var key = {
       "new": function (x) { return (x.rev_new ? 0 : 1e6) - (x.yoy3 || 0); },
       streak: function (x) { return -x.rev_streak * 1000 - (x.yoy || 0); },
@@ -275,8 +277,9 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       '<div class="evi">' + ev("rev_high", "60") + ev("rev_high", "20") + "</div>" +
       '<div class="tools"><span>排序</span>' + seg("sort", sortBy, [["new", "新公告優先"], ["streak", "連續創新高"], ["lag", "股價尚未反映"], ["yoy", "年增最高"]]) +
       '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label>" +
-      '<label><input type="checkbox" data-opt="onlyNew"' + (onlyNew ? " checked" : "") + "> 只看 " + esc(R.rev_latest.slice(5).replace(/^0/, "")) + " 月新公告</label></div>" +
-      list("rev", items, 18, revCard) + portfolioBox() +
+      '<label><input type="checkbox" data-opt="onlyNew"' + (onlyNew ? " checked" : "") + "> 只看 " + esc(R.rev_latest.slice(5).replace(/^0/, "")) + " 月新公告</label>" +
+      '<label><input type="checkbox" data-opt="onlyTri"' + (onlyTri ? " checked" : "") + "> 只看營收＋動能＋題材(" + R.rev.filter(function (x) { return x.tri; }).length + " 檔)</label></div>" +
+      list("rev", items, 18, revCard) + explBox() + portfolioBox() +
       '<p class="note">年增極高(例如數百 %)常是去年基期很低的景氣循環股,不一定代表長期成長;「連續創新高」月數越多,通常代表成長越持續。「股價尚未反映」排序是距 52 週高點最遠的在前,這類股票沒有經過額外回測。</p>';
   }
 
@@ -361,6 +364,38 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
       rows + "</tbody></table></div>" +
       (items.length > 40 ? '<button type="button" class="more" data-all="rank">' + (showAll.rank ? "收合" : "顯示全部 " + items.length + " 檔") + "</button>" : "") +
       '<p class="note">前瞻合理價 = 分析師共識的未來 12 個月 EPS × 這檔股票自己過去 5 年本益比中位數;前瞻評價依前瞻本益比落在自身歷史第 25~75 百分位的哪裡判斷(歷史本益比分布很寬的股票,空間可能很大但仍屬「合理」)。沒有分析師預估的股票,點開可看依過去四季 EPS 算的版本。這些都是固定公式算出的參考值,不是目標價或買賣建議。</p>';
+  }
+
+  // 飆股起漲前特徵研究(scripts/explosion_study.py)
+  function explBox() {
+    var X = R.explosion;
+    if (!X || !X.rules) return "";
+    var names = [["只看營收(目前的起漲雷達)", "只看營收(這份名單)"], ["營收 + 起漲初期", "營收＋還沒漲多(120 日 < 1 倍、離季線 < 40%)"],
+      ["營收 + 動能", "營收＋動能(60 日漲 ≥ 20%)"], ["營收 + 同產業股價強", "營收＋題材(同產業 60 日平均漲 ≥ 15%)"],
+      ["營收 + 動能 + 同產業股價強", "營收＋動能＋題材"]];
+    function cell(s) {
+      if (!s || s.hit == null) return "<td>—</td><td>—</td><td>—</td><td>—</td>";
+      return "<td>" + plain(s.per_month, 0) + "</td><td>" + plain(s.hit, 1, "%") + '</td><td class="' + dir(s.x60) + '">' + num(s.x60, 1, "%") + "</td><td>" + plain(s.crash, 0, "%") + "</td>";
+    }
+    var rows = names.map(function (n) {
+      var r = X.rules[n[0]];
+      return r ? '<tr class="' + (n[0] === "營收 + 動能 + 同產業股價強" ? "hl" : "") + '"><td>' + n[1] + "</td>" + cell(r.is) + cell(r.oos) + "</tr>" : "";
+    }).join("");
+    var tr = X.traps || {}, f = tr["法人(外資)20 日大賣"], d = tr["年增減速(近 3 月比 3 月前少 20pp 以上)"], g = tr["毛利率下降 3pp 以上"], lb = tr["低基期反彈(半年前年增 < −20%)"];
+    var rc = X.recall || {}, a = rc["只看營收"], b = rc["組合規則"];
+    return '<div class="box"><h3>飆股起漲前有什麼共同點(' + esc(X.span[0].slice(0, 4)) + "–" + esc(X.span[1].slice(0, 4)) + ")</h3>" +
+      "<p>每月營收公告日取所有可交易股票,看之後 120 個交易日內最高漲幅 ≥ 100% 的比例(「飆股率」)。全市場 " + plain(X.base.all, 1, "%") +
+      ",這份營收名單 " + plain(X.base.rev, 1, "%") + "。規則用 2019–2022 決定,2023 年後是樣本外。</p>" +
+      '<table class="pf"><thead><tr><th rowspan="2">條件</th><th colspan="4">2019–2022</th><th colspan="4">2023 年後(樣本外)</th></tr>' +
+      "<tr><th>每月檔數</th><th>飆股率</th><th>60 日比一般股</th><th>60 日內曾跌 25%</th><th>每月檔數</th><th>飆股率</th><th>60 日比一般股</th><th>60 日內曾跌 25%</th></tr></thead><tbody>" + rows + "</tbody></table>" +
+      "<ul>" +
+      "<li><b>動能比「還沒漲」重要。</b>只挑還沒漲多的反而變差;已經開始漲、同產業也在漲的,飆股率高 1.5 倍左右。代價是進場較晚:" +
+      (a && b ? "只看營收時列入當下中位數已從低點漲 " + a.at_med + "%、之後還有 " + a.left_med + "%;三項都有時已漲 " + b.at_med + "%、之後還有 " + b.left_med + "%,而且只抓得到 " + b.caught + "% 的翻倍波段(只看營收 " + a.caught + "%)。" : "") + "</li>" +
+      (d ? "<li><b>陷阱:營收在減速。</b>名單裡年增明顯減速的,60 日比一般股 " + num(d.x60, 1, "%") + "(其他 " + num(d.x60_other, 1, "%") + ")。</li>" : "") +
+      (f ? "<li><b>陷阱:外資 20 日大賣(超過成交 10%)。</b>飆股率 " + plain(f.hit, 1, "%") + "(其他 " + plain(f.hit_other, 1, "%") + ")。</li>" : "") +
+      (g && lb ? "<li><b>不是陷阱:</b>毛利率下降(飆股率 " + plain(g.hit, 1, "%") + " 對 " + plain(g.hit_other, 1, "%") + ")、低基期反彈(" + plain(lb.hit, 1, "%") + " 對 " + plain(lb.hit_other, 1, "%") + ")、本益比已高於自身歷史,都沒有讓結果變差。</li>" : "") +
+      "<li><b>群聯這種「營收還在爆發、股價卻不動」</b>事前看不出來:已連續列入 4 個月以上的股票,2019–2022 之後表現略差、2023 年後反而更好,兩段不一致;列入後已漲 1 倍的,中途大跌的機率明顯較高(約 3–4 成)。看不出穩定的「漲完了」訊號,所以靠分散,不靠挑。</li>" +
+      "</ul><p>研究腳本 scripts/explosion_study.py。2023 年後是 AI 多頭,樣本外數字偏樂觀;回測不含已下市股票。</p></div>";
   }
 
   function portfolioBox() {
@@ -487,6 +522,7 @@ table.tk { border-collapse: collapse; width: 100%; font-size: 14px; background: 
     var o = e.target.dataset && e.target.dataset.opt;
     if (o === "hideLow") { hideLow = e.target.checked; try { localStorage.setItem("radar.hideLow", hideLow ? "1" : "0"); } catch (x) {} }
     if (o === "onlyNew") onlyNew = e.target.checked;
+    if (o === "onlyTri") onlyTri = e.target.checked;
     if (o) render();
   });
 

@@ -59,6 +59,17 @@ def fetch(code, known_sym=None):
             def g(row, col):
                 return num(ee.loc[row, col]) if row in ee.index and col in ee.columns else None
             rec.update(eps0=g("0y", "avg"), eps1=g("+1y", "avg"), n0=g("0y", "numberOfAnalysts"), n1=g("+1y", "numberOfAnalysts"))
+            # Yahoo 有些台股(例:富世達)的 EPS 預估是美元,股價與目標價卻是台幣。用同一來源的台幣 forwardEps 對照,
+            # 兩者差一個匯率(20~45 倍)就換算回台幣
+            try:
+                fwd = num((t.info or {}).get("forwardEps"))
+            except Exception:  # noqa: BLE001
+                fwd = None
+            if fwd and rec.get("eps1") and rec["eps1"] > 0 and 20 < fwd / rec["eps1"] < 45:
+                fx = fwd / rec["eps1"]
+                rec["eps0"] = None if rec.get("eps0") is None else round(rec["eps0"] * fx, 2)
+                rec["eps1"] = round(rec["eps1"] * fx, 2)
+                rec["usd_fixed"] = round(fx, 2)
         if pt and num(pt.get("mean")):
             rec.update(tgt=num(pt.get("mean")), tgt_lo=num(pt.get("low")), tgt_hi=num(pt.get("high")))
         if len(rec) > 1:

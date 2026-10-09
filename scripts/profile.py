@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import history  # noqa: E402
 
 OUT = os.path.join(history.ROOT, "data", "profile", "latest.json")
+IND_OUT = os.path.join(history.ROOT, "data", "profile", "industry.json")
 STOCKS = os.path.join(history.ROOT, "data", "stocks")
 STALE_DAYS = 30
 MAX_PER_RUN = 120
@@ -109,7 +110,28 @@ def moneydj(code):
     return out
 
 
+def industry_map():
+    """全部上市櫃公司的產業別(證交所產業代碼),起漲雷達算「同產業股價是否一起走強」用。每次執行都更新(只有兩個請求)。"""
+    out = {}
+    for url, kc, ki in (("https://openapi.twse.com.tw/v1/opendata/t187ap03_L", "公司代號", "產業別"),
+                        ("https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O", "SecuritiesCompanyCode", "SecuritiesIndustryCode")):
+        try:
+            for r in history.get(url):
+                c = str(r.get(kc, "")).strip()
+                if history.STOCK.match(c) and str(r.get(ki, "")).strip():
+                    out[c] = str(r.get(ki)).strip()
+        except Exception as e:  # noqa: BLE001
+            print("industry: %s %s" % (url, e), file=sys.stderr)
+            return None
+    return out
+
+
 def main():
+    ind = industry_map()
+    if ind:
+        os.makedirs(os.path.dirname(IND_OUT), exist_ok=True)
+        with open(IND_OUT, "w", encoding="utf-8") as f:
+            json.dump(ind, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
     try:
         with open(OUT, encoding="utf-8") as f:
             db = json.load(f)

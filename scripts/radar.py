@@ -25,6 +25,9 @@ TRACK = os.path.join(history.ROOT, "data", "track")
 MIN_VALUE = 0.3          # 億,當天成交金額門檻(比觀察名單寬,才看得到小型股)
 SURGE = 5                # 成交金額 ≥ 前 20 日均量幾倍
 REV_YOY = 30             # 營收年增門檻(%)
+MOM60 = 20               # 「動能」:近 60 日漲幅 ≥ 20%(scripts/explosion_study.py 的組合規則)
+PEER60 = 15              # 「題材」:同產業(證交所產業別)可交易股票近 60 日平均漲幅 ≥ 15%
+DECEL = -20              # 「營收減速」:近 3 月平均年增比 3 個月前少 20 個百分點以上
 REV_YOY2 = 20            # 或連續 2 個月年增都 ≥ 這個數(接住像騰輝 1 月年增 29% 這種差一點的)
 
 RULES = {
@@ -142,6 +145,7 @@ def build(L):
     mx250 = close.shift(1).rolling(250, min_periods=200).max()
     vol60 = chg.rolling(60, min_periods=40).std()
     ret20 = close / close.shift(20) - 1
+    ret60 = close / close.shift(60) - 1
 
     D = {k: to_daily(rp[k], rp["months"], close.index) for k in ("yoy", "yoy3", "rec", "good")}
     newpub = pd.Series(False, index=close.index)
@@ -200,6 +204,8 @@ def build(L):
 
     ma60 = L["ma60"]
     rk_last = L["rk_n"].loc[last].fillna(1).to_dict()
+    peer, ind = peer_momentum(ret60.loc[last], tradable.loc[last])
+    accel = rp["yoy3"] - rp["yoy3"].shift(3)
     vol_cut = float(vol60.loc[last][tradable.loc[last]].quantile(0.3))
     rev_list = []
     for c in codes:
@@ -222,6 +228,15 @@ def build(L):
             "low_vol": bool(not pd.isna(x["vol60"]) and x["vol60"] < vol_cut),
             "rev_hist": [_f(v / 1e5, 1) for v in col.loc[:mi].iloc[-13:].values],
         })
+        r60 = ret60.at[last, c]
+        x.update({
+            "ret60": _f(r60 * 100, 1), "ind": IND_NAME.get(ind.get(c), ind.get(c)), "peer60": _f(peer.get(c), 1),
+            "accel": _f(accel.at[mi, c], 1),
+        })
+        x["mom_ok"] = bool(not pd.isna(r60) and r60 * 100 >= MOM60)
+        x["peer_ok"] = bool(x["peer60"] is not None and x["peer60"] >= PEER60)
+        x["tri"] = x["mom_ok"] and x["peer_ok"]
+        x["decel"] = bool(x["accel"] is not None and x["accel"] <= DECEL)
         x["why"] = rev_reasons(x)
         rev_list.append(x)
     rev_list.sort(key=lambda x: (not x["rev_new"], -(x["yoy3"] or 0)))
@@ -269,6 +284,15 @@ def build(L):
     try:   # 毛利率回測結果(scripts/margin_test.py 產生,研究用、不在排程跑)
         with open(os.path.join(OUT, "margin_test.json"), encoding="utf-8") as f:
             meta["margin_bt"] = json.load(f)
+    except (OSError, ValueError):
+        pass
+    try:   # 飆股特徵研究(scripts/explosion_study.py,研究用):只帶網頁要顯示的部分
+        with open(os.path.join(OUT, "explosion.json"), encoding="utf-8") as f:
+            ex = json.load(f)
+        meta["explosion"] = {k: ex[k] for k in ("span", "base", "traps", "recall", "cases") if k in ex}
+        meta["explosion"]["rules"] = {k: v for k, v in ex.get("rules", {}).items()
+                                      if k in ("只看營收(目前的起漲雷達)", "營收 + 起漲初期", "營收 + 動能", "營收 + 同產業股價強", "營收 + 動能 + 同產業股價強")}
+        meta["explosion"]["streak"] = ex.get("streak")
     except (OSError, ValueError):
         pass
     doc = dict(meta, stats=stats, base=base, rev=rev_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank,
@@ -411,6 +435,33 @@ def cycle(L, rp, close, dates, usable):
     return {"stats": stats, "cases": cases, "now": now}
 
 
+# 證交所產業別代碼(上市與上櫃共用)
+IND_NAME = {"01": "水泥", "02": "食品", "03": "塑膠", "04": "紡織", "05": "電機機械", "06": "電器電纜", "08": "玻璃陶瓷",
+            "09": "造紙", "10": "鋼鐵", "11": "橡膠", "12": "汽車", "14": "建材營造", "15": "航運", "16": "觀光餐旅",
+            "17": "金融保險", "18": "貿易百貨", "19": "綜合", "20": "其他", "21": "化學", "22": "生技醫療", "23": "油電燃氣",
+            "24": "半導體", "25": "電腦及週邊", "26": "光電", "27": "通信網路", "28": "電子零組件", "29": "電子通路",
+            "30": "資訊服務", "31": "其他電子", "32": "文化創意", "33": "農業科技", "35": "綠能環保", "36": "數位雲端",
+            "37": "運動休閒", "38": "居家生活", "80": "管理股票"}
+
+
+MIXED_IND = {"19", "20", "80"}   # 綜合、其他、管理股票:不是同一種生意,不算「同產業」
+
+
+def peer_momentum(r60_last, trad_last):
+    """同產業可交易股票近 60 日平均漲幅(%);產業內少於 5 檔不算。"""
+    try:
+        with open(os.path.join(history.ROOT, "data", "profile", "industry.json"), encoding="utf-8") as f:
+            ind = json.load(f)
+    except (OSError, ValueError):
+        return {}, {}
+    df = pd.DataFrame({"r": r60_last, "t": trad_last})
+    df["g"] = [None if ind.get(c) in MIXED_IND else ind.get(c) for c in df.index]
+    ok = df[df.t.fillna(False).astype(bool) & df.r.notna() & df.g.notna()]
+    agg = ok.groupby("g").r.agg(["mean", "size"])
+    agg = agg[agg["size"] >= 5]["mean"] * 100
+    return {c: agg.get(g) for c, g in df.g.items() if g in agg.index}, ind
+
+
 def rev_reasons(x):
     out = ["%s 月營收年增 %+.0f%%,創近 12 個月新高" % (x["rev_month"][5:].lstrip("0"), x["yoy"])]
     if x["yoy"] < REV_YOY:
@@ -430,6 +481,12 @@ def rev_reasons(x):
             out.append("股價距 52 週高點還有 %.0f%%,尚未反映" % -x["hi250"])
     if x["ret20"] is not None and x["ret20"] >= 30:
         out.append("股價 20 日已漲 %+.0f%%" % x["ret20"])
+    if x.get("tri"):
+        out.append("營收、動能(60 日漲 %+.0f%%)、題材(%s類股 60 日平均 %+.0f%%)三項都有" % (x["ret60"], x["ind"] or "同產業", x["peer60"]))
+    elif x.get("peer60") is not None and x["peer60"] >= PEER60:
+        out.append("%s類股 60 日平均漲 %+.0f%%,但這檔股價動能還不足" % (x["ind"] or "同產業", x["peer60"]))
+    if x.get("decel"):
+        out.append("營收年增在減速(近 3 月比 3 個月前少 %.0f 個百分點),歷史上之後表現較差" % -x["accel"])
     return out
 
 

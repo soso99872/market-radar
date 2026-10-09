@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>盤前雷達</title>
-<meta name="description" content="每個交易日 07:30 自動更新的台美股盤前重點、經濟日曆與影響分析">
+<meta name="description" content="每個交易日 06:00 自動更新的台美股盤前重點、經濟日曆與影響分析">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
@@ -201,7 +201,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
         <path d="M13 13 L13 1.5 A11.5 11.5 0 0 1 23.5 8.2 Z" fill="var(--accent)" opacity=".85"/>
         <circle cx="18.5" cy="8.5" r="1.8" fill="var(--text)"/>
       </svg>
-      <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 07:30</span></div>
+      <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 06:00</span></div>
     </div>
     <nav class="nav" aria-label="頁面">
       <a href="./" aria-current="page">晨報</a>
@@ -419,7 +419,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
     .then(function (r) { return r.json(); })
     .then(function (idx) {
       dates = idx.dates || [];
-      if (!dates.length) { app.innerHTML = '<p class="err">還沒有任何報告,第一份會在下一個交易日 07:30 產生。</p>'; return; }
+      if (!dates.length) { app.innerHTML = '<p class="err">還沒有任何報告,第一份會在下一個交易日 06:00 產生。</p>'; return; }
       sel.innerHTML = dates.map(function (d) {
         return '<option value="' + esc(d) + '">' + (d === "sample" ? "範例" : esc(d)) + "</option>";
       }).join("");

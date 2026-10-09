@@ -1,11 +1,11 @@
 # 盤前雷達 — 每日報告產生指南
 
-這份文件是給每天 07:30(台北時間)自動執行的排程 agent 看的。網站 `index.html` 會讀 `data/index.json` 和 `data/YYYY-MM-DD.json` 來顯示報告。
+這份文件是給每天 06:00(台北時間)自動執行的排程 agent 看的。網站 `index.html` 會讀 `data/index.json` 和 `data/YYYY-MM-DD.json` 來顯示報告。
 
 ## 每日流程
 
 1. 用 `TZ=Asia/Taipei date +%F` 取得今天日期(以下稱 DATE)。
-2. 讀行情:GitHub Actions 每個交易日台北 06:15 會先把行情抓好放在 `data/quotes.json`(雲端排程的網路連不到 Yahoo 與證交所,所以不要自己跑 fetch_quotes.py)。
+2. 讀行情:GitHub Actions 每個交易日台北 05:10 會先把行情抓好放在 `data/quotes.json`(雲端排程的網路連不到 Yahoo 與證交所,所以不要自己跑 fetch_quotes.py)。
    - 確認 `fetched_at` 是今天(台北時間);是的話,把它的 `markets` 與 `tsm_adr_premium_pct` 原樣放進報告,`failed` 裡的代號改用網路搜尋補(查不到就省略該項,不可捏造)。
    - 如果 `fetched_at` 不是今天,先 `git pull origin main` 再看一次;還是舊的,就全部改用網路搜尋取得收盤數字,`spark` 省略,並在 sources 註明來源。
    - 台股前一交易日三大法人金額讀 `data/flows/market.json`(證交所官方數字,date 要是前一交易日),直接填進 `tw_flows` 的 foreign / trust / dealer,不要用新聞上的數字取代。

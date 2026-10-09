@@ -526,7 +526,9 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
         "</td><td>p = " + (x.p_t < 0.001 ? "&lt;0.001" : x.p_t.toFixed(3)) + (x.oos_persisted ? " · 樣本外延續" : "") + "</td></tr>";
     }
     return '<div class="box"><h3>第三方稽核:anti-gambling-trader</h3><table class="pf"><tbody>' +
-      one(AU.live, "實盤追蹤(真正的檢驗)") + one(AU.backtest, "回測(規則是事後訂的,僅供參考)") + "</tbody></table>" +
+      one(AU.live, "營收名單 · 實盤追蹤(真正的檢驗)") + one(AU.backtest, "營收名單 · 回測(規則是事後訂的,僅供參考)") +
+      (AU.live_star ? one(AU.live_star, "評級 4★ 以上 · 實盤追蹤(2026-10-09 起)") : "") +
+      (AU.backtest_star ? one(AU.backtest_star, "評級 4★ 以上 · 回測(規則是看過 2019–2026 才定的)") : "") + "</tbody></table>" +
       "<p>每週自動把「營收動能名單每月一籃、持有 20 日、扣掉同日一般股報酬」的紀錄,交給開源的交易統計檢驗工具 " +
       '<a href="https://github.com/mars-tw/anti-gambling-trader-tw" style="color:var(--accent)">anti-gambling-trader</a>(固定版本 ' + esc((AU.tool_sha || "").slice(0, 7)) +
       ")判定是實力還是運氣。我們驗證過:把隨機選股丟給它,40 次沒有一次被判「具統計優勢」。最近稽核 " + esc(AU.generated_at.slice(0, 10)) + "。</p></div>";

@@ -545,3 +545,24 @@ for k in (5, 4, 3, 2, 1):
                 k, tag, s["per_month"], s["hit"], s["big"], s["x60"], s["med60"], s["crash"], s["t"]))
 with open(OUT, "w", encoding="utf-8") as fh:
     json.dump(clean(out), fh, ensure_ascii=False, separators=(",", ":"))
+
+# ---- 第三方稽核用:4★ 以上每月一籃(營收公告隔天開盤進場、持有 20 日、扣掉同日一般股),格式同 radar.basket_log ----
+import csv  # noqa: E402
+rows_b = []
+for i in sorted(R.i.unique()):
+    e = i + 1
+    if e + 19 >= N:
+        continue
+    f20 = C[e + 19] / O[e] - 1 - S.COST
+    ok = (V[i] >= radar.MIN_VALUE) & ~np.isnan(f20)
+    picks = [codes.index(c) for c in R[(R.i == i) & (R.stars >= 4)].code]
+    picks = [j for j in picks if ok[j]]
+    if not picks or ok.sum() < 100:
+        continue
+    rows_b.append(["籃%s" % dates[i], dates[e], dates[e + 19], int(round(1e6 * (np.mean(f20[picks]) - np.mean(f20[ok])))), "TWD"])
+with open(os.path.join(history.ROOT, "data", "track", "basket_backtest_star.csv"), "w", encoding="utf-8", newline="") as fh:
+    w = csv.writer(fh)
+    w.writerow(["代號", "進場時間", "出場時間", "已實現淨損益", "損益幣別"])
+    w.writerows(rows_b)
+print("\n[稽核用] 4★ 以上每月一籃 %d 筆,平均每籃比一般股 %+.2f%%,月勝率 %.0f%%" % (
+    len(rows_b), np.mean([r[3] for r in rows_b]) / 1e4, np.mean([r[3] > 0 for r in rows_b]) * 100))

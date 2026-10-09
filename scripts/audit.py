@@ -62,6 +62,9 @@ def main():
         "unit": "每月一籃,投入 100 萬,損益 = 名單等權報酬 − 同日一般股平均報酬(已扣交易成本)",
         "backtest": run(agt, os.path.join(TRACK, "basket_backtest.csv")),
         "live": run(agt, os.path.join(TRACK, "basket_live.csv")),
+        # 星等評級 4★ 以上(2026-10-09 加入):回測紀錄由 scripts/explosion_study.py 產生,規則是看過 2019–2026 才定的
+        "backtest_star": run(agt, os.path.join(TRACK, "basket_backtest_star.csv")),
+        "live_star": run(agt, os.path.join(TRACK, "basket_live_star.csv")),
     }
     with open(os.path.join(TRACK, "audit.json"), "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)

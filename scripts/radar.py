@@ -10,6 +10,7 @@
 月營收視為次月 11 日起才知道(法定公告期限是 10 日)。
 """
 import csv
+from datetime import datetime
 import json
 import os
 
@@ -762,21 +763,25 @@ def track(L, rev_list, bo_list, close, opn, vyi, dates, mom=None):
         "picks": [x["code"] for x in w.get("picks", [])],
         "dump": [x["code"] for x in w.get("dump", [])],
         "mom_top": [c for c, v in ((mom or {}).get("today") or {}).items() if v["q"] == 4],
+        "star45": [x["code"] for x in rev_list if x.get("stars", 0) >= 4],   # 2026-10-09 起記錄
+        "star5": [x["code"] for x in rev_list if x.get("stars", 0) >= 5],
     }
     p = os.path.join(d, last + ".json")
     if not os.path.exists(p):
         with open(p, "w", encoding="utf-8") as f:
             json.dump(snap, f, ensure_ascii=False, separators=(",", ":"))
     else:
-        # 已存在的快照不改既有名單;只補上後來新增的名單種類
+        # 已存在的快照不改既有名單;只補上後來新增的名單種類,而且只能在隔天開盤(進場)前補,過了就等於事後補記
         old = json.load(open(p, encoding="utf-8"))
-        add = {k: v for k, v in snap.items() if k not in old}
+        now = datetime.now(history.TZ)
+        before_open = now.strftime("%Y-%m-%d") == last or now.hour < 9
+        add = {k: v for k, v in snap.items() if k not in old} if before_open else {}
         if add:
             old.update(add)
             with open(p, "w", encoding="utf-8") as f:
                 json.dump(old, f, ensure_ascii=False, separators=(",", ":"))
 
-    names = {"rev": "營收動能", "mom_top": "營收動能 · 動能分數前 1/5", "breakout": "爆量突破", "picks": "法人資金流向", "dump": "法人持續調節"}
+    names = {"rev": "營收動能", "star45": "評級 4★ 以上", "star5": "評級 5★", "mom_top": "營收動能 · 動能分數前 1/5", "breakout": "爆量突破", "picks": "法人資金流向", "dump": "法人持續調節"}
     idx = {x: i for i, x in enumerate(dates)}
     univ = vyi >= MIN_VALUE
     res = {k: {"name": v, "rows": []} for k, v in names.items()}
@@ -801,24 +806,25 @@ def track(L, rev_list, bo_list, close, opn, vyi, dates, mom=None):
             xs = [r["x%d" % h] for r in v["rows"] if r.get("x%d" % h) is not None]
             v["avg_x%d" % h] = _f(np.mean(xs)) if xs else None
             v["n%d" % h] = len(xs)
-    # 實盤的每月一籃:從快照中每隔 20 個交易日取一天,把營收動能名單等權持有 20 日(扣掉一般股),給第三方稽核用
-    live_rows, next_i = [], -1
-    for fn in sorted(os.listdir(d)):
-        s = json.load(open(os.path.join(d, fn), encoding="utf-8"))
-        i = idx.get(s["date"])
-        if i is None or i < next_i or i + 20 >= len(dates):
-            continue
-        f = close.iloc[i + 20] / opn.iloc[i + 1] - 1 - S.COST
-        cs = [c for c in s.get("rev", []) if c in close.columns and not pd.isna(f[c])]
-        if cs:
-            live_rows.append(["籃%s" % s["date"], dates[i + 1], dates[i + 20],
-                              int(round(1e6 * (f[cs].mean() - f[univ.iloc[i]].mean()))), "TWD"])
-            next_i = i + 20
+    # 實盤的每月一籃:從快照中每隔 20 個交易日取一天,把名單等權持有 20 日(扣掉一般股),給第三方稽核用
     os.makedirs(TRACK, exist_ok=True)
-    with open(os.path.join(TRACK, "basket_live.csv"), "w", encoding="utf-8", newline="") as fh:
-        w = csv.writer(fh)
-        w.writerow(["代號", "進場時間", "出場時間", "已實現淨損益", "損益幣別"])
-        w.writerows(live_rows)
+    for key, fname in (("rev", "basket_live.csv"), ("star45", "basket_live_star.csv")):
+        live_rows, next_i = [], -1
+        for fn in sorted(os.listdir(d)):
+            s = json.load(open(os.path.join(d, fn), encoding="utf-8"))
+            i = idx.get(s["date"])
+            if i is None or i < next_i or i + 20 >= len(dates) or key not in s:
+                continue
+            f = close.iloc[i + 20] / opn.iloc[i + 1] - 1 - S.COST
+            cs = [c for c in s.get(key, []) if c in close.columns and not pd.isna(f[c])]
+            if cs:
+                live_rows.append(["籃%s" % s["date"], dates[i + 1], dates[i + 20],
+                                  int(round(1e6 * (f[cs].mean() - f[univ.iloc[i]].mean()))), "TWD"])
+                next_i = i + 20
+        with open(os.path.join(TRACK, fname), "w", encoding="utf-8", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["代號", "進場時間", "出場時間", "已實現淨損益", "損益幣別"])
+            w.writerows(live_rows)
     with open(os.path.join(TRACK, "summary.json"), "w", encoding="utf-8") as f:
         json.dump({"since": sorted(os.listdir(d))[0][:10] if os.listdir(d) else last, "date": last, "lists": res},
                   f, ensure_ascii=False, separators=(",", ":"))

@@ -44,11 +44,12 @@
     if (!statsP) statsP = MR.json("data/signals/stats.json").catch(function () { return null; });
     return statsP;
   };
-  // 個股基本資料(scripts/profile.py),只載一次
-  var profP = null;
-  MR.profile = function () {
-    if (!profP) profP = MR.json("data/profile/latest.json").catch(function () { return {}; });
-    return profP;
+  // 個股基本資料(scripts/profile.py):依代號前兩碼分檔(write_shards),每份只載一次;回傳 {代號: 概況}
+  var profP = {};
+  MR.profile = function (code) {
+    var k = String(code || "").slice(0, 2);
+    if (!profP[k]) profP[k] = MR.json("data/profile/shard/" + k + ".json").catch(function () { return {}; });
+    return profP[k];
   };
 
   // ---- 星等評級(依 scripts/explosion_study.py 回測:分層 + 陷阱扣分) ----
@@ -144,7 +145,11 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", navBadge); else navBadge();
 
   // ---- 今天先看這 10 檔:data/radar/picks.json(排序規則在 scripts/radar.py write_picks) ----
-  MR.picks = function () { return MR.json("data/radar/picks.json"); };
+  var picksP = null;
+  MR.picks = function () {
+    if (!picksP) picksP = MR.json("data/radar/picks.json").catch(function (e) { picksP = null; throw e; });
+    return picksP;
+  };
   MR.picksHtml = function (P, more) {
     if (!P || !P.top || !P.top.length) return "";
     var c = P.curve || {}, k = c["4★ 以上"], all = c["全部可交易股票"];
@@ -172,8 +177,12 @@
       "建議分散買、單檔不超過可投入金額的 1/10;評級是統計機率,不是保證。" + (more ? ' <a href="radar.html">看起漲雷達 →</a>' : "") + "</p></section>";
   };
 
-  // 查詢索引(全部股票,scripts/signals.py write_index),只載一次
-  var idxP = null;
+  // 查詢索引(全部股票,scripts/signals.py write_index),只載一次;搜尋只需要名稱與星等,用輕量的 search.json
+  var idxP = null, srchP = null;
+  MR.searchIndex = function () {
+    if (!srchP) srchP = MR.json("data/stocks/search.json").catch(function () { return MR.index(); });
+    return srchP;
+  };
   MR.index = function () {
     if (!idxP) idxP = MR.json("data/stocks/index.json").catch(function () { return null; });
     return idxP;
@@ -390,9 +399,10 @@
   // 評級說明:每一級歷史上的表現(起漲雷達 latest.json 帶研究結果)
   var starStatsP = null;
   function starStats() {
-    if (!starStatsP) starStatsP = MR.json("data/radar/latest.json").then(function (r) {
-      var s = (r.explosion || {}).stars || null;
-      if (s) { s.regime = (r.explosion || {}).regime; s.landmine = (r.explosion || {}).landmine; }
+    // 讀 14KB 的 picks.json(原本讀 400KB 的 radar/latest.json)
+    if (!starStatsP) starStatsP = MR.picks().then(function (r) {
+      var s = r.stars || null;
+      if (s) { s.regime = r.regime; s.landmine = r.landmine; }
       return s;
     }).catch(function () { return null; });
     return starStatsP;
@@ -574,7 +584,7 @@
     var d = ensureDialog();
     d.innerHTML = '<div class="sh-head"><div><h3 id="stk-title">' + esc(code) + '</h3></div><button type="button" class="x" data-close aria-label="關閉">×</button></div><div class="sh-body"><p class="flat">載入中…</p></div>';
     if (!d.open) d.showModal();
-    Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile()])
+    Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile(code)])
       .then(function (res) {
         d.innerHTML = stockHtml(res[0], res[1], res[2]);
         starStats().then(function (S) { var n = d.querySelector("#health"); if (n) n.innerHTML = healthHtml(res[0].health, res[0].rating, S); });
@@ -591,7 +601,7 @@
 
   // 沒有詳細面板的股票:用查詢索引顯示精簡資料
   function brief(d, code) {
-    Promise.all([MR.index(), MR.profile(), starStats()]).then(function (res) {
+    Promise.all([MR.index(), MR.profile(code), starStats()]).then(function (res) {
       var I = res[0], x = I && I.s[code], body = d.querySelector(".sh-body");
       if (!x) { body.innerHTML = '<p class="flat">查無這檔股票(只收錄上市櫃普通股)。</p>'; return; }
       var r = { stars: x[1], tier: x[2], traps: x[11] }, p = res[1] && res[1][code];
@@ -633,7 +643,7 @@
     q.addEventListener("input", function () {
       var v = q.value.trim().toLowerCase();
       if (!v) { items = []; render(); return; }
-      MR.index().then(function (I) {
+      MR.searchIndex().then(function (I) {
         if (!I) return;
         var exact = [], pre = [], has = [];
         Object.keys(I.s).forEach(function (c) {

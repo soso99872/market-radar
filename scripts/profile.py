@@ -126,6 +126,18 @@ def industry_map():
     return out
 
 
+def write_shards(db):
+    """依代號前兩碼拆成小檔(data/profile/shard/23.json …),網頁開一檔股票只載其中一份(全市場時每份約 20KB)。"""
+    d = os.path.join(os.path.dirname(OUT), "shard")
+    os.makedirs(d, exist_ok=True)
+    groups = {}
+    for c, v in db.items():
+        groups.setdefault(c[:2], {})[c] = v
+    for k, g in groups.items():
+        with open(os.path.join(d, k + ".json"), "w", encoding="utf-8") as f:
+            json.dump(g, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+
+
 def main():
     ind = industry_map()
     if ind:
@@ -164,6 +176,7 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(db, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    write_shards(db)
     print("profile updated", done, "of", len(todo[:limit]), "| total", len(db), "| still stale", max(0, len(todo) - done))
 
 

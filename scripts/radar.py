@@ -939,7 +939,8 @@ def write_picks(rev_list, last, ex):
     def slim(x):
         return {k: x.get(k) for k in keep}
     doc = {"date": last, "n": len(cand), "liq": PICK_LIQ, "ind_cap": PICK_IND, "top": [slim(x) for x in top], "rest": [slim(x) for x in rest],
-           "curve": (ex or {}).get("curve"), "stars": (ex or {}).get("stars")}
+           "curve": (ex or {}).get("curve"), "stars": (ex or {}).get("stars"),
+           "regime": (ex or {}).get("regime"), "landmine": (ex or {}).get("landmine")}   # 個股健檢用,不必載整份 latest.json
     with open(os.path.join(OUT, "picks.json"), "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
 

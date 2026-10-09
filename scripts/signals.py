@@ -441,7 +441,7 @@ def main():
             json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
         keep.add(c + ".json")
     for n in os.listdir(STOCK_DIR):
-        if n.endswith(".json") and n not in keep and n != "index.json":
+        if n.endswith(".json") and n not in keep and n not in ("index.json", "search.json"):
             os.remove(os.path.join(STOCK_DIR, n))
     write_index(close, F, names, last, keep)
     print("OK", span, "signals", {k: len(v) for k, v in hits.items()}, "stocks", len(keep))
@@ -459,6 +459,9 @@ def write_index(close, F, names, last, keep):
         s[c] = [names.get(c, c), r.get("stars", 1), r.get("tier"), _f(F["close_raw"].at[last, c]), _f(F["chg"].at[last, c]),
                 n.get("ret60"), n.get("ind"), n.get("yoy"), n.get("yoy3"), n.get("rev_month"), 1 if c + ".json" in keep else 0,
                 r.get("traps") or [], n]
+    # 搜尋用的輕量索引(代號 → [名稱, 星等]),打字時才不用下載整份 index.json
+    with open(os.path.join(STOCK_DIR, "search.json"), "w", encoding="utf-8") as f:
+        json.dump({"date": last, "s": {c: [v[0], v[1]] for c, v in s.items()}}, f, ensure_ascii=False, separators=(",", ":"))
     with open(os.path.join(STOCK_DIR, "index.json"), "w", encoding="utf-8") as f:
         json.dump({"date": last, "fields": ["name", "stars", "tier", "close", "chg", "ret60", "ind", "yoy", "yoy3", "rev_month", "panel", "traps", "health"],
                    "s": s}, f, ensure_ascii=False, separators=(",", ":"))

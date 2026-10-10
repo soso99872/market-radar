@@ -698,7 +698,7 @@ _Q = {}
 
 
 def run_rate_eps(c, r3, cur_m, ttm=None, yoy3=None):
-    """近 3 月營收 × 4 × 最新一季淨利率 ÷ 股數。r3 = 近 3 個月營收合計(千元)。只用當下已過申報期限的季報。"""
+    """近 3 月營收 × 4 × 最新一季本業稅後淨利率 ÷ 股數。r3 = 近 3 個月營收合計(千元)。只用當下已過申報期限的季報。"""
     import margin
     import quality
     if not _Q:
@@ -711,12 +711,18 @@ def run_rate_eps(c, r3, cur_m, ttm=None, yoy3=None):
     pl, bs, rv = _Q["pl"].get(c), _Q["bs"].get(c), _Q["rev"].get(c)
     if not (p and pl and bs and rv and p in bs):
         return None
-    q = quality.quarterly_pl(pl).get(p)
+    plq = quality.quarterly_pl(pl)
+    q = plq.get(p)
     qr = margin.quarterly(rv).get(p)
     cap = bs[p][4]
-    if not q or not qr or not qr[0] or qr[0] <= 0 or not cap or cap <= 0:
+    if not q or not qr or not qr[0] or qr[0] <= 0 or not cap or cap <= 0 or q[0] <= 0:
         return None
-    nm = q[3] / qr[0]                      # 最新一季稅後淨利率
+    # 本業稅後淨利率 = 最新一季營業利益 × (淨利 ÷ 稅前淨利,近四季,限制 0.5~1) ÷ 營收
+    # 不用含業外的淨利率:業外常是一次性(匯兌、處分),例:大亞 2026Q2 業外 4.4 億把淨利率推到 14.3%
+    four = [plq.get(x) for x in quality.prev_quarters(p, 4)]
+    pre4, ni4 = (sum(x[2] for x in four), sum(x[3] for x in four)) if all(four) else (0, 0)
+    tax_keep = min(1.0, max(0.5, ni4 / pre4)) if pre4 > 0 and ni4 > 0 else 0.8
+    nm = q[0] * tax_keep / qr[0]
     shares = cap * 1000 / 10               # 股本(千元)÷ 面額 10 元
     out = {"eps": r3 * 4 * nm * 1000 / shares, "nm": _f(nm * 100, 1), "rev12": _f(r3 * 4 / 1e5, 1), "p": p}
     # 成長情境:過去 12 個月營收 × (1 + 近 3 月年增率),再乘同樣的淨利率(年增率限制在 −50% ~ +100%)
@@ -781,12 +787,13 @@ def fair_all(rp, close, last):
                                 "low": _f(feps12 * lo_), "high": _f(feps12 * hi_), "up": _f((feps12 * mid_ / price - 1) * 100, 1),
                                 "n": k.get("n1"), "eps0": k.get("eps0"), "eps1": k["eps1"], "band": [_f(b, 1) for b in pe_band[:3]]}
                     e["fwd"]["status"] = "低估" if price < feps12 * lo_ else "高估" if price > feps12 * hi_ else "合理"
-            # 沒有分析師預估時:自行推估未來 12 個月 EPS = 近 3 月營收 × 4 × 最新一季稅後淨利率 ÷ 股數
+            # 沒有分析師預估時:自行推估未來 12 個月 EPS = 近 3 月營收 × 4 × 最新一季本業稅後淨利率 ÷ 股數
             # (用最新的營收與獲利率,不是過去四季平均;假設接下來 12 個月維持這個水準,不外推成長)
             if "fwd" not in e and pe_band and r3:
                 y3 = rp["yoy3"][c].dropna()
                 pj = run_rate_eps(c, r3, cur_m, ttm, y3.iloc[-1] if len(y3) else None)
-                if pj and pj["eps"] > 0 and price / pj["eps"] >= 2:
+                # 推估本益比太高(最新一季幾乎沒賺)時本益比法沒有意義,不估;門檻 50 倍或歷史區間上緣的 2.5 倍
+                if pj and pj["eps"] > 0 and 2 <= price / pj["eps"] <= max(50, pe_band[2] * 2.5):
                     lo_, mid_, hi_ = pe_band[:3]
                     pj.update(fair=_f(pj["eps"] * mid_), low=_f(pj["eps"] * lo_), high=_f(pj["eps"] * hi_), pe=_f(price / pj["eps"], 1),
                               up=_f((pj["eps"] * mid_ / price - 1) * 100, 1), band=[_f(b_, 1) for b_ in pe_band[:3]])

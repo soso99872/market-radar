@@ -169,12 +169,15 @@
         '<span class="pk-w">' + esc(why(x)) + "</span></button>";
     };
     var rest = P.rest || [];
-    return '<section class="picks"><div class="pk-top"><h2>今天先看這 ' + P.top.length + " 檔</h2>" +
-      "<span>起漲雷達 4★ 以上共 " + P.n + " 檔,依 星等 → 本月新公告 → 好進出(20 日均成交 ≥ " + P.liq + " 億)→ 近 3 月營收年增 排序" + (P.ind_cap ? ",同一產業最多 " + P.ind_cap + " 檔" : "") + ";處置中的不列、有財務地雷的排後面,點了看健檢</span></div>" +
+    var help = MR.help("picks", "今天先看這 " + P.top.length + " 檔:怎麼選、有多準",
+      "<p>起漲雷達 4★ 以上共 " + P.n + " 檔,依 星等 → 本月新公告 → 好進出(20 日均成交 ≥ " + P.liq + " 億)→ 近 3 月營收年增 排序" + (P.ind_cap ? ",同一產業最多 " + P.ind_cap + " 檔" : "") + ";處置中的不列、有財務地雷的排後面,點個股看健檢。</p>" +
+      (k ? "<p>回測:每月買全部 4★ 以上、持有一個月,年化 " + MR.sign(k.cagr, 0) + "%、最大回撤 " + k.mdd + "%(同期全部股票 " + MR.sign(all && all.cagr, 0) + "%)。</p>" : "") +
+      "<p>建議分散買、單檔不超過可投入金額的 1/10;評級是統計機率,不是保證。詳細驗證見「策略績效」頁。</p>");
+    return '<section class="picks"><div class="pk-top"><h2>今天先看這 ' + P.top.length + " 檔" + help + "</h2>" +
+      "<span>起漲雷達 4★ 以上共 " + P.n + " 檔</span></div>" +
       '<div class="pk-list">' + P.top.map(card).join("") + "</div>" +
       (rest.length ? '<details class="pk-rest"><summary>其餘 ' + rest.length + " 檔 4★ 以上</summary>" + '<div class="pk-list">' + rest.map(card).join("") + "</div></details>" : "") +
-      '<p class="pk-foot">' + (k ? "回測:每月買全部 4★ 以上、持有一個月,年化 " + MR.sign(k.cagr, 0) + "%、最大回撤 " + k.mdd + "%(同期全部股票 " + MR.sign(all && all.cagr, 0) + "%)。" : "") +
-      "建議分散買、單檔不超過可投入金額的 1/10;評級是統計機率,不是保證。" + (more ? ' <a href="radar.html">看起漲雷達 →</a>' : "") + "</p></section>";
+      '<p class="pk-foot">分散買、單檔不超過可投入金額的 1/10。' + (more ? ' <a href="radar.html">看起漲雷達 →</a>' : "") + "</p></section>";
   };
 
   // 查詢索引(全部股票,scripts/signals.py write_index),只載一次;搜尋只需要名稱與星等,用輕量的 search.json
@@ -206,6 +209,24 @@
     });
     return dlg;
   }
+
+  // ---- 說明按鈕:標題旁的「?」,點開用同一個面板顯示「怎麼看、怎麼算、回測證明」,讓頁面只留結果 ----
+  var HELP = {};
+  MR.help = function (key, title, html) {
+    HELP[key] = { title: title, html: html };
+    return ' <button type="button" class="help-btn" data-help="' + esc(key) + '" aria-label="說明:' + esc(title) + '" title="說明">?</button>';
+  };
+  MR.openHelp = function (key) {
+    var h = HELP[key], d = ensureDialog();
+    if (!h) return;
+    d.innerHTML = '<div class="sh-head"><div><h3 id="stk-title">' + esc(h.title) + '</h3></div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
+      '<div class="sh-body help-body">' + h.html + "</div>";
+    if (!d.open) d.showModal();
+  };
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-help]");
+    if (b) { e.preventDefault(); e.stopPropagation(); MR.openHelp(b.getAttribute("data-help")); }
+  }, true);
 
   function sma(vals, n) {
     return vals.map(function (_, i) {

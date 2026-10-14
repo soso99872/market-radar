@@ -23,6 +23,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 .status .sep { width: 1px; height: 12px; background: var(--line); }
 .tabs { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .tabs .seg button { height: 34px; padding: 0 14px; font-size: 14px; }
+.vline { margin: 0; font-size: 14px; font-weight: 700; color: var(--muted); }
 .verdict { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px; padding: 12px 16px; }
 .verdict h2 { margin: 0 0 6px; font-size: 15px; font-weight: 900; }
 .verdict ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
@@ -178,13 +179,13 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
     if (s) li.push("<span class=\"k\">漲多不等於會跌。</span>高於季線 50% 以上的股票平均仍 <b>" + sign(s.all.avg_rel, 2) + "%</b>,但中位數 <b>" +
       sign(s.all.med_rel, 2) + "%</b>:多數會回檔、少數繼續噴,風險在波動,不在方向。");
     li.push("<span class=\"k\">幾乎所有條件的中位數都是負的</span>:就算是有根據的名單,單一個股多數時候仍會輸,平均報酬靠少數大漲股撐起來。分散持有與停損比挑對一檔更重要。");
-    return '<section class="verdict"><h2>先看結論:用 2019 年以來的資料驗證過的事</h2><ul><li>' + li.join("</li><li>") + "</li></ul>" +
-      "<details><summary>名單怎麼來、哪些沒驗證過</summary><ul>" +
+    return '<p class="vline">用 2019 年以來的資料驗證過的結論' + MR.help("watch-verdict", "用 2019 年以來的資料驗證過的結論", "<ul><li>" + li.join("</li><li>") + "</li></ul>" +
+      "<h4>名單怎麼來、哪些沒驗證過</h4><ul>" +
       "<li>板塊資金:板塊內所有成分股三大法人買賣超加總,看 20 日與 5 日方向;排名用「20 日買賣超 ÷ 成交金額」,避免大型板塊天生數字大。</li>" +
       "<li>比較基準:板塊類條件跟「所有板塊成分股平均」比,個股條件跟「所有流動股平均」比。板塊清單是現在定的,事後看本來就偏向強勢產業,直接跟全市場比會高估。</li>" +
       "<li>回測假設:收盤後才知道、隔天開盤買、持有 20 個交易日、扣交易成本 " + (ST.cost_pct || 0).toFixed(3) + "%。t 值已用日期聚合與重疊修正。</li>" +
       "<li>本益比、股價淨值比(" + esc(W.val_date || "—") + ")與月營收(" + esc(W.rev_month || "—") + ")只有最新一期,<b>沒有回測</b>,是輔助判斷用,不是篩選條件。</li>" +
-      "<li>沒有考慮:已下市股票(結果偏樂觀)、漲停買不到、融資融券、大股東申報轉讓。</li></ul></details></section>";
+      "<li>沒有考慮:已下市股票(結果偏樂觀)、漲停買不到、融資融券、大股東申報轉讓。</li></ul>") + "</p>";
   }
 
   function spark(vals) {
@@ -222,12 +223,14 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
         "<td>" + (t.pe_med == null ? "—" : t.pe_med.toFixed(1)) + "</td><td class=\"" + dir(t.rev_yoy_med) + "\">" + num(t.rev_yoy_med, 0, "%") + "</td>" +
         '<td class="l read">' + read(t) + "</td></tr>";
     }).join("");
-    return '<div class="sec-h"><h2>產業趨勢</h2><p>31 個板塊依「20 日法人買賣超佔成交比」排名。資金方向比股價先反映,但要看持續性。</p></div>' +
+    var help = MR.help("trend", "產業趨勢:怎麼排名、怎麼看",
+      "<p>31 個板塊依「20 日法人買賣超佔成交比」排名。資金方向比股價先反映,但要看持續性。</p>" +
       '<div class="evi">' + evi("w_pick", "資金流入板塊中的法人重押股") + evi("w_theme_out", "資金連續撤出的板塊") + evi("w_theme_bottom", "資金排名最後 5 名的板塊") + "</div>" +
+      "<p>60 日資金走勢 = 每天往回算 20 日法人買賣超佔成交比的變化;線往上代表資金越來越積極。點板塊名稱看成分股。</p>");
+    return '<div class="sec-h"><h2>產業趨勢' + help + "</h2><p>依 20 日法人買賣超佔成交比排名。</p></div>" +
       '<div class="tablewrap"><table class="th"><thead><tr><th class="l">#</th><th class="l">板塊</th><th class="l">資金狀態</th><th>20 日法人</th><th>佔成交</th>' +
       "<th>60 日資金走勢</th><th>20 日漲跌</th><th>本益比中位數</th><th>" + esc((W.rev_month || "").slice(5).replace(/^0/, "")) + " 月營收年增中位數</th><th class=\"l\">解讀</th></tr></thead><tbody>" +
-      rows + "</tbody></table></div>" +
-      '<p class="note">60 日資金走勢 = 每天往回算 20 日法人買賣超佔成交比的變化;線往上代表資金越來越積極。點板塊名稱看成分股。</p>';
+      rows + "</tbody></table></div>";
   }
 
   function card(x, risk) {
@@ -263,19 +266,27 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
         return '<button type="button" data-' + name + '="' + o[0] + '" aria-pressed="' + (o[0] === cur) + '">' + o[1] + "</button>";
       }).join("") + "</div>";
     }
-    return '<div class="sec-h"><h2>法人資金流向</h2><p>這份名單看的是「錢往哪裡流」,不是爆發力:防禦性的大型股(例如電信、金融)也會因為法人轉進而入選。要找爆發型個股請看<a href="radar.html" style="color:var(--accent)">起漲雷達</a>。所屬板塊資金 20 日與 5 日都在流入,而且個股 20 日法人買超佔成交比在全市場前 30%。共 ' + W.counts.picks + " 檔。</p></div>" +
+    var help = MR.help("flow", "法人資金流向:條件與回測",
+      "<p>這份名單看的是「錢往哪裡流」,不是爆發力:防禦性的大型股(例如電信、金融)也會因為法人轉進而入選。要找爆發型個股請看<a href=\"radar.html\" style=\"color:var(--accent)\">起漲雷達</a>。</p>" +
+      "<p>條件:所屬板塊資金 20 日與 5 日都在流入,而且個股 20 日法人買超佔成交比在全市場前 30%。</p>" +
       '<div class="evi">' + evi("w_pick", "整份名單") + evi("w_pick_moving", "其中已發動(20 日漲 > 10%)") + evi("w_pick_quiet", "其中未發動(20 日漲 ≤ 10%)") + "</div>" +
+      "<p>「本益比/板塊」= 個股本益比 / 所屬板塊中位數。本益比與營收只供參考,沒有回測。歷史上這群股票平均略優於同類,但多數個股仍會輸給平均。</p>");
+    return '<div class="sec-h"><h2>法人資金流向' + help + "</h2><p>資金流入板塊中的法人重押股,共 " + W.counts.picks + " 檔。</p></div>" +
       '<div class="tools">' + seg("stage", stage, [["all", "全部"], ["已發動", "已發動"], ["未發動", "未發動"]]) +
       "<span>排序</span>" + seg("sort", sortBy, [["flow", "法人買超比"], ["rev", "營收年增"], ["pe", "本益比相對低"]]) + "</div>" +
-      list("picks", items, 12) +
-      '<p class="note">「本益比/板塊」= 個股本益比 / 所屬板塊中位數。本益比與營收只供參考,沒有回測。名單不是買進建議:歷史上這群股票平均略優於同類,但多數個股仍會輸給平均。</p>';
+      list("picks", items, 12);
   }
 
   function risk() {
     var bot = W.themes.filter(function (t) { return t.bottom; });
-    return '<div class="sec-h"><h2>留意風險</h2><p>歷史上最穩定的訊號在這一側:資金撤退的地方,之後通常表現較差。</p></div>' +
+    var help = MR.help("risk", "留意風險:條件與回測",
+      "<p>歷史上最穩定的訊號在這一側:資金撤退的地方,之後通常表現較差。</p>" +
+      "<h4>資金排名墊底的板塊</h4>" + '<div class="evi">' + evi("w_theme_bottom") + "</div>" +
+      "<h4>法人持續調節</h4><p>20 日法人賣超佔成交比在全市場最後 10%,且賣超 ≥ 1 億。</p>" + '<div class="evi">' + evi("w_dump") + "</div>" +
+      "<h4>大幅偏離季線</h4><p>股價高於 60 日均線 50% 以上。這組的平均報酬不差(強者恆強),但中位數明顯為負:多數會回檔、少數繼續大漲。列在這裡是提醒波動風險,不是預測會跌。</p>" +
+      '<div class="evi">' + evi("w_stretch") + "</div>");
+    return '<div class="sec-h"><h2>留意風險' + help + "</h2><p>資金撤退的地方,之後通常表現較差。</p></div>" +
       '<div class="blk"><div class="sec-h"><h2 style="font-size:16px">資金排名墊底的板塊</h2></div>' +
-      '<div class="evi">' + evi("w_theme_bottom") + "</div>" +
       '<div class="cards">' + bot.map(function (t) {
         return '<article class="pc"><div class="pc-h"><a class="stock-link" style="text-decoration:none;font-size:16px;font-weight:900" href="sectors.html#' + esc(t.id) + '">' + esc(t.name) + "</a>" +
           stateTag(t.state) + '<span class="px">排名 ' + t.rank + "/" + t.of + "</span></div>" +
@@ -283,11 +294,9 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
           "<div><span>20 日漲跌</span><b class=\"" + dir(t.ret20) + "\">" + num(t.ret20, 1, "%") + "</b></div><div><span>近 5 日</span><b>" + MR.yi(t.net5) + "</b></div></div>" +
           spark(t.trend) + "</article>";
       }).join("") + "</div></div>" +
-      '<div class="blk"><div class="sec-h"><h2 style="font-size:16px">法人持續調節</h2><p>20 日法人賣超佔成交比在全市場最後 10%,且賣超 ≥ 1 億。共 ' + W.counts.dump + " 檔。</p></div>" +
-      '<div class="evi">' + evi("w_dump") + "</div>" + list("dump", W.dump, 9) + "</div>" +
-      '<div class="blk"><div class="sec-h"><h2 style="font-size:16px">大幅偏離季線</h2><p>股價高於 60 日均線 50% 以上。共 ' + W.counts.stretch + " 檔。</p></div>" +
-      '<div class="evi">' + evi("w_stretch") + "</div>" +
-      '<p class="note">這組的平均報酬不差(強者恆強),但中位數明顯為負:多數會回檔、少數繼續大漲。列在這裡是提醒波動風險,不是預測會跌。</p>' +
+      '<div class="blk"><div class="sec-h"><h2 style="font-size:16px">法人持續調節</h2><p>共 ' + W.counts.dump + " 檔。</p></div>" +
+      list("dump", W.dump, 9) + "</div>" +
+      '<div class="blk"><div class="sec-h"><h2 style="font-size:16px">大幅偏離季線</h2><p>高於季線 50% 以上,共 ' + W.counts.stretch + " 檔。</p></div>" +
       list("stretch", W.stretch, 9) + "</div>";
   }
 

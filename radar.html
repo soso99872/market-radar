@@ -21,6 +21,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 .status { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); align-items: center; }
 .status b { font-family: var(--mono); font-weight: 600; color: var(--text); }
 .status .sep { width: 1px; height: 12px; background: var(--line); }
+.vline { margin: 0; font-size: 14px; font-weight: 700; color: var(--muted); }
 .verdict { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px; padding: 12px 16px; }
 .verdict h2 { margin: 0 0 6px; font-size: 15px; font-weight: 900; }
 .verdict ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
@@ -209,7 +210,7 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
 
   function verdict() {
     var a = R.stats.rev_high.horizons["60"], b = R.base["60"], bo = R.stats.breakout.horizons["60"], br = R.stats.breakout_rev.horizons["60"], bn = R.stats.breakout_norev.horizons["60"];
-    return '<details class="verdict"' + (window.innerWidth > 640 ? " open" : "") + '><summary><h2>這頁在找什麼、有多準</h2></summary><ul>' +
+    return '<p class="vline">這頁在找什麼、有多準' + MR.help("radar-verdict", "這頁在找什麼、有多準", "<ul>" +
       '<li><span class="k">爆發前:看營收,不看籌碼。</span>騰輝這類股在起漲前法人幾乎不在場,籌碼看不出來;但營收會先創新高。月營收創 12 個月新高、且年增 ≥ 30%(或連續 2 個月年增 ≥ 20%)的股票,公告後 60 日平均 <b>' +
       num(a.avg, 1, "%") + "</b>、中位數 <b>" + num(a.med, 1, "%") + "</b>(一般股 " + num(b.avg, 1, "%") + " / " + num(b.med, 1, "%") + ")," + (a.med > 0 ? "是少數中位數為正的條件" : "中位數雖然接近 0,但遠好於一般股") + "(證據:" + esc(a.grade) + ")。</li>" +
       '<li><span class="k">剛爆發:爆量突破要搭配營收。</span>有營收成長的突破 60 日平均 <b>' + num(br.avg, 1, "%") + "</b>,營收衰退的突破只有 <b>" + num(bn.avg, 1, "%") +
@@ -217,11 +218,11 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       '<li><span class="k">命中率要有正確期待。</span>符合條件後 120 日內翻倍的比例約 <b>' + plain(a.double, 0, "%") + "</b>(隨便挑一檔是 " + plain(b.double, 0, "%") +
       "),也就是約 " + Math.round(100 / (a.double || 1)) + " 檔才有 1 檔;同時約 <b>" + plain(a.loss15, 0, "%") + "</b> 會在 60 日內虧超過 15%。報酬集中在少數大漲股,所以要<span class=\"k\">分散買 10 檔左右</span>(見營收動能頁下方的組合模擬)。</li>" +
       '<li><span class="k">整個產業的漲價行情看「產業循環」。</span>被動元件 2025 年底那波漲了 4 倍,產業營收轉強訊號在板塊只漲 6% 時就出現。</li>' +
-      "</ul><details><summary>方法與限制</summary><ul>" +
+      "</ul><h4>方法與限制</h4><ul>" +
       "<li>營收資料:公開資訊觀測站月營收彙總表(" + esc(R.span[0]) + " 起),回測時視為次月 11 日才知道,隔天開盤進場,扣交易成本 " + R.cost_pct.toFixed(3) + "%。</li>" +
       "<li>評級門檻已依多重比較拉高(強:t ≥ 3.5;中:t ≥ 2.5)。這些規則是看過 2023–2026 資料後才定的,所以「近一年」也不是真正的樣本外;真正的檢驗是下方的<b>實績追蹤</b>,從 " + esc((TK && TK.since) || R.date) + " 起每天記錄名單、事後結算。</li>" +
       "<li>回測期間是 AI 多頭,隨便挑都有 " + plain(b.double, 0, "%") + " 會翻倍;空頭時這些數字會差很多。資料不含已下市股票,結果偏樂觀。</li>" +
-      "<li>「低波動」= 近 60 日日報酬波動在可交易股票後 30%(像中華電這類),預設隱藏,因為很難有爆發力。</li>" + gmNote() + "</ul></details></details>";
+      "<li>「低波動」= 近 60 日日報酬波動在可交易股票後 30%(像中華電這類),預設隱藏,因為很難有爆發力。</li>" + gmNote() + "</ul>") + "</p>";
   }
 
   function gmNote() {
@@ -342,15 +343,17 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       yoy: function (x) { return -(x.yoy || 0); }
     }[sortBy];
     items = items.slice().sort(function (a, b) { return key(a) - key(b); });
-    return '<div class="sec-h"><h2>營收動能 · 爆發前</h2><p>最新公布的月營收創近 12 個月新高,且年增 ≥ 30% 或連續 2 個月年增 ≥ 20%。共 ' + items.length + " 檔。</p></div>" +
-      '<div class="evi">' + ev("rev_high", "60") + ev("rev_high", "20") + "</div>" +
+    var help = MR.help("rev", "營收動能:條件、回測與操作方式",
+      "<p>最新公布的月營收創近 12 個月新高,且年增 ≥ 30% 或連續 2 個月年增 ≥ 20%。</p>" +
+      '<div class="evi">' + ev("rev_high", "60") + ev("rev_high", "20") + "</div>" + explBox() + portfolioBox() +
+      "<p>年增極高(例如數百 %)常是去年基期很低的景氣循環股,不一定代表長期成長;「連續創新高」月數越多,通常代表成長越持續。「股價尚未反映」排序是距 52 週高點最遠的在前,這類股票沒有經過額外回測。</p>");
+    return '<div class="sec-h"><h2>營收動能 · 爆發前' + help + "</h2><p>月營收創 12 個月新高的個股,共 " + items.length + " 檔。</p></div>" +
       '<div class="tools"><span>排序</span>' + seg("sort", sortBy, [["tier", "分層 A→C"], ["new", "新公告優先"], ["streak", "連續創新高"], ["lag", "股價尚未反映"], ["yoy", "年增最高"]]) +
       '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label>" +
       '<label><input type="checkbox" data-opt="onlyNew"' + (onlyNew ? " checked" : "") + "> 只看 " + esc(R.rev_latest.slice(5).replace(/^0/, "")) + " 月新公告</label>" +
       "</div>" +
       '<div class="tools"><span>分層</span>' + (function (n) { return seg("tier", tierF, [["all", "全部"], ["A", "A 三項都有 " + n("A")], ["B", "B 兩項 " + n("B")], ["C", "C 只有營收 " + n("C")]]); })(function (k) { return R.rev.filter(function (x) { return x.tier === k; }).length; }) + "</div>" +
-      list("rev", items, 18, revCard) + themeBox() + explBox() + portfolioBox() +
-      '<p class="note">年增極高(例如數百 %)常是去年基期很低的景氣循環股,不一定代表長期成長;「連續創新高」月數越多,通常代表成長越持續。「股價尚未反映」排序是距 52 週高點最遠的在前,這類股票沒有經過額外回測。</p>';
+      list("rev", items, 18, revCard) + themeBox();
   }
 
   function boView() {
@@ -360,12 +363,14 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       liveHtml = '<div class="sec-h"><h2 style="font-size:16px">今日即時突破(上市)</h2><p>用證交所 ' + esc(LIVE.date) + " 官方收盤資料在你的瀏覽器即時判斷;上櫃與營收確認待排程更新。</p></div>" +
         '<div class="cards">' + LIVEHITS.map(function (x) { return boCard(x, true); }).join("") + "</div>";
     }
-    return '<div class="sec-h"><h2>爆量突破 · 剛爆發</h2><p>近 10 個交易日成交爆量、突破整理並創 52 週新高的個股。共 ' + items.length + " 檔。</p></div>" +
+    var help = MR.help("bo", "爆量突破:條件與回測",
+      "<p>近 10 個交易日成交爆量、突破整理並創 52 週新高的個股。</p>" +
       '<div class="evi">' + ev("breakout_rev", "60") + ev("breakout", "60") + ev("breakout_norev", "60") + "</div>" +
+      "<p>爆量突破整體統計不夠顯著,而且中位數為負:多數突破之後會拉回。有營收成長支撐的突破明顯較好,營收衰退的突破歷史上平均是虧的。</p>");
+    return '<div class="sec-h"><h2>爆量突破 · 剛爆發' + help + "</h2><p>近 10 日爆量創 52 週新高,共 " + items.length + " 檔。</p></div>" +
       liveHtml +
       '<div class="tools"><label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label></div>" +
-      list("bo", items, 18, function (x) { return boCard(x, false); }) +
-      '<p class="note">爆量突破整體統計不夠顯著,而且中位數為負:多數突破之後會拉回。有營收成長支撐的突破明顯較好,營收衰退的突破歷史上平均是虧的。</p>';
+      list("bo", items, 18, function (x) { return boCard(x, false); });
   }
 
   function fwdNote() {
@@ -445,8 +450,11 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
         '<td class="sm">' + (t ? t.mean + "(" + sign(t.up, 0) + "%)" : "—") + "</td>" +
         '<td class="' + dir(x.yoy) + '">' + num(x.yoy, 0, "%") + '</td><td class="l sm">' + x.src.join("、") + (x.above_ma60 === false ? "、季線下" : "") + (x.dumped ? "、法人大賣" : "") + "</td></tr>";
     }).join("");
-    return '<div class="sec-h"><h2>潛在排行</h2><p>營收動能名單依「動能分數」排序,並附兩種客觀價格:依歷史同分組實際落點換算的「統計 60 日區間」,以及用分析師共識預估 EPS 算的「前瞻合理價」。點代號看算式與詳細資料。</p></div>' +
-      momEvidence() + fwdNote() + fvEvidence() +
+    var help = MR.help("rank", "潛在排行:欄位怎麼算、可信度",
+      "<p>營收動能名單依「動能分數」排序,並附兩種客觀價格:依歷史同分組實際落點換算的「統計 60 日區間」,以及用分析師共識預估 EPS 算的「前瞻合理價」。</p>" +
+      "<p>前瞻合理價 = 分析師共識的未來 12 個月 EPS × 這檔股票自己過去 5 年本益比中位數;前瞻評價依前瞻本益比落在自身歷史第 25~75 百分位的哪裡判斷(歷史本益比分布很寬的股票,空間可能很大但仍屬「合理」)。沒有分析師預估的股票,點開可看依過去四季 EPS 算的版本。這些都是固定公式算出的參考值。</p>" +
+      momEvidence() + fwdNote() + fvEvidence());
+    return '<div class="sec-h"><h2>潛在排行' + help + "</h2><p>依動能分數排序,點代號看算式與詳細資料。</p></div>" +
       '<div class="tools"><span>排序</span>' + seg("rs", rankSort, [["score", "動能分數"], ["up", "前瞻空間"], ["streak", "營收連續創新高"], ["high", "接近 52 週高"]]) +
       "<span>只看</span>" + seg("rf", rankFilter, [["all", "全部"], ["sane", "有分析師預估"], ["ok", "前瞻不高估"], ["lo", "前瞻低估"]]) +
       '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label><span>共 " + items.length + " 檔</span></div>" +
@@ -457,8 +465,7 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
         return "<th" + cls + ' srt"' + ' data-col="' + k + '" title="依' + RANK_COLS[k][0] + '排序" aria-sort="' + (on ? (colSort.dir < 0 ? "descending" : "ascending") : "none") + '">' + h + "</th>";
       }).join("") + "</tr></thead><tbody>" +
       rows + "</tbody></table></div>" +
-      (items.length > 40 ? '<button type="button" class="more" data-all="rank">' + (showAll.rank ? "收合" : "顯示全部 " + items.length + " 檔") + "</button>" : "") +
-      '<p class="note">前瞻合理價 = 分析師共識的未來 12 個月 EPS × 這檔股票自己過去 5 年本益比中位數;前瞻評價依前瞻本益比落在自身歷史第 25~75 百分位的哪裡判斷(歷史本益比分布很寬的股票,空間可能很大但仍屬「合理」)。沒有分析師預估的股票,點開可看依過去四季 EPS 算的版本。這些都是固定公式算出的參考值,不是目標價或買賣建議。</p>';
+      (items.length > 40 ? '<button type="button" class="more" data-all="rank">' + (showAll.rank ? "收合" : "顯示全部 " + items.length + " 檔") + "</button>" : "");
   }
 
   // D 層:沒有營收、只有動能 + 題材。預設收合
@@ -550,12 +557,14 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       function cell(x) { return x ? MR.md(x.date) + " · 已漲 " + num(x.at, 0, "%") + " · 之後 " + num(x.left, 0, "%") : '<span style="color:var(--faint)">沒抓到</span>'; }
       return "<tr><td>" + esc(c.name) + "</td><td>" + MR.md(c.trough) + " → " + MR.md(c.peak) + '</td><td class="up">' + num(c.gain, 0, "%") + "</td><td>" + cell(c.rev_up) + "</td><td>" + cell(c.both) + "</td></tr>";
     }).join("");
-    return '<div class="sec-h"><h2>產業循環 · 抓整個產業的漲價行情</h2><p>記憶體、被動元件這類行情是整個產業一起動。沒有產品報價資料,改看兩件公開資料:板塊內公司的營收是否一起轉強、股價是否一起創新高。</p></div>' +
+    var help = MR.help("cycle", "產業循環:訊號定義與歷史回顧",
+      "<p>記憶體、被動元件這類行情是整個產業一起動。沒有產品報價資料,改看兩件公開資料:板塊內公司的營收是否一起轉強、股價是否一起創新高。</p>" +
+      "<p>「營收轉強」= 板塊同口徑營收 3 個月平均年增 ≥ 15%、比 3 個月前高 10 個百分點以上,且過半成員年增 ≥ 20%。「齊漲」= 過半成員在 52 週高點 5% 內且板塊指數創新高。兩者在 60 日內都出現 = 景氣上行確認。只有 31 個板塊,樣本少,統計上不如個股名單可靠:2023–2026 AI 行情期間效果很強(60 日比其他板塊 +25%),但 2019–2023 只剩 +5.7%、中位數為負;而且板塊清單是現在定的,有後見之明。</p>" +
       '<div class="evi">' + st("both") + st("rev_up") + st("rally") + "</div>" +
-      '<p class="note">「營收轉強」= 板塊同口徑營收 3 個月平均年增 ≥ 15%、比 3 個月前高 10 個百分點以上,且過半成員年增 ≥ 20%。「齊漲」= 過半成員在 52 週高點 5% 內且板塊指數創新高。兩者在 60 日內都出現 = 景氣上行確認。只有 31 個板塊,樣本少,統計上不如個股名單可靠:2023–2026 AI 行情期間效果很強(60 日比其他板塊 +25%),但 2019–2023 只剩 +5.7%、中位數為負;而且板塊清單是現在定的,有後見之明。</p>' +
-      '<div class="cy">' + cards + "</div>" +
-      '<div class="box"><h3>歷史大行情回顧:訊號在什麼時候出現</h3><table class="pf"><thead><tr><th>板塊</th><th>低點 → 高點</th><th>漲幅</th><th>營收轉強</th><th>營收轉強 + 齊漲</th></tr></thead><tbody>' + cases + "</tbody></table>" +
-      "<p>漲幅是板塊等權指數。「已漲」= 訊號出現時已從低點漲多少,「之後」= 訊號出現後到高點還剩多少。2025 年 4 月關稅急跌後的全面反彈多數抓不到,因為那是大盤行情,不是產業景氣。</p></div>";
+      '<div class="box"><h3>歷史大行情回顧:訊號在什麼時候出現</h3><div class="tkwrap"><table class="pf"><thead><tr><th>板塊</th><th>低點 → 高點</th><th>漲幅</th><th>營收轉強</th><th>營收轉強 + 齊漲</th></tr></thead><tbody>' + cases + "</tbody></table></div>" +
+      "<p>漲幅是板塊等權指數。「已漲」= 訊號出現時已從低點漲多少,「之後」= 訊號出現後到高點還剩多少。2025 年 4 月關稅急跌後的全面反彈多數抓不到,因為那是大盤行情,不是產業景氣。</p></div>");
+    return '<div class="sec-h"><h2>產業循環 · 抓整個產業的漲價行情' + help + "</h2><p>板塊營收一起轉強、股價一起創新高。</p></div>" +
+      '<div class="cy">' + cards + "</div>";
   }
 
   function recallBox() {
@@ -603,9 +612,12 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       function cell(h) { var x = v["avg_x" + h]; return '<td class="' + dir(x) + '">' + (x == null ? "累積中" : sign(x, 2) + "%") + '<br><small style="color:var(--faint)">' + v["n" + h] + " 天</small></td>"; }
       return "<tr><td>" + esc(v.name) + "</td>" + cell(5) + cell(20) + cell(60) + "</tr>";
     }).join("");
-    return recallBox() + auditBox() + '<div class="sec-h"><h2>實績追蹤</h2><p>從 ' + esc(TK.since) + " 起,每個交易日把當天的名單存下來(之後不會修改),再用之後的實際股價結算。這是唯一不能事後挑選的成績單。</p></div>" +
+    var help = MR.help("track", "實績追蹤:怎麼算",
+      "<p>從 " + esc(TK.since) + " 起,每個交易日把當天的名單存下來(之後不會修改),再用之後的實際股價結算。這是唯一不能事後挑選的成績單。</p>" +
+      "<p>「比一般股」= 名單內個股隔天開盤買進、持有 N 日的平均報酬,減掉同一天所有可交易股票的平均,已扣交易成本。剛開始記錄時樣本很少,數字波動會很大,至少累積數個月再判斷。</p>");
+    return '<div class="sec-h"><h2>實績追蹤' + help + "</h2><p>" + esc(TK.since) + " 起每天存檔、事後結算。</p></div>" +
       '<div class="tkwrap"><table class="tk"><thead><tr><th>名單</th><th>5 日後比一般股</th><th>20 日後比一般股</th><th>60 日後比一般股</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
-      '<p class="note">「比一般股」= 名單內個股隔天開盤買進、持有 N 日的平均報酬,減掉同一天所有可交易股票的平均,已扣交易成本。剛開始記錄時樣本很少,數字波動會很大,至少累積數個月再判斷。</p>';
+      recallBox() + auditBox();
   }
 
   function render() {

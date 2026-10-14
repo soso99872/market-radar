@@ -356,3 +356,16 @@ html.nosplash #splash, #splash.done { opacity: 0; visibility: hidden; pointer-ev
 .dstat.bad summary { color: var(--down); font-weight: 600; }
 .dstat ul { margin: 6px 0 0; padding-left: 18px; columns: 2; }
 @media (max-width: 640px) { .dstat ul { columns: 1; } }
+
+/* 說明按鈕(MR.help):標題旁的「?」,點開顯示怎麼看與回測證明 */
+.help-btn { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-left: 6px; padding: 0; vertical-align: 2px;
+  border: 1px solid var(--line); border-radius: 50%; background: var(--panel-2); color: var(--muted); font: 700 12px/1 var(--sans); cursor: pointer; }
+.help-btn:hover, .help-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
+.help-body { font-size: 14px; color: var(--muted); line-height: 1.7; }
+.help-body p { margin: 10px 0 0; }
+.help-body ul { margin: 10px 0 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.help-body b { color: var(--text); }
+.help-body h4 { margin: 16px 0 4px; font-size: 15px; color: var(--text); }
+.help-body .box, .help-body .ev { margin-top: 10px; }
+.help-body .tkwrap, .help-body table { margin-top: 8px; }
+.help-body .tkwrap { max-height: none; }

@@ -244,8 +244,8 @@ details.tv summary { cursor: pointer; font-size: 13px; color: var(--muted); marg
       return "<tr><td>" + esc(name) + "</td><td>" + (started.length ? esc(started[0].date) : "—") + "</td><td>" + started.length + " 天</td>" +
         ["5", "20", "60"].map(function (h) { var x = v["avg_x" + h]; return '<td class="' + MR.dir(x) + '">' + (x == null ? "累積中" : pct(x, 2)) + "<br><small>" + v["n" + h] + " 天</small></td>"; }).join("") + "</tr>";
     }
-    return '<section class="card"><h2>實盤追蹤:真正的檢驗</h2>' +
-      "<p>上面的曲線是回測。從 2026-10-09 起,每天收盤後把 4★ 以上與 5★ 名單存檔(之後不能修改),再用之後的實際股價結算;每 20 個交易日取一籃交給開源工具 anti-gambling-trader 判定是實力還是運氣。</p>" +
+    return '<section class="card"><h2>實盤追蹤:真正的檢驗' + MR.help("live", "實盤追蹤:怎麼記錄、怎麼判定",
+      "<p>上面的曲線是回測。從 2026-10-09 起,每天收盤後把 4★ 以上與 5★ 名單存檔(之後不能修改),再用之後的實際股價結算;每 20 個交易日取一籃交給開源工具 anti-gambling-trader 判定是實力還是運氣。</p>") + "</h2>" +
       '<div class="prog" aria-label="實盤樣本進度"><i style="width:' + Math.min(100, n / need * 100).toFixed(0) + '%"></i></div>' +
       '<p style="margin-top:0">第三方稽核:實盤 ' + n + " / " + need + " 籃" + (n < need ? "(約每月 1 籃,樣本不足前不判定)" : ":" + esc(au.headline || "")) +
       (bt.headline ? ";回測 " + bt.n + " 籃 " + esc(bt.headline) : "") + "</p>" +
@@ -256,10 +256,19 @@ details.tv summary { cursor: pointer; font-size: 13px; color: var(--muted); marg
   function render() {
     var c = A.curve, k = c["4★ 以上"], s5 = c["5★"];
     app.innerHTML =
-      "<div><h1>策略績效</h1><p class=\"sub\">每月營收公告隔天開盤,等權買進當天評級 4★ 以上的全部股票,持有到下一次公告後換股(約一個月),已扣交易成本。" +
-      esc(k.eq[0][0]) + " ~ " + esc(k.eq[k.eq.length - 1][0]) + " 共 " + k.months + " 個月。</p></div>" + tiles() +
-      '<section class="card viz"><h2>權益曲線(1 元變成多少)</h2><p>對數刻度:同樣的垂直距離代表同樣的報酬率。只買 5★ 年化較高(' + pct(s5.cagr, 0) + "),但回撤 " + s5.mdd +
-      "%、夏普 " + s5.sharpe.toFixed(2) + ",波動大很多;買全部 4★ 以上分散,風險調整後較好。</p>" + legend() +
+      "<div><h1>策略績效" + MR.help("strategy", "策略績效:怎麼回測、為什麼偏樂觀",
+        "<p>每月營收公告隔天開盤,等權買進當天評級 4★ 以上的全部股票,持有到下一次公告後換股(約一個月),已扣交易成本。" +
+        esc(k.eq[0][0]) + " ~ " + esc(k.eq[k.eq.length - 1][0]) + " 共 " + k.months + " 個月。</p>" +
+        "<h4>這些數字為什麼偏樂觀</h4><ul>" +
+        "<li><b>規則是看過資料才定的。</b>分層、星等試過好幾種版本才選定;2023 年後雖然當成樣本外,但其實也看過。真正可信的是實盤追蹤。</li>" +
+        "<li><b>不含已下市股票。</b>回測期間下市、被併購的股票不在資料裡,偏樂觀。</li>" +
+        "<li><b>2025–2026 是極強的多頭。</b>4★ 以上在 2022 年只比一般股多 +1.9%;大盤空頭時 5★ 的 60 日中位數是 −5%。</li>" +
+        "<li><b>小型股、成交少的股票。</b>名單裡有成交不到 1 億的股票,大資金進出會有明顯價差,實際報酬會比回測低。</li>" +
+        "<li>回測腳本 scripts/accuracy_study.py,可以重跑驗證。</li></ul>") +
+      "</h1><p class=\"sub\">每月買進全部 4★ 以上、約一個月換股的回測,共 " + k.months + " 個月。</p></div>" + tiles() +
+      '<section class="card viz"><h2>權益曲線(1 元變成多少)' + MR.help("eq", "權益曲線怎麼看",
+        "<p>對數刻度:同樣的垂直距離代表同樣的報酬率。只買 5★ 年化較高(" + pct(s5.cagr, 0) + "),但回撤 " + s5.mdd +
+        "%、夏普 " + s5.sharpe.toFixed(2) + ",波動大很多;買全部 4★ 以上分散,風險調整後較好。</p>") + "</h2>" + legend() +
       '<div class="chart" id="c-eq"></div>' +
       '<details class="tv"><summary>表格檢視</summary><div class="wrap"><table class="yr"><thead><tr><th>進場月</th>' + SERIES.map(function (s) { return "<th>" + esc(s[2]) + "</th>"; }).join("") +
       "</tr></thead><tbody>" + k.eq.map(function (p, i) {
@@ -268,13 +277,7 @@ details.tv summary { cursor: pointer; font-size: 13px; color: var(--muted); marg
       '<section class="card viz"><h2>回撤(離前高跌了多少)</h2><p>4★ 以上最大回撤 ' + k.mdd + "%,加權指數 " + c["加權指數"].mdd + "%。要能接受帳面上虧掉四分之一,才適合照這個方法操作。</p>" + legend() +
       '<div class="chart" id="c-dd"></div></section>' +
       '<section class="card"><h2>逐年報酬</h2><p>每一年都有比較嗎?還是只靠一兩年大賺?</p>' + yearly() + "</section>" +
-      live() +
-      '<section class="card"><h2>這些數字為什麼偏樂觀</h2><ul class="note">' +
-      "<li><b>規則是看過資料才定的。</b>分層、星等試過好幾種版本才選定;2023 年後雖然當成樣本外,但其實也看過。真正可信的是上方的實盤追蹤。</li>" +
-      "<li><b>不含已下市股票。</b>回測期間下市、被併購的股票不在資料裡,偏樂觀。</li>" +
-      "<li><b>2025–2026 是極強的多頭。</b>4★ 以上在 2022 年只比一般股多 +1.9%;大盤空頭時 5★ 的 60 日中位數是 −5%。</li>" +
-      "<li><b>小型股、成交少的股票。</b>名單裡有成交不到 1 億的股票,大資金進出會有明顯價差,實際報酬會比回測低。</li>" +
-      "<li>回測腳本 scripts/accuracy_study.py,可以重跑驗證。</li></ul></section>";
+      live();
     lineChart("c-eq", seriesFor("eq"), { h: 300, right: 120, log: true, labels: true, aria: "權益曲線", fmt: function (v) { return v.toFixed(2) + "x"; } });
     lineChart("c-dd", seriesFor("dd"), { h: 200, right: 120, log: false, labels: true, aria: "回撤", fmt: function (v) { return v.toFixed(1) + "%"; } });
     document.title = "策略績效";

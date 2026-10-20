@@ -215,14 +215,14 @@ class BacktestTest(unittest.TestCase):
     t = 第 300 個交易日。全部開盤 100、指數平盤 100,只有下面這些點不同:
       C 收盤:t+20 = 110、t+21 = 90,其餘 100;指數:t+20 = 104、t+21 = 102。
     樣本 1(訊號日 t,進場 t+1 開盤 100):
-      20 日:出場 t+20 收盤 110 → 報酬 0.10 − 0.005425 = 0.094575;指數 104/100−1 = 0.04;超額 0.054575(贏、沒虧)
-      60 日:出場 t+60 收盤 100 → 報酬 −0.005425;指數 0;超額 −0.005425(輸、虧)
+      20 日:出場 t+20 收盤 110 → 報酬 0.10 − 0.00585 = 0.09415;指數 104/100−1 = 0.04;超額 0.05415(贏、沒虧)
+      60 日:出場 t+60 收盤 100 → 報酬 −0.00585;指數 0;超額 −0.00585(輸、虧)
     樣本 2(訊號日 t+1,進場 t+2 開盤 100):
-      20 日:出場 t+21 收盤 90 → 報酬 −0.10 − 0.005425 = −0.105425;指數 102/100−1 = 0.02;超額 −0.125425(輸、虧)
-      60 日:出場 t+61 收盤 100 → 報酬 −0.005425;超額 −0.005425(輸、虧)
-    20 日:勝率 1/2 = 50%;虧損機率 1/2 = 50%;平均超額 (0.054575 − 0.125425)/2 = −0.03542 → −3.54%;中位數同(兩筆的平均)
-          平均報酬 (0.094575 − 0.105425)/2 = −0.005425 → −0.54%
-    60 日:勝率 0%;虧損機率 100%;平均超額 −0.54%"""
+      20 日:出場 t+21 收盤 90 → 報酬 −0.10 − 0.00585 = −0.10585;指數 102/100−1 = 0.02;超額 −0.12585(輸、虧)
+      60 日:出場 t+61 收盤 100 → 報酬 −0.00585;超額 −0.00585(輸、虧)
+    20 日:勝率 1/2 = 50%;虧損機率 1/2 = 50%;平均超額 (0.05415 − 0.12585)/2 = −0.03585 → −3.58%;中位數同(兩筆的平均)
+          平均報酬 (0.09415 − 0.10585)/2 = −0.00585 → −0.58%
+    60 日:勝率 0%;虧損機率 100%;平均超額 −0.58%"""
     T0 = 300
     COLS = ["A", "B", "C"]
 
@@ -247,7 +247,7 @@ class BacktestTest(unittest.TestCase):
         return laggard.backtest(c, o, tx, L, self.yoy, self.topics, **kw)
 
     def test_cost_constant(self):
-        self.assertAlmostEqual(laggard.COST, 0.005425)
+        self.assertAlmostEqual(laggard.COST, 0.00585)
 
     def test_counts(self):
         r = self.run_bt()
@@ -260,9 +260,9 @@ class BacktestTest(unittest.TestCase):
         self.assertEqual((st["n"], st["stocks"]), (2, 1))
         self.assertEqual(st["win"], 50.0)
         self.assertEqual(st["loss"], 50.0)
-        self.assertEqual(st["avg_rel"], -3.54)
-        self.assertEqual(st["med_rel"], -3.54)
-        self.assertEqual(st["avg"], -0.54)
+        self.assertEqual(st["avg_rel"], -3.58)
+        self.assertEqual(st["med_rel"], -3.58)
+        self.assertEqual(st["avg"], -0.58)
         self.assertEqual(st["grade"], "樣本不足")   # n < 30
 
     def test_stats_60(self):
@@ -270,22 +270,22 @@ class BacktestTest(unittest.TestCase):
         self.assertEqual(st["n"], 2)
         self.assertEqual(st["win"], 0.0)
         self.assertEqual(st["loss"], 100.0)
-        self.assertEqual(st["avg_rel"], -0.54)
+        self.assertEqual(st["avg_rel"], -0.58)
 
     def test_missing_future_excluded(self):
-        # 只留到 t+60:樣本 2 的 60 日出場在 t+61 沒資料 → 60 日只剩 1 筆(超額 −0.5425% → −0.54);20 日仍是 2 筆
+        # 只留到 t+60:樣本 2 的 60 日出場在 t+61 沒資料 → 60 日只剩 1 筆(超額 −0.585% → −0.58);20 日仍是 2 筆
         st = self.run_bt(n=self.T0 + 61)["stats"]
         self.assertEqual(st["20"]["n"], 2)
         self.assertEqual(st["60"]["n"], 1)
-        self.assertEqual(st["60"]["avg_rel"], -0.54)
+        self.assertEqual(st["60"]["avg_rel"], -0.58)
 
     def test_oos_split(self):
         # 樣本外 = 最後 oos_days 個交易日的訊號日(位置 ≥ len − oos_days)
         n = len(BT_DATES)
         all_oos = self.run_bt(oos_days=n - self.T0)["stats"]["20"]        # 位置 300、301 都在樣本外
-        self.assertEqual((all_oos["oos_n"], all_oos["oos_avg_rel"]), (2, -3.54))
-        one = self.run_bt(oos_days=n - self.T0 - 1)["stats"]["20"]        # 只有 301(樣本 2)在樣本外:超額 −12.54%
-        self.assertEqual((one["oos_n"], one["oos_avg_rel"]), (1, -12.54))
+        self.assertEqual((all_oos["oos_n"], all_oos["oos_avg_rel"]), (2, -3.58))
+        one = self.run_bt(oos_days=n - self.T0 - 1)["stats"]["20"]        # 只有 301(樣本 2)在樣本外:超額 −12.58%
+        self.assertEqual((one["oos_n"], one["oos_avg_rel"]), (1, -12.58))
         none = self.run_bt(oos_days=10)["stats"]["20"]
         self.assertEqual((none["oos_n"], none["oos_avg_rel"]), (0, None))
 

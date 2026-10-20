@@ -495,7 +495,7 @@ table.tk.lg.st { min-width: 0; }
   function laggardView() {
     if (!LG) return '<div class="sec-h"><h2>落後補漲</h2></div><p class="err">落後補漲資料尚未產生。</p>';
     var bt = LG.backtest || {}, hz = bt.horizons || {}, stale = !!LG.date && !!R && LG.date !== R.date, isNew = stale ? [] : (LG.new || []);
-    var cost = bt.cost_pct == null ? "0.5425" : String(bt.cost_pct);
+    var cost = bt.cost_pct == null ? "0.585" : String(bt.cost_pct);
     var help = MR.help("laggard", "落後補漲:怎麼選、報酬怎麼算",
       "<p>觸發:同一題材當天有 2 檔以上「發動」(爆量突破,或收盤創 52 週新高)。</p>" +
       "<p>入選:同題材中,最新月營收年增不低於題材中位數,且近 20 個交易日漲幅低於題材中位數;排除處置股、注意股,當天已發動的不列入。</p>" +

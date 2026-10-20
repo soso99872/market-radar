@@ -29,10 +29,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 .verdict .k { color: var(--text); font-family: var(--sans); font-weight: 700; }
 .verdict details { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .verdict summary { cursor: pointer; color: var(--text); }
-.tabs .seg button { height: 34px; padding: 0 14px; font-size: 14px; }
+.tabs .seg button { height: 34px; padding: 0 14px; font-size: 14px; white-space: nowrap; flex: none; }
 .tabs { overflow-x: auto; }
 .tabs .seg { max-width: none; }
-.tabs .seg button { white-space: nowrap; flex: none; }
 .sec-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 4px 0 -4px; }
 .sec-h h2 { margin: 0; font-size: 18px; font-weight: 900; }
 .sec-h p { margin: 0; font-size: 13px; color: var(--muted); }
@@ -108,6 +107,7 @@ table.pf { border-collapse: collapse; width: 100%; font-size: 13.5px; }
 .pc .chips { margin-top: 8px; }
 .more { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 4px 0; font-size: 14px; justify-self: start; }
 .note { font-size: 12.5px; color: var(--faint); margin: 0; }
+.note.stale { font-size: 13px; color: var(--text); border-left: 3px solid var(--amber); padding-left: 8px; }   /* 資料過期提示:警示色只放在細條,文字維持對比 */
 .live { background: color-mix(in srgb, var(--accent) 10%, var(--panel)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); border-radius: 10px; padding: 10px 14px; font-size: 13.5px; }
 .live b { font-family: var(--mono); }
 table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; background: var(--panel); }
@@ -157,7 +157,7 @@ table.tk.lg.st { min-width: 0; }
 .ftog::after { content: "▾"; color: var(--faint); }
 .ftog[aria-expanded="true"]::after { content: "▴"; }
 .fcount { color: var(--muted); }
-.fcount b { font-family: var(--mono); color: var(--text); font-size: 15px; }
+.fcount b { display: inline-block; font-family: var(--mono); color: var(--text); font-size: 15px; }
 .fclear { margin-left: auto; min-height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: none; color: var(--accent); font-size: 13px; cursor: pointer; }
 .fbh { display: inline-flex; align-items: center; gap: 4px; }
 .fclear:disabled { color: var(--faint); cursor: default; }
@@ -167,11 +167,9 @@ table.tk.lg.st { min-width: 0; }
 .fpanel[hidden] { display: none; }
 .fb, .fmine, .ftog, .fclear, .fdel { transition: border-color .16s ease, background-color .16s ease, color .16s ease, transform .16s ease; }
 .fb:active:not(:disabled), .ftog:active, .fclear:active:not(:disabled) { transform: scale(.97); }
-.fcount b { display: inline-block; }
 .fcount b.chg { animation: fpulse .45s ease; }   /* 符合檔數變了,數字放大再回來,讓人注意到名單縮了 */
 @keyframes fpulse { from { color: var(--accent); transform: scale(1.3); } to { color: var(--text); transform: none; } }
 @media (prefers-reduced-motion: reduce) { .fcount b.chg { animation: none; } .fb, .fmine, .ftog, .fclear, .fdel { transition: none; } .fb:active:not(:disabled), .ftog:active, .fclear:active:not(:disabled) { transform: none; } }
-.fbox { scroll-margin-top: calc(var(--bar-h, 110px) + 12px); }
 .frow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
 .frow > .fl { flex: none; width: 4.6em; color: var(--faint); font-size: 12px; }
 .fb { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--text); font-size: 13px; cursor: pointer; }
@@ -215,8 +213,6 @@ table.tk.lg.st { min-width: 0; }
   .fq { width: 44px; height: 44px; border: 0; background: none; isolation: isolate; }
   .fq::before { content: ""; position: absolute; z-index: -1; left: 12px; top: 12px; width: 20px; height: 20px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 50%; background: var(--panel-2); }
   .fq:hover::before, .fq:focus-visible::before { border-color: var(--accent); }
-}
-@media (max-width: 640px) {
   .gtog { min-height: 44px; }
   .fhead { position: sticky; top: var(--bar-h, 110px); z-index: 2; background: var(--panel); padding: 6px 0; margin: -6px 0; }
   .fb, .fmine, .ftog, .fclear, .fsave input, .fundo button, .fdel { min-height: 44px; }
@@ -477,7 +473,7 @@ table.tk.lg.st { min-width: 0; }
       list("bo", items, 18, function (x) { return boCard(x, false); });
   }
 
-  // 落後補漲:資料 data/radar/laggard.json;題材名、已發動個股名稱在 T04 前用 topics.json 與頁面既有股名對照
+  // 落後補漲:資料 data/radar/laggard.json;題材名、已發動個股名稱優先用資料內的欄位,沒有時才用 topics.json 與頁面既有股名對照(相容舊資料)
   var NAMES = null;
   function nameOf(code) {
     if (!NAMES) {
@@ -498,7 +494,7 @@ table.tk.lg.st { min-width: 0; }
   }
   function laggardView() {
     if (!LG) return '<div class="sec-h"><h2>落後補漲</h2></div><p class="err">落後補漲資料尚未產生。</p>';
-    var bt = LG.backtest || {}, hz = bt.horizons || {}, isNew = LG.new || [];
+    var bt = LG.backtest || {}, hz = bt.horizons || {}, stale = !!LG.date && !!R && LG.date !== R.date, isNew = stale ? [] : (LG.new || []);
     var cost = bt.cost_pct == null ? "0.5425" : String(bt.cost_pct);
     var help = MR.help("laggard", "落後補漲:怎麼選、報酬怎麼算",
       "<p>觸發:同一題材當天有 2 檔以上「發動」(爆量突破,或收盤創 52 週新高)。</p>" +
@@ -518,6 +514,7 @@ table.tk.lg.st { min-width: 0; }
       : '<p class="empty">今天沒有落後補漲名單</p>';
     var per = bt.period ? bt.period[0] + " ~ " + bt.period[1] : "—";
     return '<div class="sec-h"><h2>落後補漲' + (LG.advantage ? "" : ' <span class="evb ref">僅供參考</span>') + help + "</h2><p>題材有人發動、營收跟上但股價還沒漲。</p></div>" +
+      (stale ? '<p class="note stale">落後補漲資料停在 ' + esc(LG.date) + ",今天未更新</p>" : "") +
       table +
       '<div class="sec-h"><h3>歷史回測</h3><p>期間 ' + esc(per) + " · 觸發 " + (bt.triggers == null ? "—" : bt.triggers.toLocaleString("en-US")) + " 次 · 超額報酬已扣成本 " + esc(cost) + "%</p></div>" +
       '<div class="tkwrap"><table class="tk lg st"><thead><tr><th>持有</th><th>樣本</th><th>勝率</th><th>平均超額</th><th>中位數</th><th>虧損率</th></tr></thead><tbody>' +

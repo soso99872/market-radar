@@ -188,6 +188,22 @@ def grade(st):
     return "弱"
 
 
+def attach_tags(rows, lag, close, vyi, yoy, yoy3, net, last):
+    """算條件標籤並寫入每檔的 tags。signals.py 先跑 laggard;lag 沒有結果(失敗或略過)時 topic_sync、laggard 標籤不給。
+    標籤算失敗只印警告、每檔 tags 給空陣列,不影響 latest.json 其他欄位。"""
+    if lag is not None and lag.get("date") != last:
+        lag = None
+    try:
+        tags = condition_tags(close, vyi, yoy, yoy3, net, last,
+                              None if lag is None else {c for t in lag["triggered"].values() for c in t["members"]},
+                              None if lag is None else {x["code"] for x in lag["list"]})
+    except Exception as e:
+        print("::warning::條件標籤略過:%s" % e)
+        tags = {}
+    for x in rows:
+        x["tags"] = tags.get(x["code"], [])
+
+
 def build(L):
     close, opn, F, names, dates = L["close"], L["opn"], L["F"], L["names"], L["dates"]
     vyi, net = L["vyi"], L["net"]
@@ -408,14 +424,7 @@ def build(L):
     landmines_now(last)
     technical_now(L, F)
     mom = momentum(L, rp, close, opn, tradable, usable, newpub, rev_list)
-    lag = L.get("lag")   # signals.py 先跑 laggard;沒有結果(失敗或略過)時 topic_sync、laggard 標籤不給
-    if lag is not None and lag.get("date") != last:
-        lag = None
-    tags = condition_tags(close, vyi, D["yoy"], D["yoy3"], net, last,
-                          None if lag is None else {c for t in lag["triggered"].values() for c in t["members"]},
-                          None if lag is None else {x["code"] for x in lag["list"]})
-    for x in rev_list + theme_list + bo_list:
-        x["tags"] = tags.get(x["code"], [])
+    attach_tags(rev_list + theme_list + bo_list, L.get("lag"), close, vyi, D["yoy"], D["yoy3"], net, last)
     rank = ranking(rev_list, bo_list, mom)
     try:   # 毛利率回測結果(scripts/margin_test.py 產生,研究用、不在排程跑)
         with open(os.path.join(OUT, "margin_test.json"), encoding="utf-8") as f:

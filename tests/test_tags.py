@@ -1,8 +1,11 @@
 """scripts/radar.py condition_tags 測試:小型固定資料,每個標籤測「剛好達標／剛好不達標」。
 判定日 T = 最後一列。每個測試只造一檔股票(或同標籤的一對 A/B),其餘標籤不管。"""
+import contextlib
+import io
 import os
 import sys
 import unittest
+from unittest import mock
 
 import numpy as np
 import pandas as pd
@@ -128,6 +131,22 @@ class Defs(unittest.TestCase):
         self.assertEqual(set(radar.TAG_ORDER), set(radar.TAG_DEFS))
         for d in radar.TAG_DEFS.values():
             self.assertTrue(d["name"] and d["desc"])
+
+
+class Isolation(unittest.TestCase):
+    # condition_tags 丟例外時,attach_tags 不丟例外、每檔 tags 都是 []、其他欄位不變
+    def test_failure_gives_empty_tags(self):
+        rows = [{"code": "A", "x": 1}, {"code": "B", "x": 2}]
+        with mock.patch.object(radar, "condition_tags", side_effect=ValueError("boom")),                 contextlib.redirect_stdout(io.StringIO()) as out:
+            radar.attach_tags(rows, None, None, None, None, None, None, None)
+        self.assertEqual(rows, [{"code": "A", "x": 1, "tags": []}, {"code": "B", "x": 2, "tags": []}])
+        self.assertIn("::warning::條件標籤略過:boom", out.getvalue())
+
+    def test_success_still_writes_tags(self):
+        rows = [{"code": "A"}, {"code": "B"}]
+        with mock.patch.object(radar, "condition_tags", return_value={"A": ["vol_up"]}):
+            radar.attach_tags(rows, None, None, None, None, None, None, None)
+        self.assertEqual([r["tags"] for r in rows], [["vol_up"], []])
 
 
 if __name__ == "__main__":

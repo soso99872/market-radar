@@ -24,6 +24,9 @@ on:
       - scripts/profile.py
       - scripts/margin.py
       - scripts/quality.py
+      - scripts/laggard.py
+      - scripts/topics.py
+      - data/sectors/topics.json
       - data/sectors/themes.json
 
 permissions:
@@ -65,6 +68,13 @@ jobs:
         run: python scripts/valuation.py || echo "::warning::valuation 失敗"
       - name: 訊號回測、觀察名單、起漲雷達與個股資料
         run: python scripts/signals.py || echo "::warning::signals 失敗"
+      - name: Telegram 推播(收盤後那次或手動執行;未設定 Secrets 時自動略過)
+        if: github.event.schedule == '40 9 * * 1-5' || github.event_name == 'workflow_dispatch'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
+        run: python scripts/notify.py || echo "::warning::notify 失敗"
       - name: 資料新鮮度檢查
         run: STALE_FILE=/tmp/stale.txt python scripts/status.py || echo "::warning::status 失敗"
       - name: 提交

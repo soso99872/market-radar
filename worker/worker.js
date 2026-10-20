@@ -7,7 +7,7 @@ const MIS = "https://mis.twse.com.tw/stock/api/getStockInfo.jsp";
 const MAX_CODES = 300;
 const CHUNK = 40;            // 每次查 40 檔 = 80 個 ex_ch,網址長度安全
 const CACHE_SEC = 10;
-const ALLOW = [/^https:\/\/soso99872\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
+const ALLOW = [/^https:\/\/stock-market-radar\.pages\.dev$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 
 function num(s) {
   const v = parseFloat(s);
@@ -40,7 +40,7 @@ async function fetchChunk(codes) {
 function cors(req) {
   const o = req.headers.get("Origin") || "";
   return {
-    "Access-Control-Allow-Origin": ALLOW.some((re) => re.test(o)) ? o : "https://soso99872.github.io",
+    "Access-Control-Allow-Origin": ALLOW.some((re) => re.test(o)) ? o : "https://stock-market-radar.pages.dev",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     Vary: "Origin",
   };

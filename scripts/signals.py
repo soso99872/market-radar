@@ -384,6 +384,12 @@ def main():
 
     rd = radar.build(locals()) or {"rev": [], "breakout": []}
 
+    try:   # 落後補漲(失敗只印警告,不影響其他輸出)
+        import laggard
+        laggard.build(locals())
+    except Exception as e:
+        print("laggard 略過:%s" % e)
+
     # 個股頁:板塊成分股 + 近 20 日有訊號的股票 + 觀察名單 + 起漲雷達
     recent = dates[-20:]
     universe = set(themes) | {x["code"] for k in ("picks", "dump", "stretch") for x in watch[k]}

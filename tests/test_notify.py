@@ -105,6 +105,43 @@ class BuildMessage(unittest.TestCase):
         self.assertEqual(notify.star_map(latest), {"2330": 2, "1101": 1})
 
 
+    def test_laggard_date_mismatch_not_pushed(self):   # laggard.json 是舊日期:不把它的 new 當今日名單
+        lg = mk_laggard(["6672"])
+        lg["date"] = "2026-10-19"
+        text, _ = notify.build_message(mk_latest({}), lg, {"date": "d", "stars": []})
+        self.assertIn("落後補漲資料未更新", text)
+        self.assertNotIn("6672", text)
+        self.assertNotIn("落後補漲新名單", text)
+        self.assertIn("今天沒有新名單", text)   # 沒有任何新名單時照樣標示
+
+    def test_laggard_date_match_still_pushed(self):
+        text, _ = notify.build_message(mk_latest({}), mk_laggard(["6672"]), {"date": "d", "stars": []})
+        self.assertIn("落後補漲新名單：6672", text)
+        self.assertNotIn("未更新", text)
+
+
+class SiteUrl(unittest.TestCase):
+    def reload_with(self, env):
+        import importlib
+        with mock.patch.dict(os.environ, env):
+            os.environ.pop("SITE_URL", None) if "SITE_URL" not in env else None
+            importlib.reload(notify)
+            return notify.URL
+
+    def tearDown(self):
+        import importlib
+        importlib.reload(notify)
+
+    def test_empty_env_uses_default(self):   # GitHub 變數未設時 workflow 會傳空字串
+        self.assertEqual(self.reload_with({"SITE_URL": ""}), "https://stock-market-radar.pages.dev/radar")
+
+    def test_unset_env_uses_default(self):
+        self.assertEqual(self.reload_with({}), "https://stock-market-radar.pages.dev/radar")
+
+    def test_custom_env(self):
+        self.assertEqual(self.reload_with({"SITE_URL": "https://example.com/"}), "https://example.com/radar")
+
+
 class Send(unittest.TestCase):
     def test_payload_without_thread(self):
         seen = {}

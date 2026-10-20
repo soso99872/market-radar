@@ -75,6 +75,64 @@ def to_daily(panel, months, index):
     return df.reindex(pd.to_datetime(index), method="ffill").set_axis(index)
 
 
+# ---------- 條件標籤(起漲雷達篩選用,只用第 t 日含以前的資料) ----------
+
+TAG_ORDER = ("vol_up", "ma_up", "near_high", "rev_mom", "chips", "topic_sync", "laggard")
+TAG_DEFS = {
+    "vol_up": {"name": "量能放大", "desc": "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍"},
+    "ma_up": {"name": "均線轉強", "desc": "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線"},
+    "near_high": {"name": "接近 52 週高", "desc": "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%"},
+    "rev_mom": {"name": "營收動能", "desc": "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%"},
+    "chips": {"name": "籌碼偏多", "desc": "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0"},
+    "topic_sync": {"name": "題材同步發動", "desc": "所屬題材今天有 2 檔以上發動(爆量突破或收盤創 52 週新高)"},
+    "laggard": {"name": "落後補漲", "desc": "在今天的落後補漲名單內(同題材已有 2 檔以上發動,本檔營收年增不低於題材中位數、近 20 日漲幅低於題材中位數)"},
+}
+TAG_VOL_RATIO = 1.5      # 近 5 日均額 / 前 20 日均額
+TAG_NEAR_HIGH = 0.95     # 收盤 / 近 250 日最高收盤
+TAG_REV = 20             # 最新月年增與近 3 月平均年增門檻(%)
+TAG_HI_MIN = 200         # 52 週高至少要有幾個交易日資料(同 laggard 的 52 週新高定義)
+
+
+def condition_tags(close, value, yoy, yoy3, net, day, topic_codes=None, laggard_codes=None):
+    """第 day 日各檔的條件標籤。回傳 {代號: [標籤 id...]}(依 TAG_ORDER,沒有任何標籤的不放進去)。
+    close、value(成交金額)、net(法人買賣超)、yoy、yoy3(已換成交易日、第 day 日已公告的最新月數字):
+    日期 × 代號的 DataFrame,同一份 index。只取 day(含)以前的列。
+    topic_codes:今天被觸發的題材的所有成員代號;laggard_codes:今天落後補漲名單的代號。
+    給 None 表示該資料算不出來,對應標籤(topic_sync、laggard)整批不給。資料缺值的標籤不給。"""
+    i = close.index.get_loc(day)
+    px = close.iloc[:i + 1]
+    val = value.iloc[:i + 1]
+    c = px.iloc[-1]
+    ok = {}
+    if len(px) >= 25:
+        recent = val.iloc[-5:].mean()
+        prior = val.iloc[-25:-5].mean()
+        ok["vol_up"] = (prior > 0) & (recent >= TAG_VOL_RATIO * prior)
+    ma20 = px.rolling(20, min_periods=20).mean()
+    ma60 = px.rolling(60, min_periods=60).mean()
+    if len(px) >= 60:
+        ok["ma_up"] = (c > ma20.iloc[-1]) & (ma20.iloc[-1] > ma60.iloc[-1]) & (ma20.iloc[-1] > ma20.iloc[-6])
+    hi = px.iloc[-250:]
+    if len(px) >= TAG_HI_MIN:
+        ok["near_high"] = (c >= hi.max() * TAG_NEAR_HIGH) & (hi.count() >= TAG_HI_MIN)
+    ok["rev_mom"] = (yoy.loc[day] >= TAG_REV) & (yoy3.loc[day] >= TAG_REV)
+    nt = net.iloc[:i + 1]
+    ok["chips"] = (nt.iloc[-20:].sum(min_count=20) > 0) & (nt.iloc[-5:].sum(min_count=5) > 0)
+    out = {}
+    for t in TAG_ORDER:
+        if t == "topic_sync":
+            hit = None if topic_codes is None else set(topic_codes)
+        elif t == "laggard":
+            hit = None if laggard_codes is None else set(laggard_codes)
+        else:
+            m = ok.get(t)
+            hit = None if m is None else set(m.index[m.fillna(False).values.astype(bool)])
+        for code in (hit or ()):
+            if code in c.index:
+                out.setdefault(code, []).append(t)
+    return out
+
+
 def first(m, gap=20):
     m = m.fillna(False).astype(bool)
     p = m.shift(1).fillna(False).astype(bool)
@@ -350,6 +408,14 @@ def build(L):
     landmines_now(last)
     technical_now(L, F)
     mom = momentum(L, rp, close, opn, tradable, usable, newpub, rev_list)
+    lag = L.get("lag")   # signals.py 先跑 laggard;沒有結果(失敗或略過)時 topic_sync、laggard 標籤不給
+    if lag is not None and lag.get("date") != last:
+        lag = None
+    tags = condition_tags(close, vyi, D["yoy"], D["yoy3"], net, last,
+                          None if lag is None else {c for t in lag["triggered"].values() for c in t["members"]},
+                          None if lag is None else {x["code"] for x in lag["list"]})
+    for x in rev_list + theme_list + bo_list:
+        x["tags"] = tags.get(x["code"], [])
     rank = ranking(rev_list, bo_list, mom)
     try:   # 毛利率回測結果(scripts/margin_test.py 產生,研究用、不在排程跑)
         with open(os.path.join(OUT, "margin_test.json"), encoding="utf-8") as f:
@@ -376,7 +442,7 @@ def build(L):
         meta["explosion"]["curve"] = {k: {x: v[x] for x in ("cagr", "mdd", "sharpe", "win", "months")} for k, v in acc.get("curve", {}).items()}
     except (OSError, ValueError):
         pass
-    doc = dict(meta, stats=stats, base=base, rev=rev_list, theme=theme_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank,
+    doc = dict(meta, tag_defs=TAG_DEFS, stats=stats, base=base, rev=rev_list, theme=theme_list, breakout=bo_list, portfolio=port, cycle=cyc, rank=rank,
                momentum={k: v for k, v in mom.items() if k != "today"})
     with open(os.path.join(OUT, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, separators=(",", ":"))
@@ -904,7 +970,7 @@ def ranking(rev_list, bo_list, mom):
         else:
             seen[x["code"]] = dict(x, src=["爆量突破"])
     keys = ("code", "name", "close", "chg", "fv", "src", "yoy", "yoy3", "rev_streak", "above_ma60", "dumped",
-            "low_vol", "themes", "ret20", "hi250")
+            "low_vol", "themes", "ret20", "hi250", "tags")
     for x in seen.values():
         r = {k: x.get(k) for k in keys}
         r["mom"] = mom["today"].get(x["code"])   # 只有營收動能名單內的才有分數

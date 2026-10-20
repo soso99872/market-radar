@@ -382,13 +382,14 @@ def main():
     with open(os.path.join(WATCH_DIR, "latest.json"), "w", encoding="utf-8") as f:
         json.dump(watch, f, ensure_ascii=False, separators=(",", ":"))
 
-    rd = radar.build(locals()) or {"rev": [], "breakout": []}
-
-    try:   # 落後補漲(失敗只印警告,不影響其他輸出)
+    lag = None
+    try:   # 落後補漲(失敗只印警告,不影響其他輸出;radar 的 topic_sync、laggard 標籤用它的結果)
         import laggard
-        laggard.build(locals())
+        lag = laggard.build(locals())
     except Exception as e:
         print("laggard 略過:%s" % e)
+
+    rd = radar.build(locals()) or {"rev": [], "breakout": []}
 
     # 個股頁:板塊成分股 + 近 20 日有訊號的股票 + 觀察名單 + 起漲雷達
     recent = dates[-20:]

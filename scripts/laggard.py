@@ -222,6 +222,7 @@ def build(L, write=True):
         print("laggard: 沒有月營收資料,略過")
         return None
     tps = {t["id"]: t["codes"] for t in T.load()}
+    tnames = {t["id"]: t.get("name", t["id"]) for t in T.load()}
     launched = launches(cl, va, ch)
     restricted = _restricted()
     bt = backtest(cl, op, tx, launched, rp["yoy"], tps)
@@ -230,6 +231,8 @@ def build(L, write=True):
     prev = select(cl.index[-2], cl, launched, rp["yoy"], tps, restricted) if len(cl) > 1 else []
     for x in today:
         x["name"] = names.get(x["code"], x["code"])
+        x["topic_name"] = tnames.get(x["topic"], x["topic"])
+        x["launched_names"] = [names.get(c, c) for c in x["launched"]]
         x["yoy"], x["ret20"] = _r(x["yoy"], 1), _r(x["ret20"] * 100, 1)
         x["yoy_median"], x["ret20_median"] = _r(x["yoy_median"], 1), _r(x["ret20_median"] * 100, 1)
     new = sorted({x["code"] for x in today} - {x["code"] for x in prev})
@@ -238,6 +241,8 @@ def build(L, write=True):
         "date": str(last.date()),
         "generated_at": datetime.now(history.TZ).isoformat(timespec="minutes"),
         "list": today, "new": new,
+        "triggered": {tid: {"launched": fired, "members": sorted(set(tps[tid]))}   # 今日被觸發的題材(給 radar 的條件標籤用)
+                      for tid, fired in sorted(triggers(last, launched, tps).items())},
         "backtest": {
             "period": [str(cl.index[0].date()), str(last.date())],
             "oos_start": str(cl.index[max(0, len(cl) - S.OOS_DAYS)].date()),

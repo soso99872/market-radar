@@ -16,7 +16,7 @@ LATEST = os.path.join(ROOT, "data", "radar", "latest.json")
 LAGGARD = os.path.join(ROOT, "data", "radar", "laggard.json")
 TOPICS = os.path.join(ROOT, "data", "sectors", "topics.json")
 STATE = os.path.join(ROOT, "data", "radar", "notify_state.json")
-SITE = os.environ.get("SITE_URL", "https://stock-market-radar.pages.dev").rstrip("/")   # 換網域只要改 GitHub repo 變數 SITE_URL
+SITE = (os.environ.get("SITE_URL") or "https://stock-market-radar.pages.dev").rstrip("/")   # 換網域只要改 GitHub repo 變數 SITE_URL
 URL = SITE + "/radar"
 MAX_PER_SECTION = 15
 MAX_LEN = 4096
@@ -83,6 +83,8 @@ def build_message(latest, laggard, state, topic_names=None):
     lag_new = []
     if laggard is None:
         lines.append("落後補漲資料尚未產生")
+    elif laggard.get("date") != latest["date"]:   # 舊檔的 new 不是今天的新名單,不推
+        lines.append("落後補漲資料未更新")
     else:
         by_code = {}
         for x in laggard.get("list") or []:

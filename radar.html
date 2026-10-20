@@ -30,6 +30,9 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 .verdict details { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .verdict summary { cursor: pointer; color: var(--text); }
 .tabs .seg button { height: 34px; padding: 0 14px; font-size: 14px; }
+.tabs { overflow-x: auto; }
+.tabs .seg { max-width: none; }
+.tabs .seg button { white-space: nowrap; flex: none; }
 .sec-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 4px 0 -4px; }
 .sec-h h2 { margin: 0; font-size: 18px; font-weight: 900; }
 .sec-h p { margin: 0; font-size: 13px; color: var(--muted); }
@@ -112,6 +115,26 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
 .tk td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); font-family: var(--mono); }
 .tk th:first-child, .tk td:first-child { text-align: left; font-family: var(--sans); }
 /* 長表格在框內捲動,表頭固定在頂端、個股欄固定在左邊,往下或往右捲都知道每個數字是什麼 */
+table.tk.lg { min-width: 640px; }
+table.tk.lg.st { min-width: 0; }
+.lg .u { font-family: var(--sans); font-size: 11px; color: var(--muted); margin-left: 2px; }
+.tk.lg.st th, .tk.lg.st td { white-space: nowrap; }
+@media (max-width: 640px) { .tk.lg.st th, .tk.lg.st td { padding: 8px 4px; font-size: 12.5px; } }
+@media (max-width: 900px) {
+  .tkwrap:has(.lg.nm) { border: 0; background: transparent; overflow: visible; max-height: none; }
+  table.tk.lg.nm { min-width: 0; display: block; background: transparent; }
+  .lg.nm thead { display: none; }
+  .lg.nm tbody { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+  .lg.nm tr { display: grid; align-content: start; min-width: 0; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+  .lg.nm td { display: block; overflow-wrap: anywhere; padding: 0; border: 0; text-align: left; font-family: var(--sans); }
+  .lg.nm td[data-l]::before { content: attr(data-l); display: block; font-size: 11px; color: var(--faint); }
+  .lg.nm td.full { grid-column: 1 / -1; }
+  .lg.nm td.n { font-family: var(--mono); font-size: 16px; }
+}
+.tk.lg td.l, .tk.lg th.l { text-align: left; font-family: var(--sans); }
+.tk.lg td.l { white-space: normal; min-width: 8em; }
+.tk.lg td small { display: block; font-size: 11px; color: var(--faint); }
+.evb.ref { font-size: 12.5px; font-weight: 700; color: var(--text); border-color: var(--muted); vertical-align: middle; }
 .tkwrap { overflow: auto; max-height: calc(100vh - var(--bar-h, 110px) - 24px); scroll-margin-top: calc(var(--bar-h, 110px) + 12px); border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
 .tkwrap thead th { position: sticky; top: 0; z-index: 2; background: var(--panel-2); }
 .tkwrap thead tr + tr th { top: 29px; }
@@ -182,9 +205,9 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
   "use strict";
   var esc = MR.esc, pct = MR.pct, sign = MR.sign, dir = MR.dir;
   var app = document.getElementById("app");
-  var R = null, TK = null, AU = null, RC = null, LIVE = null, LIVEHITS = [];
+  var R = null, TK = null, AU = null, RC = null, LIVE = null, LIVEHITS = [], LG = null, TOPICS = null;
   var view = (location.hash || "#rank").slice(1);
-  if (["rank", "rev", "cycle", "breakout", "track"].indexOf(view) < 0) view = "rank";
+  if (["rank", "rev", "cycle", "breakout", "laggard", "track"].indexOf(view) < 0) view = "rank";
   var hideLow = true, onlyNew = false, tierF = "all", sortBy = "tier", showAll = {}, rankFilter = "all", rankSort = "score", FVT = null;
   try { hideLow = localStorage.getItem("radar.hideLow") !== "0"; } catch (e) {}
   MR.setupConv();
@@ -371,6 +394,53 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       liveHtml +
       '<div class="tools"><label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label></div>" +
       list("bo", items, 18, function (x) { return boCard(x, false); });
+  }
+
+  // 落後補漲:資料 data/radar/laggard.json;題材名、已發動個股名稱在 T04 前用 topics.json 與頁面既有股名對照
+  var NAMES = null;
+  function nameOf(code) {
+    if (!NAMES) {
+      NAMES = {};
+      [R.rank, R.rev, R.theme, R.breakout].forEach(function (a) { (a || []).forEach(function (x) { if (x && x.code && x.name) NAMES[x.code] = x.name; }); });
+    }
+    return NAMES[code] || code;
+  }
+  function topicName(x) {
+    if (x.topic_name) return x.topic_name;
+    var t = (TOPICS || []).filter(function (o) { return o.id === x.topic; })[0];
+    return t ? t.name : x.topic;
+  }
+  function lgStat(h, z) {
+    if (!z) return "<tr><td>" + h + " 日</td><td colspan=\"5\">—</td></tr>";
+    return "<tr><td>" + h + " 日</td><td>" + z.stocks + '<span class="u">檔</span>' + "<small>n " + (z.n == null ? "—" : z.n.toLocaleString("en-US")) + "</small></td><td>" + plain(z.win, 1, "%") + '</td><td class="' + dir(z.avg_rel) + '">' + num(z.avg_rel, 2, "%") +
+      '</td><td class="' + dir(z.med_rel) + '">' + num(z.med_rel, 2, "%") + "</td><td>" + plain(z.loss, 1, "%") + "</td></tr>";
+  }
+  function laggardView() {
+    if (!LG) return '<div class="sec-h"><h2>落後補漲</h2></div><p class="note">落後補漲資料尚未產生。</p>';
+    var bt = LG.backtest || {}, hz = bt.horizons || {}, isNew = LG.new || [];
+    var cost = bt.cost_pct == null ? "0.5425" : String(bt.cost_pct);
+    var help = MR.help("laggard", "落後補漲:怎麼選、報酬怎麼算",
+      "<p>觸發:同一題材當天有 2 檔以上「發動」(爆量突破,或收盤創 52 週新高)。</p>" +
+      "<p>入選:同題材中,最新月營收年增不低於題材中位數,且近 20 個交易日漲幅低於題材中位數;排除處置股、注意股,當天已發動的不列入。</p>" +
+      "<p>報酬:觸發後隔天開盤買進,持有 20 日、60 日,相對加權指數的超額報酬,已扣來回成本 " + esc(cost) + "%。只用觸發當天已存在的資料。</p>" +
+      ((LG.notes || []).length ? "<ul>" + LG.notes.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") + "</ul>" : ""));
+    var rows = (LG.list || []).map(function (x) {
+      var nm = x.name || nameOf(x.code);
+      return '<tr><td class="l full"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(nm) + "</button>" +
+        (isNew.indexOf(x.code) >= 0 ? ' <span class="tag2 hot">新進</span>' : "") + "</td>" +
+        '<td class="l full" data-l="題材">' + esc(topicName(x)) + "</td>" +
+        '<td class="l full" data-l="已發動的同題材個股">' + (x.launched || []).map(function (c, i) { return esc((x.launched_names && x.launched_names[i]) || nameOf(c)); }).join("、") + "</td>" +
+        '<td class="n ' + dir(x.yoy) + '" data-l="營收年增">' + num(x.yoy, 1, "%") + "<small>中位 " + num(x.yoy_median, 1, "%") + "</small></td>" +
+        '<td class="n ' + dir(x.ret20) + '" data-l="近 20 日漲幅">' + num(x.ret20, 1, "%") + "<small>中位 " + num(x.ret20_median, 1, "%") + "</small></td></tr>";
+    }).join("");
+    var table = rows ? '<div class="tkwrap"><table class="tk lg nm"><thead><tr><th>個股</th><th class="l">題材</th><th class="l">已發動的同題材個股</th><th>營收年增</th><th>近 20 日漲幅</th></tr></thead><tbody>' + rows + "</tbody></table></div>"
+      : '<p class="empty">今天沒有落後補漲名單</p>';
+    var per = bt.period ? bt.period[0] + " ~ " + bt.period[1] : "—";
+    return '<div class="sec-h"><h2>落後補漲' + (LG.advantage ? "" : ' <span class="evb ref">僅供參考</span>') + help + "</h2><p>題材有人發動、營收跟上但股價還沒漲。</p></div>" +
+      table +
+      '<div class="sec-h"><h2 style="font-size:16px">歷史回測</h2><p>期間 ' + esc(per) + " · 觸發 " + (bt.triggers == null ? "—" : bt.triggers.toLocaleString("en-US")) + " 次 · 超額報酬已扣成本 " + esc(cost) + "%</p></div>" +
+      '<div class="tkwrap"><table class="tk lg st"><thead><tr><th>持有</th><th>樣本</th><th>勝率</th><th>平均超額</th><th>中位數</th><th>虧損率</th></tr></thead><tbody>' +
+      lgStat(20, hz["20"]) + lgStat(60, hz["60"]) + "</tbody></table></div>";
   }
 
   function fwdNote() {
@@ -626,10 +696,12 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
       '<span class="sep"></span><span id="live-status">' + MR.liveStatus(LIVE, R.date) + "</span></div>" +
       quick() + verdict() +
       '<div class="tabs"><div class="seg" role="tablist" aria-label="檢視">' +
-      [["rank", "潛在排行"], ["rev", "營收動能 · 爆發前"], ["cycle", "產業循環"], ["breakout", "爆量突破 · 剛爆發" + (LIVEHITS.length ? " +" + LIVEHITS.length : "")], ["track", "驗證與實績"]].map(function (o) {
+      [["rank", "潛在排行"], ["rev", "營收動能 · 爆發前"], ["cycle", "產業循環"], ["breakout", "爆量突破 · 剛爆發" + (LIVEHITS.length ? " +" + LIVEHITS.length : "")], ["laggard", "落後補漲"], ["track", "驗證與實績"]].map(function (o) {
         return '<button type="button" role="tab" data-view="' + o[0] + '" aria-pressed="' + (o[0] === view) + '" aria-selected="' + (o[0] === view) + '">' + o[1] + "</button>";
       }).join("") + "</div></div>" +
-      (view === "rank" ? rankView() : view === "rev" ? revView() : view === "cycle" ? cycleView() : view === "breakout" ? boView() : trackView());
+      (view === "rank" ? rankView() : view === "rev" ? revView() : view === "cycle" ? cycleView() : view === "breakout" ? boView() : view === "laggard" ? laggardView() : trackView());
+    var cur = app.querySelector('.tabs [aria-pressed="true"]');
+    if (cur) { var tb = cur.closest(".tabs"); tb.scrollLeft += cur.getBoundingClientRect().left - tb.getBoundingClientRect().left - 16; }   // 窄螢幕讓目前分頁露出來
     MR.patchPrices(app, LIVE, R.date);
     document.title = "起漲雷達 · " + R.date;
   }
@@ -661,10 +733,12 @@ table.tk { border-collapse: separate; border-spacing: 0; width: 100%; font-size:
     MR.json("data/track/audit.json").catch(function () { return null; }),
     MR.json("data/radar/fv_backtest.json").catch(function () { return null; }),
     MR.json("data/radar/recall.json").catch(function () { return null; }),
-    MR.picks().catch(function () { return null; })])
+    MR.picks().catch(function () { return null; }),
+    MR.json("data/radar/laggard.json").catch(function () { return null; }),
+    MR.json("data/sectors/topics.json").catch(function () { return null; })])
     .then(function (r) {
       R = r[0]; TK = r[1]; AU = r[2]; FVT = r[3]; RC = r[4];
-      PICKS = r[5];
+      PICKS = r[5]; LG = r[6]; TOPICS = r[7];
       render();
       MR.startIntraday(function () { return app; }, R.date, function () { MR.patchPrices(app, LIVE, R.date); });
       // 證交所若已公布比網站更新的收盤資料,直接在瀏覽器更新上市股價格並判斷今日突破

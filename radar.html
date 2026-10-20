@@ -159,6 +159,7 @@ table.tk.lg.st { min-width: 0; }
 .fcount { color: var(--muted); }
 .fcount b { font-family: var(--mono); color: var(--text); font-size: 15px; }
 .fclear { margin-left: auto; min-height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: none; color: var(--accent); font-size: 13px; cursor: pointer; }
+.fbh { display: inline-flex; align-items: center; gap: 4px; }
 .fclear:disabled { color: var(--faint); cursor: default; }
 .fclear:not(:disabled):hover { border-color: var(--accent); }
 .fpanel { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 10px 24px; }
@@ -194,7 +195,24 @@ table.tk.lg.st { min-width: 0; }
 .fnote { color: var(--faint); font-size: 12px; }
 .fundo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); }
 .fundo button { min-height: 32px; padding: 0 10px; border: 1px solid var(--accent); border-radius: 8px; background: none; color: var(--accent); cursor: pointer; }
+/* 3 步驟引導 */
+.guide { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; display: grid; gap: 6px; }
+.gtog { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; padding: 0; border: 0; background: none; color: var(--text); font-size: 14px; font-weight: 700; text-align: left; cursor: pointer; touch-action: manipulation; }
+.gtog::after { content: "▾"; margin-left: auto; color: var(--faint); }
+.gtog[aria-expanded="true"]::after { content: "▴"; }
+.gtog:hover { color: var(--accent); }
+.gtog small { color: var(--faint); font-size: 12px; font-weight: 400; }
+.gsteps { list-style: none; margin: 0 0 6px; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 16px; counter-reset: gs; }
+.gsteps[hidden] { display: none; }
+.gsteps li { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: var(--muted); counter-increment: gs; }
+.gsteps li::before { content: counter(gs); flex: none; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--accent); color: var(--accent); font: 600 13px/22px var(--mono); text-align: center; }
+.gsteps b { color: var(--text); }
+@media (max-width: 760px) { .gsteps { grid-template-columns: 1fr; } }
+/* 篩選器條件旁的「?」:視覺維持 20px,點擊範圍擴到 44px(手機) */
+.fq { position: relative; margin-left: 0; vertical-align: 0; touch-action: manipulation; }
+@media (max-width: 640px) { .fq::after { content: ""; position: absolute; inset: -13px; } }
 @media (max-width: 640px) {
+  .gtog { min-height: 44px; }
   .fb, .fmine, .ftog, .fclear, .fsave input, .fundo button, .fdel { min-height: 44px; }
   .fdel { min-width: 44px; }
   .frow > .fl { width: 100%; }
@@ -563,6 +581,18 @@ table.tk.lg.st { min-width: 0; }
   var fPulse = false, fOpen = window.innerWidth > 640, fSaving = false, fUndo = null, fFocus = null;
   var storeOk = (function () { try { localStorage.setItem("radar.t", "1"); localStorage.removeItem("radar.t"); return true; } catch (e) { return false; } })();
 
+  // 條件旁的「?」:說明文字取 tag_defs[id].desc(舊資料沒有就寫「資料更新後提供」)
+  function qHelp(key, title, html) { return MR.help(key, title, html).replace('class="help-btn"', 'class="help-btn fq"'); }
+  function tagHelp(id) {
+    var d = R.tag_defs && R.tag_defs[id];
+    return qHelp("f-tag-" + id, "條件標籤:" + tagName(id), "<p>" + (d && d.desc ? esc(d.desc) : "資料更新後提供") + "</p>");
+  }
+  function starHelp() {
+    return qHelp("f-star", "評級", "<p>評級是 1~5 顆星,依營收與題材條件的歷史回測證據強度給,有陷阱會扣 1 顆;不是保證。沒有評級的個股當 1★。</p><p>「4★ 以上」代表 4 顆星和 5 顆星;按鈕上的數字是再加上這個條件後剩下的檔數。</p>");
+  }
+  function pxHelp() {
+    return qHelp("f-px", "價格帶", "<p>價格帶依最新收盤價(元)分組:&lt; 50、50–150、150–500、≥ 500,含下限、不含上限。</p><p>按鈕上的數字是再加上這個條件後剩下的檔數。</p>");
+  }
   function hasTags() { return !!R.tag_defs && (R.rank || []).some(function (x) { return Array.isArray(x.tags); }); }
   function tagName(id) { return (R.tag_defs && R.tag_defs[id] && R.tag_defs[id].name) || TAGNAME[id] || id; }
   function fPass(x, f) {
@@ -599,11 +629,11 @@ table.tk.lg.st { min-width: 0; }
   function filterBox(base, shown) {
     var ok = hasTags(), mine = loadMine();
     var note = '<span class="fnote">資料更新後提供</span>';
-    var rows = '<div class="frow"><span class="fl">評級</span>' + STARS.map(function (s) { return fbtn("star:" + s[0], s[1], fCount(base, fWith(fl, "star", s[0])), fl.star === s[0]); }).join("") + "</div>" +
-      '<div class="frow"><span class="fl">價格帶</span>' + PXB.map(function (p, i) { return fbtn("px:" + i, p[0], fCount(base, fWith(fl, "px", i)), fl.px === i); }).join("") + "</div>" +
+    var rows = '<div class="frow"><span class="fl">評級</span>' + STARS.map(function (s) { return fbtn("star:" + s[0], s[1], fCount(base, fWith(fl, "star", s[0])), fl.star === s[0]); }).join("") + starHelp() + "</div>" +
+      '<div class="frow"><span class="fl">價格帶</span>' + PXB.map(function (p, i) { return fbtn("px:" + i, p[0], fCount(base, fWith(fl, "px", i)), fl.px === i); }).join("") + pxHelp() + "</div>" +
       TAGGRP.map(function (g) {
         return '<div class="frow"><span class="fl">' + g[0] + "</span>" + g[1].map(function (id) {
-          return fbtn("tag:" + id, esc(tagName(id)), ok ? fCount(base, fWith(fl, "tag", id)) : 0, fl.tags.indexOf(id) >= 0, !ok);
+          return '<span class="fbh">' + fbtn("tag:" + id, esc(tagName(id)), ok ? fCount(base, fWith(fl, "tag", id)) : 0, fl.tags.indexOf(id) >= 0, !ok) + tagHelp(id) + "</span>";
         }).join("") + (ok ? "" : note) + "</div>";
       }).join("");
     var pre = PRESETS.map(function (p, i) {
@@ -647,6 +677,18 @@ table.tk.lg.st { min-width: 0; }
     else if (k === "del") { mine = loadMine(); fUndo = { item: mine[+v], idx: +v }; mine.splice(+v, 1); saveMine(mine); }
     else if (k === "undo" && fUndo) { mine = loadMine(); mine.splice(Math.min(fUndo.idx, mine.length), 0, fUndo.item); saveMine(mine.slice(0, FMAX)); fUndo = null; }
     fFocus = k === "savebtn" ? "#fname" : k === "cancel" ? '[data-f="savebtn"]' : k === "del" || k === "undo" ? null : '[data-f="' + a + '"]';
+  }
+
+  // 3 步驟引導:收合狀態存 localStorage radar.guide("closed"=收合),第一次來(沒有紀錄)預設展開
+  var GKEY = "radar.guide";
+  var gOpen = (function () { try { return localStorage.getItem(GKEY) !== "closed"; } catch (e) { return true; } })();
+  function guide() {
+    return '<section class="guide" aria-label="使用步驟"><button type="button" class="gtog" data-g="toggle" aria-expanded="' + gOpen + '" aria-controls="gbody">3 步驟用好這頁' +
+      (gOpen ? "" : " <small>(點開看步驟)</small>") + "</button>" +
+      '<ol class="gsteps" id="gbody"' + (gOpen ? "" : " hidden") + ">" +
+      "<li><span><b>看方向。</b>先看個股的評級和條件標籤,挑出你想追的方向。</span></li>" +
+      "<li><span><b>縮名單。</b>用下方篩選器或預設篩選,把名單縮到幾檔。</span></li>" +
+      "<li><span><b>再決定。</b>點個股看細節與回測,確認後再做決定。</span></li></ol></section>";
   }
 
   function rankView() {
@@ -861,7 +903,7 @@ table.tk.lg.st { min-width: 0; }
     app.innerHTML =
       '<div class="status"><span>資料日 <b>' + esc(R.date) + '</b></span><span class="sep"></span><span>最新營收月份 <b>' + esc(R.rev_latest) + "</b></span>" +
       '<span class="sep"></span><span id="live-status">' + MR.liveStatus(LIVE, R.date) + "</span></div>" +
-      quick() + verdict() +
+      quick() + verdict() + guide() +
       '<div class="tabs"><div class="seg" role="tablist" aria-label="檢視">' +
       [["rank", "潛在排行"], ["rev", "營收動能 · 爆發前"], ["cycle", "產業循環"], ["breakout", "爆量突破 · 剛爆發" + (LIVEHITS.length ? " +" + LIVEHITS.length : "")], ["laggard", "落後補漲"], ["track", "驗證與實績"]].map(function (o) {
         return '<button type="button" role="tab" data-view="' + o[0] + '" aria-pressed="' + (o[0] === view) + '" aria-selected="' + (o[0] === view) + '">' + o[1] + "</button>";
@@ -874,7 +916,7 @@ table.tk.lg.st { min-width: 0; }
   }
 
   app.addEventListener("click", function (e) {
-    var b = e.target.closest("[data-view],[data-sort],[data-all],[data-rf],[data-rs],[data-tier],[data-f],th[data-col]");
+    var b = e.target.closest("[data-view],[data-sort],[data-all],[data-rf],[data-rs],[data-tier],[data-f],[data-g],th[data-col]");
     if (!b) return;
     if (b.dataset.view) { view = b.dataset.view; history.replaceState(null, "", "#" + view); }
     if (b.dataset.sort) sortBy = b.dataset.sort;
@@ -887,7 +929,9 @@ table.tk.lg.st { min-width: 0; }
     }
     if (b.dataset.all) showAll[b.dataset.all] = !showAll[b.dataset.all];
     if (b.dataset.f) fAct(b.dataset.f);
+    if (b.dataset.g) { gOpen = !gOpen; try { localStorage.setItem(GKEY, gOpen ? "open" : "closed"); } catch (x) {} }
     render();
+    if (b.dataset.g) { var gt = app.querySelector('[data-g="toggle"]'); if (gt) gt.focus(); }
     fPulse = false;
     if (b.dataset.f && fFocus) { var nf = app.querySelector(fFocus); if (nf) nf.focus(); fFocus = null; }
     if (b.dataset.view || b.dataset.all) MR.refreshIntraday();

@@ -170,7 +170,7 @@ table.tk.lg.st { min-width: 0; }
 .fcount b { display: inline-block; }
 .fcount b.chg { animation: fpulse .45s ease; }   /* 符合檔數變了,數字放大再回來,讓人注意到名單縮了 */
 @keyframes fpulse { from { color: var(--accent); transform: scale(1.3); } to { color: var(--text); transform: none; } }
-@media (prefers-reduced-motion: reduce) { .fcount b.chg { animation: none; } .fb, .ftog, .fclear { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .fcount b.chg { animation: none; } .fb, .fmine, .ftog, .fclear, .fdel { transition: none; } .fb:active:not(:disabled), .ftog:active, .fclear:active:not(:disabled) { transform: none; } }
 .fbox { scroll-margin-top: calc(var(--bar-h, 110px) + 12px); }
 .frow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
 .frow > .fl { flex: none; width: 4.6em; color: var(--faint); font-size: 12px; }
@@ -213,6 +213,7 @@ table.tk.lg.st { min-width: 0; }
 @media (max-width: 640px) { .fq::after { content: ""; position: absolute; inset: -13px; } }
 @media (max-width: 640px) {
   .gtog { min-height: 44px; }
+  .fhead { position: sticky; top: var(--bar-h, 110px); z-index: 2; background: var(--panel); padding: 6px 0; margin: -6px 0; }
   .fb, .fmine, .ftog, .fclear, .fsave input, .fundo button, .fdel { min-height: 44px; }
   .fdel { min-width: 44px; }
   .frow > .fl { width: 100%; }
@@ -578,7 +579,7 @@ table.tk.lg.st { min-width: 0; }
   var TAGNAME = { vol_up: "量能放大", ma_up: "均線轉強", near_high: "接近 52 週高", chips: "籌碼偏多", rev_mom: "營收動能", topic_sync: "題材同步發動", laggard: "落後補漲" };
   var PRESETS = [["強勢突破", { star: 4, px: null, tags: ["vol_up", "near_high"] }], ["營收＋籌碼", { star: null, px: null, tags: ["rev_mom", "chips", "ma_up"] }], ["題材補漲", { star: null, px: null, tags: ["laggard"] }]];
   var fl = { star: null, px: null, tags: [] };
-  var fPulse = false, fOpen = window.innerWidth > 640, fSaving = false, fUndo = null, fFocus = null;
+  var fLast = null, fPulse = false, fOpen = window.innerWidth > 640, fSaving = false, fUndo = null, fFocus = null;
   var storeOk = (function () { try { localStorage.setItem("radar.t", "1"); localStorage.removeItem("radar.t"); return true; } catch (e) { return false; } })();
 
   // 條件旁的「?」:說明文字取 tag_defs[id].desc(舊資料沒有就寫「資料更新後提供」)
@@ -627,6 +628,11 @@ table.tk.lg.st { min-width: 0; }
     return '<button type="button" class="fb' + (n === 0 && !off ? " z" : "") + '" data-f="' + attr + '" aria-pressed="' + on + '"' + (off ? " disabled" : "") + ">" + label + (off ? "" : " <i>" + n + "</i>") + "</button>";
   }
   function filterBox(base, shown) {
+    var html = filterHtml(base, shown);
+    fLast = shown;
+    return html;
+  }
+  function filterHtml(base, shown) {
     var ok = hasTags(), mine = loadMine();
     var note = '<span class="fnote">資料更新後提供</span>';
     var rows = '<div class="frow"><span class="fl">評級</span>' + STARS.map(function (s) { return fbtn("star:" + s[0], s[1], fCount(base, fWith(fl, "star", s[0])), fl.star === s[0]); }).join("") + starHelp() + "</div>" +
@@ -655,14 +661,14 @@ table.tk.lg.st { min-width: 0; }
     var undo = fUndo ? '<div class="fundo full" role="status">已刪除「' + esc(fUndo.item.name) + '」<button type="button" data-f="undo">復原</button></div>' : "";
     return '<section class="fbox" aria-label="篩選條件"><div class="fhead">' +
       '<button type="button" class="ftog" data-f="toggle" aria-expanded="' + fOpen + '" aria-controls="fpanel">篩選條件' + (fActive() ? "(" + fActive() + ")" : "") + "</button>" +
-      '<span class="fcount" role="status">符合 <b' + (fPulse ? ' class="chg"' : "") + ">" + shown + "</b> 檔</span>" +
+      '<span class="fcount" role="status">符合 <b' + (fPulse && shown !== fLast ? ' class="chg"' : "") + ">" + shown + "</b> 檔</span>" +
       '<button type="button" class="fclear" data-f="clear"' + (fActive() ? "" : " disabled") + ">清除</button></div>" +
       '<div class="fpanel" id="fpanel"' + (fOpen ? "" : " hidden") + '><div class="frow full"><span class="fl">快速套用</span>' + pre + "</div>" +
       '<div class="frow full"><span class="fl">自訂</span>' + save + "</div>" + undo + rows + "</div></section>";
   }
   function fAct(a) {   // 篩選器按鈕動作
     fPulse = a.indexOf("toggle") < 0 && a.indexOf("save") < 0 && a !== "cancel";
-    var k = a.split(":")[0], v = a.slice(k.length + 1), mine;
+    var k = a.split(":")[0], v = a.slice(k.length + 1), mine, undoIdx = 0;
     if (k !== "undo" && k !== "del") fUndo = null;
     if (k === "star") fl.star = fl.star === +v ? null : +v;
     else if (k === "px") fl.px = fl.px === +v ? null : +v;
@@ -675,8 +681,8 @@ table.tk.lg.st { min-width: 0; }
     else if (k === "savebtn") fSaving = true;
     else if (k === "cancel") fSaving = false;
     else if (k === "del") { mine = loadMine(); fUndo = { item: mine[+v], idx: +v }; mine.splice(+v, 1); saveMine(mine); }
-    else if (k === "undo" && fUndo) { mine = loadMine(); mine.splice(Math.min(fUndo.idx, mine.length), 0, fUndo.item); saveMine(mine.slice(0, FMAX)); fUndo = null; }
-    fFocus = k === "savebtn" ? "#fname" : k === "cancel" ? '[data-f="savebtn"]' : k === "del" || k === "undo" ? null : '[data-f="' + a + '"]';
+    else if (k === "undo" && fUndo) { undoIdx = Math.min(fUndo.idx, loadMine().length); mine = loadMine(); mine.splice(Math.min(fUndo.idx, mine.length), 0, fUndo.item); saveMine(mine.slice(0, FMAX)); fUndo = null; }
+    fFocus = k === "savebtn" ? "#fname" : k === "cancel" ? '[data-f="savebtn"]' : k === "del" ? '[data-f="undo"]' : k === "undo" ? '[data-f="mine:' + undoIdx + '"]' : '[data-f="' + a + '"]';
   }
 
   // 3 步驟引導:收合狀態存 localStorage radar.guide("closed"=收合),第一次來(沒有紀錄)預設展開

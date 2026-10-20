@@ -1,10 +1,10 @@
 {
- "date": "2026-10-19",
- "fetched_at": "2026-10-20T08:15+08:00",
- "foreign": -767.43,
- "trust": 241.42,
- "dealer": -362.63,
- "total": -888.64,
+ "date": "2026-10-20",
+ "fetched_at": "2026-10-20T19:45+08:00",
+ "foreign": -795.4,
+ "trust": 183.15,
+ "dealer": -355.8,
+ "total": -968.04,
  "unit": "億元(上市)",
  "source": "https://www.twse.com.tw/zh/trading/foreign/bfi82u.html"
 }

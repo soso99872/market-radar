@@ -197,7 +197,7 @@ table.tk.lg.st { min-width: 0; }
 .fundo button { min-height: 32px; padding: 0 10px; border: 1px solid var(--accent); border-radius: 8px; background: none; color: var(--accent); cursor: pointer; }
 /* 3 步驟引導 */
 .guide { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; display: grid; gap: 6px; }
-.gtog { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; padding: 0; border: 0; background: none; color: var(--text); font-size: 14px; font-weight: 700; text-align: left; cursor: pointer; touch-action: manipulation; }
+.gtog { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 36px; padding: 0 4px; border: 0; border-radius: 6px; background: none; color: var(--text); font-size: 14px; font-weight: 700; text-align: left; cursor: pointer; touch-action: manipulation; }
 .gtog::after { content: "▾"; margin-left: auto; color: var(--faint); }
 .gtog[aria-expanded="true"]::after { content: "▴"; }
 .gtog:hover { color: var(--accent); }
@@ -210,7 +210,12 @@ table.tk.lg.st { min-width: 0; }
 @media (max-width: 760px) { .gsteps { grid-template-columns: 1fr; } }
 /* 篩選器條件旁的「?」:視覺維持 20px,點擊範圍擴到 44px(手機) */
 .fq { position: relative; margin-left: 0; vertical-align: 0; touch-action: manipulation; }
-@media (max-width: 640px) { .fq::after { content: ""; position: absolute; inset: -13px; } }
+@media (max-width: 640px) {
+  .frow:has(.fq) { column-gap: 4px; }   /* 44px 的「?」放進同一列,評級列才不會把「?」擠到下一行 */
+  .fq { width: 44px; height: 44px; border: 0; background: none; isolation: isolate; }
+  .fq::before { content: ""; position: absolute; z-index: -1; left: 12px; top: 12px; width: 20px; height: 20px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 50%; background: var(--panel-2); }
+  .fq:hover::before, .fq:focus-visible::before { border-color: var(--accent); }
+}
 @media (max-width: 640px) {
   .gtog { min-height: 44px; }
   .fhead { position: sticky; top: var(--bar-h, 110px); z-index: 2; background: var(--panel); padding: 6px 0; margin: -6px 0; }
@@ -693,7 +698,7 @@ table.tk.lg.st { min-width: 0; }
       (gOpen ? "" : " <small>(點開看步驟)</small>") + "</button>" +
       '<ol class="gsteps" id="gbody"' + (gOpen ? "" : " hidden") + ">" +
       "<li><span><b>看方向。</b>先看個股的評級和條件標籤,挑出你想追的方向。</span></li>" +
-      "<li><span><b>縮名單。</b>用下方篩選器或預設篩選,把名單縮到幾檔。</span></li>" +
+      "<li><span><b>縮名單。</b>在「潛在排行」用篩選器或預設篩選,把名單縮到幾檔。</span></li>" +
       "<li><span><b>再決定。</b>點個股看細節與回測,確認後再做決定。</span></li></ol></section>";
   }
 

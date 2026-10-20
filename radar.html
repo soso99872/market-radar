@@ -143,6 +143,63 @@ table.tk.lg.st { min-width: 0; }
 .tk.rank th:nth-child(2), .tk.rank td:nth-child(2) { left: 34px; box-shadow: 1px 0 0 var(--line); }
 .tk.rank thead th:nth-child(-n+2) { z-index: 3; background: var(--panel-2); }
 @media (max-width: 420px) { .kpi { grid-template-columns: repeat(2, 1fr); } .ev dl { grid-template-columns: repeat(2, 1fr); } }
+.lg.nm .tag2 { white-space: nowrap; }
+.sec-h h3 { margin: 0; font-size: 16px; font-weight: 900; }
+/* 條件標籤:左側金色細條,跟警示(.warn,跌色框)分開 */
+.tag2.cond { color: var(--text); background: color-mix(in srgb, var(--accent) 12%, transparent); border-color: transparent; border-left: 3px solid var(--accent); }
+.ctags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; white-space: normal; }
+.tk.rank td .ctags { width: 148px; }
+/* 篩選器 */
+.fbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 10px; font-size: 13px; }
+.fhead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.ftog { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer; }
+.ftog:hover { border-color: var(--accent); }
+.ftog::after { content: "▾"; color: var(--faint); }
+.ftog[aria-expanded="true"]::after { content: "▴"; }
+.fcount { color: var(--muted); }
+.fcount b { font-family: var(--mono); color: var(--text); font-size: 15px; }
+.fclear { margin-left: auto; min-height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: none; color: var(--accent); font-size: 13px; cursor: pointer; }
+.fclear:disabled { color: var(--faint); cursor: default; }
+.fclear:not(:disabled):hover { border-color: var(--accent); }
+.fpanel { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 10px 24px; }
+.fpanel > .full { grid-column: 1 / -1; }
+.fpanel[hidden] { display: none; }
+.fb, .fmine, .ftog, .fclear, .fdel { transition: border-color .16s ease, background-color .16s ease, color .16s ease, transform .16s ease; }
+.fb:active:not(:disabled), .ftog:active, .fclear:active:not(:disabled) { transform: scale(.97); }
+.fcount b { display: inline-block; }
+.fcount b.chg { animation: fpulse .45s ease; }   /* 符合檔數變了,數字放大再回來,讓人注意到名單縮了 */
+@keyframes fpulse { from { color: var(--accent); transform: scale(1.3); } to { color: var(--text); transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fcount b.chg { animation: none; } .fb, .ftog, .fclear { transition: none; } }
+.fbox { scroll-margin-top: calc(var(--bar-h, 110px) + 12px); }
+.frow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.frow > .fl { flex: none; width: 4.6em; color: var(--faint); font-size: 12px; }
+.fb { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--text); font-size: 13px; cursor: pointer; }
+.fb:hover:not(:disabled) { border-color: var(--accent); }
+.fb i { font-style: normal; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.fb[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.fb[aria-pressed="true"] i { color: var(--accent-ink); }
+.fb.z:not([aria-pressed="true"]) { color: var(--faint); border-style: dashed; }
+.fb.z:not([aria-pressed="true"]) i { color: var(--faint); }
+.fb:disabled { opacity: .45; cursor: not-allowed; }
+.fb.mine { padding: 0; gap: 0; overflow: hidden; }
+.fmine { display: inline-flex; align-items: center; gap: 6px; align-self: stretch; padding: 0 8px 0 10px; border: 0; background: none; color: inherit; font-size: 13px; cursor: pointer; }
+.fmine i { font-style: normal; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.fmine:disabled { opacity: .45; cursor: not-allowed; }
+.fmine[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.fmine[aria-pressed="true"] i { color: var(--accent-ink); }
+.fdel { align-self: stretch; min-width: 32px; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: none; color: var(--muted); cursor: pointer; font-size: 15px; }
+.fdel:hover { color: var(--down); }
+.fsave { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 0; }
+.fsave input { min-height: 32px; width: 12em; max-width: 100%; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; }
+.fnote { color: var(--faint); font-size: 12px; }
+.fundo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted); }
+.fundo button { min-height: 32px; padding: 0 10px; border: 1px solid var(--accent); border-radius: 8px; background: none; color: var(--accent); cursor: pointer; }
+@media (max-width: 640px) {
+  .fb, .fmine, .ftog, .fclear, .fsave input, .fundo button, .fdel { min-height: 44px; }
+  .fdel { min-width: 44px; }
+  .frow > .fl { width: 100%; }
+  .tk.rank td .ctags { width: 132px; }
+}
 </style>
 </head>
 <body>
@@ -322,7 +379,7 @@ table.tk.lg.st { min-width: 0; }
   function revCard(x) {
     return '<article class="pc"><div class="pc-h"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b>" + esc(x.name) + "</button>" +
       (x.rev_new ? '<span class="tag2 hot">' + esc(x.rev_month.slice(5).replace(/^0/, "")) + " 月新公告</span>" : '<span class="tag2">' + esc(x.rev_month.slice(5).replace(/^0/, "")) + " 月</span>") +
-      tags(x) + pxHtml(x) + "</div>" +
+      tags(x) + pxHtml(x) + "</div>" + condTags(x) +
       '<div class="kpi"><div><span>營收年增</span><b class="' + dir(x.yoy) + '">' + num(x.yoy, 0, "%") + "</b></div>" +
       "<div><span>連續創新高</span><b>" + x.rev_streak + " 個月</b></div>" +
       "<div><span>距 52 週高</span><b>" + num(x.hi250, 0, "%") + "</b></div>" +
@@ -335,7 +392,7 @@ table.tk.lg.st { min-width: 0; }
     return '<article class="pc' + (live ? " livehit" : "") + '"><div class="pc-h"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b>" + esc(x.name) + "</button>" +
       (live ? '<span class="tag2 hot">今日即時</span>' : '<span class="tag2' + (x.days_ago === 0 ? " hot" : "") + '">' + (x.days_ago === 0 ? "今日" : x.days_ago + " 天前") + "</span>") +
       (x.rev_ok ? '<span class="tag2 hot">營收成長</span>' : '<span class="tag2 dim">營收未成長</span>') +
-      tags(x) + pxHtml(x) + "</div>" +
+      tags(x) + pxHtml(x) + "</div>" + condTags(x) +
       '<div class="kpi"><div><span>爆量倍數</span><b>' + plain(x.surge, 1, "×") + "</b></div>" +
       "<div><span>當天漲幅</span><b class=\"" + dir(x.day_chg) + "\">" + num(x.day_chg, 1, "%") + "</b></div>" +
       "<div><span>3 月營收年增</span><b class=\"" + dir(x.yoy3) + "\">" + num(x.yoy3, 0, "%") + "</b></div>" +
@@ -416,7 +473,7 @@ table.tk.lg.st { min-width: 0; }
       '</td><td class="' + dir(z.med_rel) + '">' + num(z.med_rel, 2, "%") + "</td><td>" + plain(z.loss, 1, "%") + "</td></tr>";
   }
   function laggardView() {
-    if (!LG) return '<div class="sec-h"><h2>落後補漲</h2></div><p class="note">落後補漲資料尚未產生。</p>';
+    if (!LG) return '<div class="sec-h"><h2>落後補漲</h2></div><p class="err">落後補漲資料尚未產生。</p>';
     var bt = LG.backtest || {}, hz = bt.horizons || {}, isNew = LG.new || [];
     var cost = bt.cost_pct == null ? "0.5425" : String(bt.cost_pct);
     var help = MR.help("laggard", "落後補漲:怎麼選、報酬怎麼算",
@@ -426,7 +483,7 @@ table.tk.lg.st { min-width: 0; }
       ((LG.notes || []).length ? "<ul>" + LG.notes.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") + "</ul>" : ""));
     var rows = (LG.list || []).map(function (x) {
       var nm = x.name || nameOf(x.code);
-      return '<tr><td class="l full"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(nm) + "</button>" +
+      return '<tr><td class="l full"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b>" + (nm === x.code ? "" : " " + esc(nm)) + "</button>" +
         (isNew.indexOf(x.code) >= 0 ? ' <span class="tag2 hot">新進</span>' : "") + "</td>" +
         '<td class="l full" data-l="題材">' + esc(topicName(x)) + "</td>" +
         '<td class="l full" data-l="已發動的同題材個股">' + (x.launched || []).map(function (c, i) { return esc((x.launched_names && x.launched_names[i]) || nameOf(c)); }).join("、") + "</td>" +
@@ -438,7 +495,7 @@ table.tk.lg.st { min-width: 0; }
     var per = bt.period ? bt.period[0] + " ~ " + bt.period[1] : "—";
     return '<div class="sec-h"><h2>落後補漲' + (LG.advantage ? "" : ' <span class="evb ref">僅供參考</span>') + help + "</h2><p>題材有人發動、營收跟上但股價還沒漲。</p></div>" +
       table +
-      '<div class="sec-h"><h2 style="font-size:16px">歷史回測</h2><p>期間 ' + esc(per) + " · 觸發 " + (bt.triggers == null ? "—" : bt.triggers.toLocaleString("en-US")) + " 次 · 超額報酬已扣成本 " + esc(cost) + "%</p></div>" +
+      '<div class="sec-h"><h3>歷史回測</h3><p>期間 ' + esc(per) + " · 觸發 " + (bt.triggers == null ? "—" : bt.triggers.toLocaleString("en-US")) + " 次 · 超額報酬已扣成本 " + esc(cost) + "%</p></div>" +
       '<div class="tkwrap"><table class="tk lg st"><thead><tr><th>持有</th><th>樣本</th><th>勝率</th><th>平均超額</th><th>中位數</th><th>虧損率</th></tr></thead><tbody>' +
       lgStat(20, hz["20"]) + lgStat(60, hz["60"]) + "</tbody></table></div>";
   }
@@ -485,6 +542,113 @@ table.tk.lg.st { min-width: 0; }
     ["前瞻評價", function (x) { var w = x.fv && x.fv.fwd; return w ? { "低估": 3, "合理": 2, "高估": 1 }[w.status] : null; }],
     ["目標價空間", function (x) { return x.fv && x.fv.tgt ? x.fv.tgt.up : null; }], ["營收年增", function (x) { return x.yoy; }], null];
 
+  // 條件標籤(data/radar/latest.json 的 tags、tag_defs;舊資料沒有就不顯示)
+  function condTags(x) {
+    var defs = R.tag_defs;
+    if (!defs || !Array.isArray(x.tags) || !x.tags.length) return "";
+    var out = x.tags.filter(function (id) { return defs[id]; }).map(function (id) {
+      return '<span class="tag2 cond" title="' + esc(defs[id].desc || "") + '">' + esc(defs[id].name || id) + "</span>";
+    }).join("");
+    return out ? '<div class="ctags" aria-label="條件標籤">' + out + "</div>" : "";
+  }
+
+  // 篩選器:所有已選條件 AND。f = { star: 3|4|5|null, px: 0~3|null, tags: [id...] }
+  var FKEY = "radar.filters", FMAX = 10;
+  var STARS = [[5, "5★"], [4, "4★ 以上"], [3, "3★ 以上"]];
+  var PXB = [["< 50", 0, 50], ["50–150", 50, 150], ["150–500", 150, 500], ["≥ 500", 500, Infinity]];
+  var TAGGRP = [["技術", ["vol_up", "ma_up", "near_high"]], ["籌碼", ["chips"]], ["基本面", ["rev_mom"]], ["題材", ["topic_sync", "laggard"]]];
+  var TAGNAME = { vol_up: "量能放大", ma_up: "均線轉強", near_high: "接近 52 週高", chips: "籌碼偏多", rev_mom: "營收動能", topic_sync: "題材同步發動", laggard: "落後補漲" };
+  var PRESETS = [["強勢突破", { star: 4, px: null, tags: ["vol_up", "near_high"] }], ["營收＋籌碼", { star: null, px: null, tags: ["rev_mom", "chips", "ma_up"] }], ["題材補漲", { star: null, px: null, tags: ["laggard"] }]];
+  var fl = { star: null, px: null, tags: [] };
+  var fPulse = false, fOpen = window.innerWidth > 640, fSaving = false, fUndo = null, fFocus = null;
+  var storeOk = (function () { try { localStorage.setItem("radar.t", "1"); localStorage.removeItem("radar.t"); return true; } catch (e) { return false; } })();
+
+  function hasTags() { return !!R.tag_defs && (R.rank || []).some(function (x) { return Array.isArray(x.tags); }); }
+  function tagName(id) { return (R.tag_defs && R.tag_defs[id] && R.tag_defs[id].name) || TAGNAME[id] || id; }
+  function fPass(x, f) {
+    if (f.star != null && starOf(x.code) < f.star) return false;
+    if (f.px != null && !(x.close >= PXB[f.px][1] && x.close < PXB[f.px][2])) return false;
+    for (var i = 0; i < f.tags.length; i++) if ((x.tags || []).indexOf(f.tags[i]) < 0) return false;
+    return true;
+  }
+  function fCount(base, f) { return base.filter(function (x) { return fPass(x, f); }).length; }
+  function fWith(f, kind, v) {   // 單選組:改成 v;標籤:加入 v(已選則維持)
+    var g = { star: f.star, px: f.px, tags: f.tags.slice() };
+    if (kind === "star") g.star = v; else if (kind === "px") g.px = v; else if (g.tags.indexOf(v) < 0) g.tags.push(v);
+    return g;
+  }
+  function fActive() { return (fl.star != null ? 1 : 0) + (fl.px != null ? 1 : 0) + fl.tags.length; }
+  function fSame(a, b) {
+    return a.star === b.star && a.px === b.px && a.tags.length === b.tags.length && a.tags.every(function (t) { return b.tags.indexOf(t) >= 0; });
+  }
+  function loadMine() {
+    if (!storeOk) return [];
+    try {
+      var a = JSON.parse(localStorage.getItem(FKEY) || "[]");
+      return (Array.isArray(a) ? a : []).filter(function (o) { return o && typeof o.name === "string" && o.cond && Array.isArray(o.cond.tags); }).slice(0, FMAX).map(function (o) {
+        return { name: o.name, cond: { star: [3, 4, 5].indexOf(o.cond.star) >= 0 ? o.cond.star : null, px: o.cond.px >= 0 && o.cond.px <= 3 ? o.cond.px : null,
+          tags: o.cond.tags.filter(function (t) { return TAGNAME[t]; }) } };
+      });
+    } catch (e) { return []; }
+  }
+  function saveMine(a) { try { localStorage.setItem(FKEY, JSON.stringify(a)); return true; } catch (e) { return false; } }
+
+  function fbtn(attr, label, n, on, off) {
+    return '<button type="button" class="fb' + (n === 0 && !off ? " z" : "") + '" data-f="' + attr + '" aria-pressed="' + on + '"' + (off ? " disabled" : "") + ">" + label + (off ? "" : " <i>" + n + "</i>") + "</button>";
+  }
+  function filterBox(base, shown) {
+    var ok = hasTags(), mine = loadMine();
+    var note = '<span class="fnote">資料更新後提供</span>';
+    var rows = '<div class="frow"><span class="fl">評級</span>' + STARS.map(function (s) { return fbtn("star:" + s[0], s[1], fCount(base, fWith(fl, "star", s[0])), fl.star === s[0]); }).join("") + "</div>" +
+      '<div class="frow"><span class="fl">價格帶</span>' + PXB.map(function (p, i) { return fbtn("px:" + i, p[0], fCount(base, fWith(fl, "px", i)), fl.px === i); }).join("") + "</div>" +
+      TAGGRP.map(function (g) {
+        return '<div class="frow"><span class="fl">' + g[0] + "</span>" + g[1].map(function (id) {
+          return fbtn("tag:" + id, esc(tagName(id)), ok ? fCount(base, fWith(fl, "tag", id)) : 0, fl.tags.indexOf(id) >= 0, !ok);
+        }).join("") + (ok ? "" : note) + "</div>";
+      }).join("");
+    var pre = PRESETS.map(function (p, i) {
+      var off = !ok && p[1].tags.length > 0;
+      return fbtn("preset:" + i, esc(p[0]), off ? 0 : fCount(base, p[1]), fSame(fl, p[1]), off);
+    }).join("") + mine.map(function (m, i) {
+      var off = !ok && m.cond.tags.length > 0, n = off ? 0 : fCount(base, m.cond);
+      return '<span class="fb mine' + (n === 0 && !off ? " z" : "") + '"><button type="button" class="fmine" data-f="mine:' + i + '" aria-pressed="' + fSame(fl, m.cond) + '"' + (off ? " disabled" : "") + ">" +
+        esc(m.name) + (off ? "" : " <i>" + n + "</i>") + '</button><button type="button" class="fdel" data-f="del:' + i + '" aria-label="刪除自訂篩選「' + esc(m.name) + '」">×</button></span>';
+    }).join("");
+    var canSave = storeOk && fActive() > 0 && mine.length < FMAX;
+    var save = fSaving
+      ? '<form class="fsave" data-fsave><label for="fname" class="fnote">名稱</label><input id="fname" name="fname" maxlength="12" autocomplete="off" required>' +
+        '<button type="submit" class="fb" aria-pressed="false">儲存</button><button type="button" class="fb" data-f="cancel" aria-pressed="false">取消</button></form>'
+      : '<button type="button" class="fb" data-f="savebtn" aria-pressed="false"' + (canSave ? "" : " disabled") + ">儲存目前條件</button>" +
+        (!storeOk ? '<span class="fnote">此瀏覽器無法儲存自訂篩選(localStorage 不可用)</span>'
+          : mine.length >= FMAX ? '<span class="fnote">最多存 ' + FMAX + " 組,請先刪除一組</span>"
+          : fActive() === 0 ? '<span class="fnote">先選好條件再儲存</span>' : "");
+    var undo = fUndo ? '<div class="fundo full" role="status">已刪除「' + esc(fUndo.item.name) + '」<button type="button" data-f="undo">復原</button></div>' : "";
+    return '<section class="fbox" aria-label="篩選條件"><div class="fhead">' +
+      '<button type="button" class="ftog" data-f="toggle" aria-expanded="' + fOpen + '" aria-controls="fpanel">篩選條件' + (fActive() ? "(" + fActive() + ")" : "") + "</button>" +
+      '<span class="fcount" role="status">符合 <b' + (fPulse ? ' class="chg"' : "") + ">" + shown + "</b> 檔</span>" +
+      '<button type="button" class="fclear" data-f="clear"' + (fActive() ? "" : " disabled") + ">清除</button></div>" +
+      '<div class="fpanel" id="fpanel"' + (fOpen ? "" : " hidden") + '><div class="frow full"><span class="fl">快速套用</span>' + pre + "</div>" +
+      '<div class="frow full"><span class="fl">自訂</span>' + save + "</div>" + undo + rows + "</div></section>";
+  }
+  function fAct(a) {   // 篩選器按鈕動作
+    fPulse = a.indexOf("toggle") < 0 && a.indexOf("save") < 0 && a !== "cancel";
+    var k = a.split(":")[0], v = a.slice(k.length + 1), mine;
+    if (k !== "undo" && k !== "del") fUndo = null;
+    if (k === "star") fl.star = fl.star === +v ? null : +v;
+    else if (k === "px") fl.px = fl.px === +v ? null : +v;
+    else if (k === "tag") { var i = fl.tags.indexOf(v); if (i >= 0) fl.tags.splice(i, 1); else fl.tags.push(v); }
+    else if (k === "preset" || k === "mine") {
+      var c = k === "preset" ? PRESETS[+v][1] : loadMine()[+v].cond;
+      fl = { star: c.star, px: c.px, tags: c.tags.slice() };
+    } else if (k === "clear") fl = { star: null, px: null, tags: [] };
+    else if (k === "toggle") fOpen = !fOpen;
+    else if (k === "savebtn") fSaving = true;
+    else if (k === "cancel") fSaving = false;
+    else if (k === "del") { mine = loadMine(); fUndo = { item: mine[+v], idx: +v }; mine.splice(+v, 1); saveMine(mine); }
+    else if (k === "undo" && fUndo) { mine = loadMine(); mine.splice(Math.min(fUndo.idx, mine.length), 0, fUndo.item); saveMine(mine.slice(0, FMAX)); fUndo = null; }
+    fFocus = k === "savebtn" ? "#fname" : k === "cancel" ? '[data-f="savebtn"]' : k === "del" || k === "undo" ? null : '[data-f="' + a + '"]';
+  }
+
   function rankView() {
     var key = { score: function (x) { return -(x.mom ? x.mom.score : -1); }, up: function (x) { return x.fv && x.fv.fwd ? -x.fv.fwd.up : 999; }, streak: function (x) { return -(x.rev_streak || 0) * 1000 - (x.fv.up || 0) / 1000; },
       high: function (x) { return x.hi250 == null ? 999 : -x.hi250; } }[rankSort];
@@ -506,9 +670,11 @@ table.tk.lg.st { min-width: 0; }
       if (rankFilter === "sane") return !!w;
       return true;
     });
+    var base = items;
+    items = items.filter(function (x) { return fPass(x, fl); });
     var rows = items.slice(0, showAll.rank ? 999 : 40).map(function (x, i) {
       var e = x.fv || {}, m = x.mom, pj = m && m.proj, w = e.fwd, t = e.tgt;
-      return '<tr><td class="rk">' + (i + 1) + '</td><td class="l"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(x.name) + "</button></td>" +
+      return '<tr><td class="rk">' + (i + 1) + '</td><td class="l"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(x.name) + "</button>" + condTags(x) + "</td>" +
         "<td>" + MR.stars(starOf(x.code)) + "</td>" +
         '<td data-px="' + esc(x.code) + '">' + x.close + "</td>" +
         "<td><b>" + (m ? m.score : "—") + "</b></td>" +
@@ -527,8 +693,9 @@ table.tk.lg.st { min-width: 0; }
     return '<div class="sec-h"><h2>潛在排行' + help + "</h2><p>依動能分數排序,點代號看算式與詳細資料。</p></div>" +
       '<div class="tools"><span>排序</span>' + seg("rs", rankSort, [["score", "動能分數"], ["up", "前瞻空間"], ["streak", "營收連續創新高"], ["high", "接近 52 週高"]]) +
       "<span>只看</span>" + seg("rf", rankFilter, [["all", "全部"], ["sane", "有分析師預估"], ["ok", "前瞻不高估"], ["lo", "前瞻低估"]]) +
-      '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label><span>共 " + items.length + " 檔</span></div>" +
-      '<div class="tkwrap"><table class="tk rank"><thead><tr>' + ["#", "個股", "評級", "股價", "動能分數", "統計 60 日區間(25%~中位~75%)", "前瞻本益比 / 歷史中位", "前瞻合理價", "前瞻空間", "前瞻評價", "分析師目標價", "營收年增", "入選原因"].map(function (h, k) {
+      '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label></div>" + filterBox(base, items.length) +
+      (rows ? "" : '<p class="empty">沒有符合條件的個股,可放寬條件或按「清除」。</p>') +
+      '<div class="tkwrap"' + (rows ? "" : " hidden") + '><table class="tk rank"><thead><tr>' + ["#", "個股", "評級", "股價", "動能分數", "統計 60 日區間(25%~中位~75%)", "前瞻本益比 / 歷史中位", "前瞻合理價", "前瞻空間", "前瞻評價", "分析師目標價", "營收年增", "入選原因"].map(function (h, k) {
         var cls = k === 1 || k === 12 ? ' class="l' : ' class="';
         if (!RANK_COLS[k]) return "<th" + (k === 1 || k === 12 ? ' class="l"' : "") + ">" + h + "</th>";
         var on = colSort && colSort.col === k;
@@ -552,7 +719,7 @@ table.tk.lg.st { min-width: 0; }
 
   function themeCard(x) {
     return '<article class="pc"><div class="pc-h"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b>" + esc(x.name) + "</button>" +
-      tierTag(x) + pxHtml(x) + "</div>" +
+      tierTag(x) + pxHtml(x) + "</div>" + condTags(x) +
       '<div class="kpi"><div><span>60 日漲幅</span><b class="' + dir(x.ret60) + '">' + num(x.ret60, 0, "%") + "</b></div>" +
       "<div><span>" + esc(x.ind || "同產業") + " 60 日</span><b class=\"" + dir(x.peer60) + "\">" + num(x.peer60, 0, "%") + "</b></div>" +
       "<div><span>近 3 月營收年增</span><b class=\"" + dir(x.yoy3) + "\">" + num(x.yoy3, 0, "%") + "</b></div>" +
@@ -707,7 +874,7 @@ table.tk.lg.st { min-width: 0; }
   }
 
   app.addEventListener("click", function (e) {
-    var b = e.target.closest("[data-view],[data-sort],[data-all],[data-rf],[data-rs],[data-tier],th[data-col]");
+    var b = e.target.closest("[data-view],[data-sort],[data-all],[data-rf],[data-rs],[data-tier],[data-f],th[data-col]");
     if (!b) return;
     if (b.dataset.view) { view = b.dataset.view; history.replaceState(null, "", "#" + view); }
     if (b.dataset.sort) sortBy = b.dataset.sort;
@@ -719,8 +886,23 @@ table.tk.lg.st { min-width: 0; }
       colSort = colSort && colSort.col === c ? { col: c, dir: -colSort.dir } : { col: c, dir: -1 };
     }
     if (b.dataset.all) showAll[b.dataset.all] = !showAll[b.dataset.all];
+    if (b.dataset.f) fAct(b.dataset.f);
     render();
+    fPulse = false;
+    if (b.dataset.f && fFocus) { var nf = app.querySelector(fFocus); if (nf) nf.focus(); fFocus = null; }
     if (b.dataset.view || b.dataset.all) MR.refreshIntraday();
+  });
+  app.addEventListener("submit", function (e) {
+    if (!e.target.hasAttribute("data-fsave")) return;
+    e.preventDefault();
+    var name = e.target.elements.fname.value.trim();
+    if (!name) return;
+    var mine = loadMine().filter(function (m) { return m.name !== name; });   // 同名覆蓋
+    if (mine.length >= FMAX) return;
+    mine.push({ name: name, cond: { star: fl.star, px: fl.px, tags: fl.tags.slice() } });
+    saveMine(mine);
+    fSaving = false; fUndo = null;
+    render();
   });
   app.addEventListener("change", function (e) {
     var o = e.target.dataset && e.target.dataset.opt;

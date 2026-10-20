@@ -191,17 +191,6 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
   var sel = document.getElementById("day");
   var dates = [];
   var WEEK = ["日", "一", "二", "三", "四", "五", "六"];
-  // 起漲雷達「今天先看這 10 檔」(data/radar/picks.json),放在晨報標題下方;點了開個股健檢(assets/common.js)
-  var PICKS = null;
-  if (window.MR && MR.picks) MR.picks().then(function (P) {
-    PICKS = P;
-    var slot = document.getElementById("picks-slot");
-    if (slot) slot.innerHTML = MR.picksHtml(P, true);
-    MR.startIntraday(function () { return document.getElementById("picks-slot") || document.body; }, P.date, function () {
-      var s = document.getElementById("picks-slot");
-      if (s) MR.patchPrices(s, null, P.date);
-    });
-  }).catch(function () {});
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -290,7 +279,6 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
       ' · 更新 ' + esc((r.generated_at || "").slice(11, 16)) + '</div><h1>' + esc(r.headline) + "</h1></div>" +
       '<div class="gauge"><div class="meter" aria-hidden="true">' + meter + "</div>" +
       '<div><div class="lbl ' + dir(score) + '">開盤情緒 ' + esc(s.label || "—") + "</div><p>" + esc(s.summary) + "</p></div></div></section>");
-    h.push('<div id="picks-slot">' + (PICKS ? MR.picksHtml(PICKS, true) : "") + "</div>");
 
     h.push('<section class="groups">' + (r.markets || []).map(function (g) {
       if (!g.items || !g.items.length) return "";
@@ -363,7 +351,6 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
 
     h.push('<div class="cols"><div class="stack">' + left.join("") + '</div><div class="stack">' + right.join("") + "</div></div>");
     app.innerHTML = h.join("");
-    if (PICKS) MR.patchPrices(app, null, PICKS.date);
     document.title = "盤前雷達 · " + r.date;
   }
 

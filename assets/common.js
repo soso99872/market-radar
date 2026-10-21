@@ -317,41 +317,48 @@
   function tpChart(rows, t) {
     var n = rows.length;
     if (n < 2) return "";
-    var W = 380, H = 214, X0 = 6, XT = 170, XR = 286, YT = 24, YB = 200;
+    var W = 392, H = 232, X0 = 50, XT = 182, XR = 300, YT = 24, YB = 200;
     var cl = rows.map(function (r) { return r[4]; });
-    var hi = Math.max(Math.max.apply(null, cl), t.hi), lo = Math.min(Math.min.apply(null, cl), t.lo);
+    var vs = cl.concat([t.hi, t.lo, t.mean].filter(function (v) { return v != null; }));
+    var hi = Math.max.apply(null, vs), lo = Math.min.apply(null, vs);
     var pad = (hi - lo) * 0.06 || 1;
     hi += pad; lo = Math.max(0, lo - pad);
     function y(v) { return (YT + (hi - v) / (hi - lo) * (YB - YT)).toFixed(1); }
     function x(i) { return (X0 + i / (n - 1) * (XT - X0)).toFixed(1); }
     var o = [];
+    // y 軸刻度文字放在繪圖區左側外面,不會壓到折線
     [hi, (hi + lo) / 2, lo].forEach(function (g) {
       o.push('<line x1="' + X0 + '" x2="' + XR + '" y1="' + y(g) + '" y2="' + y(g) + '" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
-        '<text x="' + X0 + '" y="' + (+y(g) - 3).toFixed(1) + '" class="tp-ax">' + tpFmt(g) + "</text>");
+        '<text x="' + (X0 - 5) + '" y="' + (+y(g) + 4).toFixed(1) + '" text-anchor="end" class="tp-ax">' + tpFmt(g) + "</text>");
     });
     var last = cl[n - 1], ys = y(last);
-    o.push('<polygon points="' + XT + "," + ys + " " + XR + "," + y(t.hi) + " " + XR + "," + y(t.lo) + '" fill="color-mix(in srgb, var(--accent) 16%, transparent)"/>');
+    if (t.hi != null && t.lo != null) o.push('<polygon points="' + XT + "," + ys + " " + XR + "," + y(t.hi) + " " + XR + "," + y(t.lo) + '" fill="color-mix(in srgb, var(--accent) 16%, transparent)"/>');
     o.push('<polyline points="' + cl.map(function (v, i) { return x(i) + "," + y(v); }).join(" ") + '" fill="none" stroke="var(--text)" stroke-width="1.4" vector-effect="non-scaling-stroke"/>');
     [t.hi, t.lo].forEach(function (v) {
+      if (v == null) return;
       o.push('<line x1="' + XT + '" x2="' + XR + '" y1="' + ys + '" y2="' + y(v) + '" stroke="var(--accent)" stroke-opacity=".6" stroke-width="1" vector-effect="non-scaling-stroke"/>');
     });
     o.push('<line x1="' + XT + '" x2="' + XR + '" y1="' + ys + '" y2="' + y(t.mean) + '" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"/>');
     o.push('<line x1="' + XT + '" x2="' + XT + '" y1="' + (YT - 6) + '" y2="' + YB + '" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>');
     o.push('<circle cx="' + XT + '" cy="' + ys + '" r="3" fill="var(--text)"/>');
     o.push('<text x="' + (XT - 4) + '" y="12" text-anchor="end" class="tp-ax">今天</text><text x="' + (XT + 4) + '" y="12" class="tp-ax">未來 12 個月</text>');
-    // 右端文字:三個價位靠得近時往下推開,避免疊字
-    var L = [[t.hi, "最高 ", "var(--muted)"], [t.mean, "平均 ", "var(--accent)"], [t.lo, "最低 ", "var(--muted)"]].map(function (a) {
+    // 日期直接畫在圖裡:起始日對齊折線左端,資料日對齊「今天」虛線
+    o.push('<text x="' + X0 + '" y="' + (YB + 18) + '" class="tp-ax">' + MR.md(rows[0][0]) + '</text>' +
+      '<text x="' + XT + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[n - 1][0]) + "</text>");
+    // 右端文字:三個價位靠得近時往下推開,避免疊字;缺的價位不畫
+    var L = [[t.hi, "最高 ", "var(--muted)"], [t.mean, "平均 ", "var(--accent)"], [t.lo, "最低 ", "var(--muted)"]].filter(function (a) { return a[0] != null; }).map(function (a) {
       return { yy: +y(a[0]), txt: a[1] + tpFmt(a[0]), col: a[2] };
     });
-    for (var i = 1; i < 3; i++) if (L[i].yy < L[i - 1].yy + 15) L[i].yy = L[i - 1].yy + 15;
-    if (L[2].yy > YB + 8) { L[2].yy = YB + 8; for (i = 1; i >= 0; i--) if (L[i].yy > L[i + 1].yy - 15) L[i].yy = L[i + 1].yy - 15; }
+    var m = L.length, i;
+    for (i = 1; i < m; i++) if (L[i].yy < L[i - 1].yy + 15) L[i].yy = L[i - 1].yy + 15;
+    if (L[m - 1].yy > YB + 8) { L[m - 1].yy = YB + 8; for (i = m - 2; i >= 0; i--) if (L[i].yy > L[i + 1].yy - 15) L[i].yy = L[i + 1].yy - 15; }
     L.forEach(function (a) {
       o.push('<text x="' + (XR + 4) + '" y="' + (a.yy + 4).toFixed(1) + '" class="tp-end" fill="' + a.col + '">' + esc(a.txt) + "</text>");
     });
-    return '<div class="kchart tp-chart"><div class="klegend"><span><i style="background:var(--text)"></i>股價</span>' +
+    return '<div class="kchart tp-chart"><div class="klegend"><span><i style="background:var(--text)"></i>股價(近 ' + n + ' 個交易日)</span>' +
       '<span><i style="background:var(--accent)"></i>目標價</span></div>' +
       '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="近 ' + n + " 日收盤價與分析師目標價範圍:最高 " + tpFmt(t.hi) + "、平均 " + tpFmt(t.mean) + "、最低 " + tpFmt(t.lo) + '">' +
-      o.join("") + '</svg><div class="cap"><span>' + MR.md(rows[0][0]) + "</span><span>近 " + n + " 個交易日</span><span>" + MR.md(rows[n - 1][0]) + "</span></div></div>";
+      o.join("") + "</svg></div>";
   }
   function tpHtml(doc) {
     var ex = doc.extra || {}, fv = ex.fv, t = fv && fv.tgt, px = doc.summary.close;
@@ -366,14 +373,15 @@
     if (!t) {
       return '<div class="fvbox tp">' + head + (brk || '<p class="flat tp-none">這檔沒有分析師目標價資料</p>') + "</div>";
     }
-    var hi = t.hi || t.mean, lo = t.lo || t.mean;
+    var hi = t.hi || null, lo = t.lo || null;
     var up = function (v) { return (v / px - 1) * 100; };
     var mu = t.up != null ? t.up : up(t.mean);
     var ntgt = t.n_tgt != null ? t.n_tgt : fv.n_tgt;
-    var n1 = fv.fwd && fv.fwd.n;
+    var n1 = t.n1 != null ? t.n1 : fv.fwd && fv.fwd.n;
     var cnt = ntgt != null ? "目標價家數:" + Math.round(ntgt) + " 家" : n1 != null ? "EPS 預估家數:" + Math.round(n1) + " 家" : "";
     var div = t.hi && t.lo && t.hi / t.lo > 1.8 ? '<span class="tag2 warn">分析師看法分歧大</span>' : "";
     function row(label, v) {
+      if (v == null) return "<tr><th>" + label + '</th><td class="num">—</td><td class="num">—</td></tr>';
       var u = up(v);
       return "<tr><th>" + label + '</th><td class="num">' + tpFmt(v) + '</td><td class="num ' + MR.dir(u) + '">' + MR.sign(u, 1) + "%</td></tr>";
     }
@@ -383,20 +391,9 @@
       tpChart(doc.rows, { hi: hi, mean: t.mean, lo: lo }) + (div ? '<div class="tp-div">' + div + "</div>" : "") +
       '<table class="tp-tbl srt-ok"><thead><tr><th>項目</th><th>目標價</th><th>上漲空間</th></tr></thead><tbody>' +
       row("最高", hi) + row("平均", t.mean) + row("最低", lo) + "</tbody></table>" +
-      '<p class="fvhow tp-src">' + (cnt ? cnt + "<br>" : "") + "資料:Yahoo Finance 匯總" + (t.at ? ",<span>" + esc(String(t.at).slice(0, 10)) + "</span> 更新" : '<span class="tp-at"></span>') + "。</p>" +
+      '<p class="fvhow tp-src">' + (cnt ? cnt + "<br>" : "") + "資料:Yahoo Finance 匯總" + (t.at ? "," + esc(String(t.at).slice(0, 10)) + " 更新" : "") + "。</p>" +
       brk + "</div>";
   }
-  var estP;
-  function tpFillDate(d, code) {
-    var el = d.querySelector(".tp-at");
-    if (!el) return;
-    if (!estP) estP = MR.json("data/estimates/latest.json").catch(function () { estP = null; return null; });
-    estP.then(function (E) {
-      var r = E && E.s && E.s[code];
-      if (r && r.at && d.contains(el)) el.textContent = "," + String(r.at).slice(0, 10) + " 更新";
-    });
-  }
-
   // 模型合理價:公式固定,把每一步算式攤開讓人可以自己驗算
   function fvHtml(doc) {
     var ex = doc.extra || {}, e = ex.fv, px = doc.summary.close;
@@ -722,7 +719,6 @@
     Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile(code)])
       .then(function (res) {
         d.innerHTML = stockHtml(res[0], res[1], res[2]);
-        tpFillDate(d, res[0].code);
         starStats().then(function (S) { var n = d.querySelector("#health"); if (n) n.innerHTML = healthHtml(res[0].health, res[0].rating, S); });
         // 盤中或今日收盤後:用即時報價取代排程資料的收盤價(live.js 有載入且已設定 Worker 才會有)
         if (MR.intradayOne) MR.intradayOne(code, res[0].date).then(function (lv) {

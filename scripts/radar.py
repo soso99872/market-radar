@@ -807,6 +807,25 @@ def run_rate_eps(c, r3, cur_m, ttm=None, yoy3=None):
     return out
 
 
+def peak_risk(method, fair, price, pb, bh, yoy_pts, months3):
+    """高峰風險判定(只用在基本估值 method=pe):營收連 3 月年增 ≥ 30%、本益比法 fair ≥ 股價 × 1.2、
+    但自身過去 60 個月 P/B 中位數法的合理價 ≤ 股價 × 0.8,代表本益比看便宜、淨值比已在歷史高檔。
+    yoy_pts:該股有資料的 (月份, 年增率%) 由舊到新;months3:全市場最新 3 個營收月份。回傳 True / False。"""
+    import fairvalue as FV
+    eps_ = 1e-9
+    if method != "pe" or not fair or not price or price <= 0 or not pb or pb <= 0:
+        return False
+    pts = [(m, v) for m, v in yoy_pts if v is not None and not pd.isna(v)][-3:]
+    if len(pts) < 3 or [m for m, _ in pts] != list(months3) or min(v for _, v in pts) < 30 - eps_:
+        return False
+    if fair < price * 1.2 - eps_:
+        return False
+    b = FV.band(bh)
+    if not b:
+        return False
+    return price / pb * b[1] <= price * 0.8 + eps_
+
+
 def fair_all(rp, close, last):
     """每檔股票的模型合理價(公式見 fairvalue.py)。同時把個股面板要用的歷史資料放進 EXTRAS。"""
     import fairvalue as FV
@@ -882,6 +901,10 @@ def fair_all(rp, close, last):
             if k.get("tgt"):
                 e["tgt"] = {"mean": k["tgt"], "lo": k.get("tgt_lo"), "hi": k.get("tgt_hi"),
                             "up": _f((k["tgt"] / price - 1) * 100, 1)}
+            # 高峰風險:只看基本估值 e,status 保持原值,只加 peak 旗標(fwd、proj 不變)
+            if peak_risk(est["method"], est["fair"], float(price), pb,
+                         bh, [(m, yoy.at[m, c]) for m in rp["months"][-3:]], rp["months"][-3:]):
+                e["peak"] = True
             if est["method"] == "pe":
                 e.update(eps=_f(est["eps"]), growth=_f(est["growth"]), feps=_f(est["feps"]))
             else:

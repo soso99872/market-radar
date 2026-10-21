@@ -840,7 +840,7 @@ def peak_risk(method, fair, price, pb, bh, yoy_pts, months3):
         return False
     if fair < price * 1.2 - eps_:
         return False
-    b = FV.band(bh)
+    b = FV.band(bh, 0, 50)
     if not b:
         return False
     return price / pb * b[1] <= price * 0.8 + eps_

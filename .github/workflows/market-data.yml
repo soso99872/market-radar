@@ -68,6 +68,8 @@ jobs:
         run: python scripts/valuation.py || echo "::warning::valuation 失敗"
       - name: 券商目標價新聞(只在每天 20:35 那次)
         if: github.event.schedule == '35 12 * * *' || github.event_name == 'workflow_dispatch'
+        timeout-minutes: 8
+        continue-on-error: true
         run: python scripts/brokers.py || echo "::warning::brokers 失敗"
       - name: 訊號回測、觀察名單、起漲雷達與個股資料
         run: python scripts/signals.py || echo "::warning::signals 失敗"

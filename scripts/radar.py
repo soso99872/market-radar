@@ -763,7 +763,7 @@ def load_brk(path, limit=BRK_MAX):
         by = {}
         for x in ev:
             if isinstance(x, dict) and x.get("code"):
-                by.setdefault(str(x["code"]), []).append(x)
+                by.setdefault(str(x["code"]), []).append({k: v for k, v in x.items() if k != "title"})   # 前端不顯示標題,省檔案大小
         return {c: sorted(v, key=lambda x: str(x.get("date") or ""), reverse=True)[:limit] for c, v in by.items()}
     except (OSError, ValueError):
         return {}

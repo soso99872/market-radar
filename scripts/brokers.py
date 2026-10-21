@@ -1,6 +1,6 @@
 """逐家券商目標價:經濟日報新聞標題／內文解析(純函式,不連網)。
 
-來源是經濟日報搜尋「目標價」的新聞(抓取與合併由 T05 加在本檔)。規則式解析,不用 LLM:
+來源是經濟日報搜尋「目標價」的新聞(前半解析,後半抓取、合併、輸出)。規則式解析,不用 LLM:
   parse(title, body, names) -> [{code, broker, target, rating, dir, prev_target}, ...]
     title  新聞標題(可含 <u> 等標籤)
     body   內文純文字,可為 None;標題抽不到券商或金額時才看內文
@@ -10,16 +10,30 @@
 dir 依 PRD A 第 8 點優先順序,本檔做 ① 與 ③:
   ① 新聞寫明前次目標價(例「從 6,055 元調升至 6,800 元」)→ 兩數比較,並填 prev_target
   ③ 關鍵字:調升／上修／調高／上調 → up,調降／下修／調低／下調 → down,維持／重申 → keep
-  都沒有 → None。② 與我們前一筆比較,在合併事件時(T05)補。
+  都沒有 → None。② 與我們前一筆比較,存檔前用 apply_dir 補(覆蓋 ③,不覆蓋 ①)。
+
+用法:python scripts/brokers.py [--backfill] [--check]
+  預設抓搜尋前 3 頁;--backfill 抓到最後一頁;--check 只驗證 data/brokers/events.json(AC-B2)。
 """
+import argparse
 import glob
 import gzip
+import html
 import json
 import os
 import re
+import sys
+import time
+import urllib.parse
+import urllib.request
+from datetime import datetime
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HISTORY = os.path.join(ROOT, "data", "history")
+OUT_DIR = os.path.join(ROOT, "data", "brokers")
+EVENTS = os.path.join(OUT_DIR, "events.json")
+SCORES = os.path.join(OUT_DIR, "scores.json")
+SEEN = os.path.join(OUT_DIR, "seen.json")   # 已處理過的網址(含沒產生事件的),重跑跳過
 
 UNNAMED = "未具名"
 
@@ -345,3 +359,208 @@ def parse(title, body, names):
     have = {e["code"] for e in result}
     result += [b for b in b_events if b["code"] not in have]
     return result
+
+
+# ---------- 抓取、合併、輸出 ----------
+
+SEARCH = "https://money.udn.com/search/result/1001/" + urllib.parse.quote("目標價") + "/{page}"
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+TIMEOUT, RETRIES, GAP = 20, 2, 1.0
+DEFAULT_PAGES, MAX_PAGES = 3, 80
+DIR_DAYS = 365
+
+_ITEM = re.compile(
+    r'<a href="(https://money\.udn\.com/money/story/\d+/\d+)[^"]*"[^>]*data-slotname="list_搜尋結果頁"[^>]*title="([^"]*)"'
+    r'.*?<time>(\d{4}-\d{2}-\d{2})[^<]*</time>', re.S)
+_last_req = [0.0]
+
+
+def fetch(url):
+    """GET 網頁文字。間隔 >= 1 秒、逾時 20 秒、失敗重試 2 次,仍失敗就丟例外。"""
+    err = None
+    for i in range(RETRIES + 1):
+        wait = GAP - (time.time() - _last_req[0])
+        if wait > 0:
+            time.sleep(wait)
+        _last_req[0] = time.time()
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "zh-TW,zh;q=0.9"})
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+                return r.read().decode("utf-8", "replace")
+        except Exception as e:  # noqa: BLE001
+            err = e
+            time.sleep(2 * (i + 1))
+    raise err
+
+
+def parse_search(page_html):
+    """搜尋結果頁 → [{url, title, date}](只取結果清單,不含側欄推薦)。"""
+    return [{"url": u, "title": html.unescape(t), "date": d} for u, t, d in _ITEM.findall(page_html)]
+
+
+def parse_article(page_html):
+    """文章頁 → 正文純文字(只取 article_body 段落,不含廣告與側欄;不存檔)。"""
+    m = re.search(r'id\s*=\s*"article_body"(.*?)id="story_end"', page_html, re.S)
+    if not m:
+        return ""
+    paras = re.findall(r"<p>(.*?)</p>", m.group(1), re.S)
+    out = [html.unescape(re.sub(r"<[^>]+>", "", p)).strip() for p in paras]
+    return "\n".join(p for p in out if p)
+
+
+def _days(a, b):
+    return (datetime.strptime(b, "%Y-%m-%d") - datetime.strptime(a, "%Y-%m-%d")).days
+
+
+def apply_dir(events):
+    """dir 規則 ②:沒有前次目標價(① 沒結果)的事件,跟同券商對同檔 365 天內的前一筆比較。
+    前一筆 = 日期較早、且不是同一份報告(同目標價 7 天內)的最近一筆;相同 → keep。
+    找不到前一筆就保留原本的(③ 關鍵字)。回傳新 list,不改動輸入。"""
+    evs = sorted((dict(e) for e in events), key=lambda e: (e["date"], e["code"], e["broker"]))
+    last = {}   # (券商, 代號) → 已處理的事件們(舊 → 新)
+    for e in evs:
+        if e["broker"] == UNNAMED:
+            continue
+        prevs = last.setdefault((e["broker"], e["code"]), [])
+        if e.get("prev_target") is None:
+            cands = [p for p in prevs
+                     if 0 < _days(p["date"], e["date"]) <= DIR_DAYS
+                     and not (p["target"] == e["target"] and _days(p["date"], e["date"]) <= 7)]
+            if cands:
+                p = cands[-1]
+                e["dir"] = "up" if e["target"] > p["target"] else "down" if e["target"] < p["target"] else "keep"
+        prevs.append(e)
+    return evs
+
+
+def collect(fetch_fn, names, seen, pages, existing, log=print):
+    """抓搜尋頁 → 解析 → (事件 list, seen set, 單篇失敗數, 搜尋頁是否失敗)。fetch_fn(url) → 文字。"""
+    idx = build_index(names)
+    seen = set(seen)
+    events = list(existing)
+    fail = 0
+    for page in range(1, pages + 1):
+        try:
+            items = parse_search(fetch_fn(SEARCH.format(page=page)))
+        except Exception as e:  # noqa: BLE001
+            log("搜尋頁 %d 失敗:%s" % (page, e))
+            return events, seen, fail, True
+        if not items:
+            break
+        for it in items:
+            if it["url"] in seen:
+                continue
+            try:
+                found = parse(it["title"], None, idx)
+                if not found or any(e["broker"] == UNNAMED for e in found):
+                    body = parse_article(fetch_fn(it["url"]))
+                    found = parse(it["title"], body, idx)
+            except Exception as e:  # noqa: BLE001
+                fail += 1
+                log("單篇失敗,略過:%s %s" % (it["url"], e))
+                continue
+            seen.add(it["url"])
+            for f in found:
+                events.append({"date": it["date"], "code": f["code"], "broker": f["broker"], "target": f["target"],
+                               "rating": f["rating"], "prev_target": f["prev_target"], "dir": f["dir"],
+                               "urls": [it["url"]], "title": re.sub(r"<[^>]+>", "", it["title"])})
+        if page % 5 == 0:
+            log("  已處理 %d 頁,事件 %d" % (page, len(events)))
+    return events, seen, fail, False
+
+
+def _dump(path, obj):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, ensure_ascii=False, separators=(",", ":"))
+
+
+def _load(path, default):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return default
+
+
+def build_scores(events):
+    """具名券商的紀錄。股價從最舊事件日前約 10 個交易日開始讀。"""
+    import broker_stats
+    import history
+    named = [e for e in events if e["broker"] != UNNAMED]
+    if not named:
+        return {}
+    ds = history.all_dates()
+    oldest = min(e["date"] for e in named)
+    i = max(0, next((k for k, d in enumerate(ds) if d >= oldest), len(ds)) - 10)
+    since = ds[i] if ds else oldest
+    closes, dates, taiex = broker_stats.load_closes({e["code"] for e in named}, since)
+    return broker_stats.scores(named, closes, dates, taiex)
+
+
+def save(events, seen, now=None):
+    """合併 → 補 dir → 寫 events.json、seen.json、scores.json;回傳存檔的事件。"""
+    import broker_stats
+    events = apply_dir(broker_stats.merge(events))
+    events.sort(key=lambda e: (e["date"], e["broker"], e["code"]))
+    _dump(EVENTS, events)
+    _dump(SEEN, sorted(seen))
+    now = now or datetime.now().strftime("%Y-%m-%d %H:%M")
+    _dump(SCORES, {"meta": {"fetched": now, "n": len(events)}, "scores": build_scores(events)})
+    return events
+
+
+def check_events(events, names):
+    """AC-B2 檢查,回傳問題清單(空 = 通過)。"""
+    import broker_stats
+    bad = []
+    if not isinstance(events, list) or not events:
+        return ["events.json 不是非空 list"]
+    for i, e in enumerate(events):
+        tag = "#%d %s %s %s" % (i, e.get("date"), e.get("code"), e.get("broker"))
+        for k in ("date", "code", "broker", "target", "urls"):
+            if not e.get(k):
+                bad.append("%s:缺 %s" % (tag, k))
+        if e.get("date") and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(e["date"])):
+            bad.append("%s:date 格式不對 %s" % (tag, e["date"]))
+        if e.get("code") and e["code"] not in names:
+            bad.append("%s:代號不在全市場代號表" % tag)
+        t = e.get("target")
+        if not isinstance(t, (int, float)) or isinstance(t, bool) or t <= 0:
+            bad.append("%s:target 不是正數 %r" % (tag, t))
+        us = e.get("urls")
+        if not isinstance(us, list) or not all(isinstance(u, str) and urllib.parse.urlparse(u).hostname == "money.udn.com" for u in us):
+            bad.append("%s:urls 不是 money.udn.com 網址 list" % tag)
+    if not bad:
+        if len(broker_stats.merge(events)) != len(events):
+            bad.append("有同券商＋股票＋目標價在 7 天內沒合併的事件")
+        for code in ("2330", "2454"):
+            n = len({e["broker"] for e in events if e["code"] == code and e["broker"] != UNNAMED})
+            if n < 5:
+                bad.append("%s 具名券商只有 %d 家(AC-B2 要求至少 5 家)" % (code, n))
+    return bad
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description="經濟日報券商目標價新聞")
+    ap.add_argument("--backfill", action="store_true", help="抓到最後一頁(預設只抓前 3 頁)")
+    ap.add_argument("--check", action="store_true", help="只驗證 events.json")
+    a = ap.parse_args(argv)
+    names = load_names()
+    if a.check:
+        bad = check_events(_load(EVENTS, None), names)
+        for b in bad[:50]:
+            print("X", b)
+        print("檢查%s:%d 個問題" % ("未通過" if bad else "通過", len(bad)))
+        return 1 if bad else 0
+    existing = _load(EVENTS, [])
+    seen = set(_load(SEEN, []))
+    events, seen, fail, page_fail = collect(fetch, names, seen, MAX_PAGES if a.backfill else DEFAULT_PAGES, existing)
+    saved = save(events, seen)
+    print("事件 %d(原 %d),單篇失敗 %d,已處理網址 %d" % (len(saved), len(existing), fail, len(seen)))
+    return 1 if page_fail else 0
+
+
+if __name__ == "__main__":
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    sys.exit(main())

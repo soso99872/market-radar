@@ -197,5 +197,164 @@ class LoadNamesTest(unittest.TestCase):
         self.assertEqual(names.get("2330"), "台積電")
 
 
+# ---------- T05:dir 規則 ②、重跑不重複、--check ----------
+
+def _ev(date, broker, target, code="2454", **kw):
+    e = {"date": date, "code": code, "broker": broker, "target": target, "rating": None,
+         "prev_target": None, "dir": None, "urls": [BASE + "1/" + date.replace("-", "") + str(target)], "title": "t"}
+    e.update(kw)
+    return e
+
+
+class TestApplyDir(unittest.TestCase):
+    def test_rule2_compare_with_previous(self):
+        out = brokers.apply_dir([_ev("2026-01-05", "高盛", 1000), _ev("2026-06-01", "高盛", 1200),
+                                 _ev("2026-08-01", "高盛", 1200, dir="up"), _ev("2026-09-01", "高盛", 900)])
+        self.assertEqual([e["dir"] for e in out], [None, "up", "keep", "down"])  # 第一筆沒有前一筆 → 維持原本
+
+    def test_rule1_not_overwritten(self):
+        # 新聞寫明前次 1500(① 得 up),我們前一筆是 2000,若用 ② 會變 down;① 優先
+        out = brokers.apply_dir([_ev("2026-03-01", "高盛", 2000),
+                                 _ev("2026-04-01", "高盛", 1800, prev_target=1500, dir="up")])
+        self.assertEqual(out[1]["dir"], "up")
+
+    def test_rule2_overrides_keyword(self):
+        out = brokers.apply_dir([_ev("2026-03-01", "高盛", 1000), _ev("2026-04-01", "高盛", 900, dir="up")])
+        self.assertEqual(out[1]["dir"], "down")
+
+    def test_window_365_days(self):
+        out = brokers.apply_dir([_ev("2025-01-01", "高盛", 1000), _ev("2026-01-01", "高盛", 1200, dir="down"),
+                                 _ev("2026-01-02", "花旗", 1300, dir="keep")])
+        self.assertEqual(out[1]["dir"], "up")      # 剛好 365 天內
+        out = brokers.apply_dir([_ev("2025-01-01", "高盛", 1000), _ev("2026-01-02", "高盛", 1200, dir="down")])
+        self.assertEqual(out[1]["dir"], "down")    # 366 天 → 不比較,留關鍵字結果
+
+    def test_other_broker_stock_and_anon_ignored(self):
+        out = brokers.apply_dir([_ev("2026-03-01", "花旗", 1000), _ev("2026-03-01", "高盛", 800, code="2330"),
+                                 _ev("2026-04-01", "高盛", 1200), _ev("2026-03-02", brokers.UNNAMED, 500),
+                                 _ev("2026-04-02", brokers.UNNAMED, 600, dir="up")])
+        self.assertEqual([e["dir"] for e in out if e["broker"] == "高盛" and e["code"] == "2454"], [None])
+        self.assertEqual([e["dir"] for e in out if e["broker"] == brokers.UNNAMED], [None, "up"])
+
+    def test_same_report_not_previous(self):
+        # 同目標價 3 天後又報導(同一份報告)不算「前一筆」
+        out = brokers.apply_dir([_ev("2026-04-01", "高盛", 1200), _ev("2026-04-04", "高盛", 1200, dir="up")])
+        self.assertEqual(out[1]["dir"], "up")
+
+    def test_input_not_mutated(self):
+        src = [_ev("2026-03-01", "高盛", 1000), _ev("2026-04-01", "高盛", 900, dir="up")]
+        brokers.apply_dir(src)
+        self.assertEqual(src[1]["dir"], "up")
+
+
+def _search_html(items):
+    rows = "".join(
+        '<li><div class="story__content "><a href="%s?from=x" data-slotname="list_搜尋結果頁" title="%s">'
+        '<h3>x</h3><time>%s 10:00</time></a></div></li>' % (u, t, d) for u, t, d in items)
+    return "<html><ul>%s</ul><time>2026-01-01 00:00</time></html>" % rows
+
+
+def _article_html(text):
+    return '<section id ="article_body"><p>%s</p><div id="story_end"></div></section>' % text
+
+
+class TestCollect(unittest.TestCase):
+    def setUp(self):
+        self.u1, self.u2, self.u3 = BASE + "5607/1", BASE + "5607/2", BASE + "5607/3"
+        self.pages = {
+            brokers.SEARCH.format(page=1): _search_html([
+                (self.u1, "高盛 調升聯發科<u>目標價</u>至1,800元", "2026-10-20"),
+                (self.u2, "法人看好聯發科 調升<u>目標價</u>", "2026-10-19"),
+                (self.u3, "今天天氣很好", "2026-10-18")]),
+            brokers.SEARCH.format(page=2): _search_html([]),
+            self.u2: _article_html("花旗證券最新報告指出,聯發科目標價上調至1,900元。"),
+            self.u3: _article_html("沒有任何券商。"),
+        }
+        self.calls = []
+
+    def fake(self, url):
+        self.calls.append(url)
+        if url not in self.pages:
+            raise IOError("404")
+        return self.pages[url]
+
+    def run_once(self, existing, seen):
+        return brokers.collect(self.fake, NAMES, seen, 3, existing, log=lambda *_: None)
+
+    def test_rerun_no_duplicates(self):
+        import broker_stats
+        ev, seen, fail, pf = self.run_once([], set())
+        self.assertFalse(pf)
+        self.assertEqual(fail, 0)
+        first = broker_stats.merge(ev)
+        self.assertEqual(sorted((e["broker"], e["target"]) for e in first), [("花旗", 1900), ("高盛", 1800)])
+        self.assertEqual(len(seen), 3)
+        self.calls.clear()
+        ev2, seen2, fail2, _ = self.run_once(first, seen)
+        self.assertEqual(broker_stats.merge(ev2), first)
+        self.assertEqual([c for c in self.calls if "/story/" in c], [])    # 已收過的網址不再抓內文
+
+    def test_title_only_no_body_fetch(self):
+        self.run_once([], set())
+        self.assertNotIn(self.u1, self.calls)      # 標題抽得到,不抓內文
+        self.assertIn(self.u2, self.calls)
+
+    def test_article_failure_counted_and_skipped(self):
+        del self.pages[self.u2]
+        ev, seen, fail, pf = self.run_once([], set())
+        self.assertEqual(fail, 1)
+        self.assertNotIn(self.u2, seen)            # 下次再試
+        self.assertFalse(pf)
+        self.assertEqual(len(ev), 1)
+
+    def test_search_page_failure(self):
+        del self.pages[brokers.SEARCH.format(page=1)]
+        ev, seen, fail, pf = self.run_once([], set())
+        self.assertTrue(pf)
+
+    def test_parse_search_ignores_sidebar(self):
+        self.assertEqual(len(brokers.parse_search(self.pages[brokers.SEARCH.format(page=1)])), 3)
+
+    def test_parse_article_body_only(self):
+        self.assertEqual(brokers.parse_article('<p>廣告</p>' + _article_html("花旗<a>(2454)</a>報告")), "花旗(2454)報告")
+
+
+class TestCheck(unittest.TestCase):
+    def good(self):
+        out = []
+        for c in ("2330", "2454"):
+            for i, b in enumerate(("高盛", "花旗", "大摩", "瑞銀", "麥格理")):
+                out.append(_ev("2026-0%d-01" % (i + 1), b, 1000 + i * 100, code=c))
+        return out
+
+    def test_pass(self):
+        self.assertEqual(brokers.check_events(self.good(), NAMES), [])
+
+    def test_violations(self):
+        for mutate, word in (
+            (lambda e: e.pop("broker"), "broker"),
+            (lambda e: e.update(code="9999"), "代號"),
+            (lambda e: e.update(target=0), "target"),
+            (lambda e: e.update(urls=["https://example.com/a"]), "urls"),
+            (lambda e: e.update(urls=[]), "urls"),
+            (lambda e: e.update(date="2026/01/01"), "date"),
+        ):
+            evs = self.good()
+            mutate(evs[0])
+            bad = brokers.check_events(evs, NAMES)
+            self.assertTrue(any(word in b for b in bad), (word, bad))
+
+    def test_unmerged_duplicates(self):
+        evs = self.good() + [_ev("2026-01-03", "高盛", 1000, code="2330", urls=[BASE + "9/9"])]
+        self.assertTrue(any("沒合併" in b for b in brokers.check_events(evs, NAMES)))
+
+    def test_too_few_brokers(self):
+        bad = brokers.check_events([e for e in self.good() if not (e["code"] == "2330" and e["broker"] == "瑞銀")], NAMES)
+        self.assertTrue(any("2330" in b for b in bad))
+
+    def test_empty(self):
+        self.assertTrue(brokers.check_events([], NAMES))
+
+
 if __name__ == "__main__":
     unittest.main()

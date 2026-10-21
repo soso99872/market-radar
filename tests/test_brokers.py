@@ -16,7 +16,7 @@ NAMES = {
     "3037": "欣興", "3189": "景碩", "4958": "臻鼎-KY", "3653": "健策", "5274": "信驊",
     "2383": "台光電", "3105": "穩懋", "3017": "奇鋐", "6805": "富世達", "2408": "南亞科",
     "1303": "南亞", "6669": "緯穎", "3661": "世芯-KY", "6830": "汎銓", "2327": "國巨*",
-    "2059": "川湖", "2308": "台達電", "6505": "台塑化", "1216": "統一", "2881": "富邦金", "2317": "鴻海",
+    "2059": "川湖", "2308": "台達電", "6505": "台塑化", "1216": "統一", "2881": "富邦金", "2317": "鴻海", "6488": "環球晶",
 }
 IDX = brokers.build_index(NAMES)
 # 來源網址前綴,下面每則只寫後半
@@ -323,6 +323,62 @@ def _ev(date, broker, target, code="2454", **kw):
          "prev_target": None, "dir": None, "urls": [BASE + "1/" + date.replace("-", "") + str(target)], "title": "t"}
     e.update(kw)
     return e
+
+
+class SupervisorRound2Test(unittest.TestCase):
+    """T05 主管第 2 次退件:數量單位、元大幅、分別、情境價、舊報告、同金額取有前次、評等升降。"""
+
+    def test_quantity_unit_not_target(self):
+        # 5607/9639830:「2,000台調升至5,000台」是出貨量
+        b = "AMD Helios機櫃出貨量預估自2,000台調升至5,000台,並將目標價由6,400調升至7,000元。"
+        e = P("瑞銀調升緯穎目標價", "瑞銀指出," + b)
+        one(self, e, "6669", "瑞銀", 7000, dir_="up", prev=6400)
+
+    def test_yuan_da_after_digit_not_broker(self):
+        # 5607/9527265:「2,988元大幅上調70%到5,088元」
+        b = "摩根士丹利證券(大摩)釋出報告,將聯發科目標價從2,988元大幅上調70%到5,088元。"
+        one(self, P("聯發科目標價 喊5,088", b), "2454", "摩根士丹利", 5088, dir_="up", prev=2988)
+
+    def test_respectively_pairs_in_order(self):
+        # 5607/9596199:分別調高 = 依序一對一;Aletheia 不在券商表,不產生
+        t = "外資啟動台積電新一波目標價上修潮"
+        b = "台積電(2330)近來外資圈掀起一波目標價調升潮。繼Aletheia資本升至3,500元、麥格理證券升至3,380元後,最新瑞銀、里昂等證券也分別調高至3,400元與3,330元。"
+        ev = P(t, b.replace(",", "，"))
+        self.assertEqual([(e["broker"], e["target"]) for e in ev], [("麥格理", 3380), ("瑞銀", 3400), ("里昂證券", 3330)])
+        later = "里昂相當看好台積電,目標價由3,250元升至3,330元。"
+        ev = P(t, b.replace(",", "，") + later)
+        self.assertEqual([(e["broker"], e["target"], e["prev_target"]) for e in ev if e["broker"] == "里昂證券"], [("里昂證券", 3330, 3250)])
+
+    def test_respectively_count_mismatch_no_event(self):
+        self.assertEqual(P("瑞銀、里昂、高盛也分別調高台積電目標價至3,400元與3,330元"), [])
+
+    def test_scenario_price_not_target(self):
+        # 5607/9376699:基本情境 2,300 是目標價,樂觀／悲觀情境價不是
+        b = ("大摩指出,奇鋐擴產積極,在基本情境給予奇鋐2,300元的目標價。"
+             "在樂觀情境,大摩給予奇鋐的本益比拉高到39倍,目標價跟著提升到3,217元。"
+             "但在悲觀情境,大摩給予奇鋐的本益比降低到17倍,目標價跟著調降到1,383元。").replace(",", "，")
+        ev = P("大摩:奇鋐目標價從1,800元大幅調高到2,300元", b)
+        self.assertEqual([e["target"] for e in ev], [2300])
+        self.assertEqual([e["target"] for e in P("x", b, )], [2300])
+
+    def test_old_report_not_event(self):
+        self.assertEqual(P("x", "台積電目標價續升,以里昂證券先前喊出的3,030元,為目前市場最高。"), [])
+        # 「從先前…」後面有調升至的新動作不受影響
+        one(self, P("里昂把台積電目標價從先前的3,000元調升至3,300元"), "2330", "里昂證券", 3300, dir_="up")
+
+    def test_body_prefers_event_with_prev(self):
+        # 5607/9451505:先有「分別調高到2,750元、2,150元」(沒前次),後有「從2,000 元升至2,150元」
+        b = ("大摩將奇鋐(3017)及富世達目標價分別調高到2,750元、2,150元,重申「優於大盤」評等。"
+             "大摩最看好奇鋐,目標價從2,300元上調至2,750元,富世達目標價則從2,000 元升至2,150元。").replace(",", "，")
+        ev = P("大摩:上調奇鋐及富世達目標價", b)
+        self.assertEqual({e["code"]: (e["target"], e["prev_target"]) for e in ev}, {"3017": (2750, 2300), "6805": (2150, 2000)})
+
+    def test_rating_upgrade_is_not_target_up(self):
+        # 5607/9226339:評等升至「優於大盤」,目標價調降5%
+        t = "麥格理:環球晶走出景氣谷底 評等升至「優於大盤」目標價調降5%"
+        b = "麥格理證券指出,環球晶(6488)已走出谷底,將環球晶評等從「中性」調高到「優於大盤」,但目標價則下調5%到473元。".replace(",", "，")
+        ev = P(t, b)
+        self.assertEqual([(e["code"], e["broker"], e["target"], e["dir"]) for e in ev], [("6488", "麥格理", 473, "down")])
 
 
 class TestApplyDir(unittest.TestCase):

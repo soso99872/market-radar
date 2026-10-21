@@ -78,31 +78,34 @@ STOCK_ALIASES = {
 
 _NAME_SUFFIX = re.compile(r"(-KY|-創|-DR|\*)+$")
 
-_UP_RE = re.compile(r"調升|上修|調高|上調|大升|同步升|升至|升到|升目標|升[^，。；\s]{0,6}?目標價|提高目標價")
-_DOWN_RE = re.compile(r"調降|下修|調低|下調|降至|降到|降目標|降[^，。；\s]{0,6}?目標價")
+_RATINGS = "強力買進|買進|買入|增持|優於大盤|跑贏大盤|超越大盤|加碼|中立|中性|持有|減碼|減持|賣出|劣於大盤|落後大盤|表現遜於大盤"
+_RT = r"(?!(?:至|到)?[「『]?(?:" + _RATINGS + "))"   # 評等升降(「升至『優於大盤』」)不是目標價方向
+_UP_RE = re.compile(r"(?:調升|上修|調高|上調|大升|同步升|升至|升到)" + _RT + r"|升目標|升" + _RT + r"[^，。；\s]{0,6}?目標價|提高目標價")
+_DOWN_RE = re.compile(r"(?:調降|下修|調低|下調|降至|降到)" + _RT + r"|降目標|降" + _RT + r"[^，。；\s]{0,6}?目標價")
 # ③ 的維持／重申只在後面接目標價時才算(「重申買進」只是評等)
 _KEEP_RE = re.compile(r"(?:維持|重申)(?:[^，,。；;、\s]|(?<=\d),(?=\d)){0,10}?(?:目標價|目標股價)|目標價(?:維持|不變)")
 # 標題寫了調升／調降卻沒給前次目標價 → 內文找「從 X 元…至 Y 元」補 prev_target
 _MOVE_RE = re.compile(r"調(?!整|查)|上修|下修|升至|降至|升到|降到|大升|提高")
 
-_RATINGS = "強力買進|買進|買入|增持|優於大盤|跑贏大盤|超越大盤|加碼|中立|中性|持有|減碼|減持|賣出|劣於大盤|落後大盤|表現遜於大盤"
 _RATING_RE = re.compile(r"[「『](" + _RATINGS + r")[」』]|(" + _RATINGS + r")(?=評等)|(?:評等|建議|給予|維持|予以)(?:至|為|於|調升至|調降至)?[「『]?(" + _RATINGS + ")")
 
 _NUM = r"\d[\d,]*(?:\.\d+)?"
-_BAD_UNIT = r"(?!\d)(?![.,]\d)(?![\d,.]*[美港日歐%％倍億萬月日年檔家張季點成度xX])(?![–—~～-]\d)"   # 後面接單位或「480–500」這種範圍都不是目標價
+_BAD_UNIT = r"(?!\d)(?![.,]\d)(?![\d,.]*[美港日歐%％倍億萬月日年檔家張季點成度台片顆支套人股xX])(?![–—~～-]\d)"   # 後面接單位或「480–500」這種範圍都不是目標價
 # 「從 X 元…至 Y 元」「由 X 元直衝 Y 元」「從 500 元升到 725 元」
-_FROM_TO = re.compile(r"[從由]\s*(" + _NUM + r")\s*元?\s*([^\d，。；、]{0,14}?)\s*(" + _NUM + r")\s*元")
+_FROM_TO = re.compile(r"[從由]\s*(" + _NUM + r")\s*元?\s*((?:[^\d，。；、]|\d+%){0,14}?)\s*(" + _NUM + r")\s*元")
 # 金額觸發:強觸發可省略「元」;弱觸發一定要有「元」
 _STRONG = r"(?:目標價維持|目標價為|目標價|目標股價|調升至|上調至|調高至|上修至|調降至|下調至|下修至|提高至|升至|升到|降至|降到|喊到|喊|上看)"
 _WEAK = r"(?:看到|看|為|至|到|達)"
-_AMT_STRONG = re.compile(_STRONG + r"\s*(" + _NUM + r")" + _BAD_UNIT + r"(元)?((?:、" + _NUM + r"元?)*)")
-_AMT_WEAK = re.compile(_WEAK + r"\s*(" + _NUM + r")\s*元((?:、" + _NUM + r"元?)*)")
+_AMT_STRONG = re.compile(_STRONG + r"\s*(" + _NUM + r")" + _BAD_UNIT + r"(元)?((?:[、與]" + _NUM + r"元?)*)")
+_AMT_WEAK = re.compile(_WEAK + r"\s*(" + _NUM + r")\s*元((?:[、與]" + _NUM + r"元?)*)")
 # 「維持4,750元目標價」這種金額在前、目標價在後的寫法
 _AMT_POST = re.compile(r"(" + _NUM + r")\s*元\s*(?:的)?目標(?:股)?價")
 _TP_RE = re.compile(r"目標價|目標股價")
 # 非目標價的金額:前 15 字(最近一個「元」之後)有獲利類字眼;彭博／平均／共識的目標價;年份
 _EPS_RE = re.compile(r"EPS|每股純益|每股盈餘|獲利|營收", re.I)
 _CONSENSUS_RE = re.compile(r"彭博|平均|共識")
+_SCENE_RE = re.compile(r"樂觀情境|悲觀情境|(?<!基本)情境|牛市|熊市")   # 情境價不是這次的目標價
+_OLD_RE = re.compile(r"先前|此前|之前|稍早|日前")   # 引用舊報告
 _YEAR_RE = re.compile(r"(?:19|20)\d\d")
 _FX_RE = re.compile(r"人民幣|美元|美金|日圓|港幣|ADR")
 
@@ -151,6 +154,8 @@ class _Index:
             s = m.group(0)
             kind, val = None, None
             base = _broker_base(s, self.broker)
+            if m.start() and text[m.start() - 1].isdigit() and s not in self.stock:
+                continue     # 「2,988元大幅」的元大不是券商
             if s in self.stock:
                 kind, val = "stock", self.stock[s]
             elif base is not None:
@@ -254,7 +259,14 @@ def _not_target(clause, start, num_at, num, yuan):
         return True
     if not yuan and _YEAR_RE.fullmatch(num):
         return True
-    return False
+    if _SCENE_RE.search(clause[max(0, num_at - 40):num_at]):    # 10 字抓不到「樂觀情境，…目標價跟著提升到」
+        return True
+    seg = clause[clause.rfind("，", 0, num_at) + 1:num_at]    # 金額所在子句;觸發詞有「調升至」類動作表示是新動作
+    return bool(_OLD_RE.search(seg)) and not re.search("[升降調修]", clause[start:num_at])
+
+
+# 一句裡「A升至X元、B升至Y元」與「…分別調高至X元與Y元」切成片段,各自配對
+_SPLIT = re.compile(r"(?<=元)、(?=[^\d、，]{1,12}?[升降調修喊看])|，(?=[^，]*分別)")
 
 
 def _amounts(clause, carry_tp):
@@ -315,9 +327,9 @@ def _analyze(text, idx, title="", fallback_stocks=()):
         sentence = sentence.strip()
         if not sentence:
             continue
-        for clause in sentence.split("；"):
+        for whole, clause in [(w, c) for w in sentence.split("；") for c in _SPLIT.split(w)]:
             ents = idx.find(clause)
-            stocks = list(dict.fromkeys(v for _, _, k, v in ents if k == "stock"))
+            stocks = list(dict.fromkeys(v for _, _, k, v in idx.find(whole) if k == "stock"))
             # 「台積電（2330）」括號代號也算
             for m in re.finditer(r"[（(](\d{4,5})[）)]", clause):
                 if m.group(1) in idx.stock.values() and m.group(1) not in stocks:
@@ -339,7 +351,7 @@ def _analyze(text, idx, title="", fallback_stocks=()):
                 bl = brokers
             elif UNNAMED_RE.search(clause):
                 bl = [UNNAMED]
-            elif carry_broker:
+            elif carry_broker and clause == whole:     # 被切開的片段不沿用前面的券商
                 bl = [carry_broker]
             else:
                 continue
@@ -352,13 +364,12 @@ def _analyze(text, idx, title="", fallback_stocks=()):
                     "dir": _direction(prev, target, *ctx),
                     "prev_target": prev,
                 })
-    uniq, seen = [], set()
-    for e in events:
+    uniq = {}
+    for e in events:    # 同檔同券商同金額只留一筆,有前次目標價的優先
         k = (e["code"], e["broker"], e["target"])
-        if k not in seen:
-            seen.add(k)
-            uniq.append(e)
-    return uniq
+        if k not in uniq or (uniq[k]["prev_target"] is None and e["prev_target"] is not None):
+            uniq[k] = e
+    return list(uniq.values())
 
 
 def _pair(stocks, brokers, amts):

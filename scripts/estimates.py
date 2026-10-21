@@ -55,6 +55,7 @@ def fetch(code, known_sym=None):
         except Exception:  # noqa: BLE001  查無此代號、限流等,換下一個後綴
             continue
         rec = {"sym": sym}
+        info = {}   # 只重用下面已在呼叫的 t.info(yfinance 有快取),不為了 n_tgt 多打請求
         if ee is not None and len(ee) and "avg" in ee.columns:
             def g(row, col):
                 return num(ee.loc[row, col]) if row in ee.index and col in ee.columns else None
@@ -62,7 +63,8 @@ def fetch(code, known_sym=None):
             # Yahoo 有些台股(例:富世達)的 EPS 預估是美元,股價與目標價卻是台幣。用同一來源的台幣 forwardEps 對照,
             # 兩者差一個匯率(20~45 倍)就換算回台幣
             try:
-                fwd = num((t.info or {}).get("forwardEps"))
+                info = t.info or {}
+                fwd = num(info.get("forwardEps"))
             except Exception:  # noqa: BLE001
                 fwd = None
             if fwd and rec.get("eps1") and rec["eps1"] > 0 and 20 < fwd / rec["eps1"] < 45:
@@ -72,6 +74,9 @@ def fetch(code, known_sym=None):
                 rec["usd_fixed"] = round(fx, 2)
         if pt and num(pt.get("mean")):
             rec.update(tgt=num(pt.get("mean")), tgt_lo=num(pt.get("low")), tgt_hi=num(pt.get("high")))
+            n_tgt = num(info.get("numberOfAnalystOpinions"))   # 目標價的分析師家數(與 EPS 的 n1 不同)
+            if n_tgt:
+                rec["n_tgt"] = int(n_tgt)
         if len(rec) > 1:
             return rec
     return None

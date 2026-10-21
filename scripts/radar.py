@@ -749,6 +749,26 @@ RATING = {}   # 代號 → 星等評級(signals.py 寫進個股檔與查詢索�
 SNAP = {}     # 代號 → 查詢索引用的最新營收、產業、60 日漲幅(全部股票)
 STARS_BASE = {"A": 5, "B": 4, "C": 3, "D": 3}   # 陷阱(營收減速、外資 20 日大賣)A/B/C 各扣 1 顆;回測見 explosion_study.py
 FO_DUMP = -10            # 外資 20 日買賣超佔成交金額 ≤ −10% 視為大賣
+BRK_MAX = 30   # 每檔最多帶幾筆券商目標價事件進個股檔
+
+
+def load_brk(path, limit=BRK_MAX):
+    """讀 brokers.py 產生的 events.json,回傳 {代號: 事件 list(新到舊,最多 limit 筆)}。
+    檔案不存在、壞掉或格式不對都回空 dict,不報錯(extra.brk 就不會產生)。"""
+    try:
+        with open(path, encoding="utf-8") as f:
+            ev = json.load(f)
+        if not isinstance(ev, list):
+            return {}
+        by = {}
+        for x in ev:
+            if isinstance(x, dict) and x.get("code"):
+                by.setdefault(str(x["code"]), []).append(x)
+        return {c: sorted(v, key=lambda x: str(x.get("date") or ""), reverse=True)[:limit] for c, v in by.items()}
+    except (OSError, ValueError):
+        return {}
+
+
 EXTRAS = {}   # 代號 → 個股面板用的估值、營收、本益比歷史(signals.py 寫個股檔時帶入)
 
 
@@ -840,6 +860,7 @@ def fair_all(rp, close, last):
         cons = json.load(open(os.path.join(history.ROOT, "data", "estimates", "latest.json"), encoding="utf-8")).get("s", {})
     except FileNotFoundError:
         cons = {}
+    brk = load_brk(os.path.join(history.ROOT, "data", "brokers", "events.json"))
     cur_m = (int(last[:4]), int(last[5:7]))
     w1 = (cur_m[1] - 1) / 12   # 未來 12 個月 EPS = 今年預估 × 剩餘比例 + 明年預估 × 已過比例
     vm = [m for m in sorted(VAL) if m < cur_m][-FV.MAX_HIST:]
@@ -901,6 +922,10 @@ def fair_all(rp, close, last):
             if k.get("tgt"):
                 e["tgt"] = {"mean": k["tgt"], "lo": k.get("tgt_lo"), "hi": k.get("tgt_hi"),
                             "up": _f((k["tgt"] / price - 1) * 100, 1)}
+                if k.get("n_tgt"):
+                    e["tgt"]["n_tgt"] = k["n_tgt"]
+                if k.get("at"):
+                    e["tgt"]["at"] = str(k["at"])[:10]   # 只留日期 YYYY-MM-DD,前端不必再讀 latest.json
             # 高峰風險:只看基本估值 e,status 保持原值,只加 peak 旗標(fwd、proj 不變)
             if peak_risk(est["method"], est["fair"], float(price), pb,
                          bh, [(m, yoy.at[m, c]) for m in rp["months"][-3:]], rp["months"][-3:]):
@@ -911,6 +936,8 @@ def fair_all(rp, close, last):
                 e.update(bvps=_f(est["bvps"]))
             out[c] = e
             ex["fv"] = e
+        if c in brk:
+            ex["brk"] = brk[c]
         EXTRAS[c] = ex
     return out
 

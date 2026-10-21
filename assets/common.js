@@ -360,10 +360,109 @@
       '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="近 ' + n + " 日收盤價與分析師目標價範圍:最高 " + tpFmt(t.hi) + "、平均 " + tpFmt(t.mean) + "、最低 " + tpFmt(t.lo) + '">' +
       o.join("") + "</svg></div>";
   }
+  // ---- 逐家券商目標價(經濟日報新聞整理,extra.brk)與券商紀錄(data/brokers/scores.json,每頁只載一次) ----
+  var BRK_MAX = 8, BRK_ANON = "未具名", SCORES_P = null;
+  function brkScores() {
+    if (!SCORES_P) SCORES_P = MR.json("data/brokers/scores.json").then(function (j) {
+      if (!j || typeof j.scores !== "object" || !j.scores) throw new Error("scores");
+      return j;
+    });
+    return SCORES_P;
+  }
+  // 回傳每個項目 [標籤, 粗體百分比或 null, 後綴];由 fillBrk 用 createElement 組成,不用 innerHTML
+  function brkRecord(sc, broker) {
+    var s = sc.scores[broker], parts = [];
+    if (!s) return "這家券商的紀錄不足(0 筆)";
+    function item(label, o) {
+      if (!o) return null;
+      return o.rate == null ? [label + " 紀錄不足(" + o.n + " 筆)", null, ""] : [label + " ", Math.round(o.rate * 100) + "%", "(" + o.n + " 筆)"];
+    }
+    if ([s.hit6, s.hit12, s.up3, s.down3].every(function (o) { return !o || o.rate == null; })) return "這家券商的紀錄不足(" + (s.n || 0) + " 筆)";
+    [item("6 個月內達標率", s.hit6), item("12 個月內達標率", s.hit12), item("調升後 3 個月跑贏大盤", s.up3), item("調降後 3 個月落後大盤", s.down3)].forEach(function (t) { if (t) parts.push(t); });
+    if (s.premium != null) parts.push(["平均喊價幅度 ", MR.sign(s.premium * 100, 0) + "%", ""]);
+    return parts;
+  }
+  function brkRow(b, doc, withRec, extra) {
+    var rows = doc.rows, px = doc.summary.close, base = null, hit = null, i;
+    for (i = 0; i < rows.length; i++) if (rows[i][0] < b.date) base = rows[i][4];
+    var prem = base > 0 ? b.target / base - 1 : null;
+    var status;
+    if (prem != null && prem <= 0) status = "目標價不高於當時股價";
+    else {
+      if (prem != null) for (i = 0; i < rows.length; i++) if (rows[i][0] >= b.date && rows[i][4] >= b.target) { hit = rows[i][0]; break; }
+      status = hit ? "已達標(" + MR.md(hit).replace(/(^|\/)0/g, "$1") + ")" : b.target > px ? "距目標 " + MR.sign((b.target / px - 1) * 100, 1) + "%" : "現價已高於目標價";
+    }
+    var md = b.date.slice(5).replace(/(^|-)0/g, "$1").replace("-", "/");
+    var dt = b.date.slice(0, 4) === String(doc.date).slice(0, 4) ? md : b.date.slice(0, 4) + "/" + md;
+    var dirTxt = b.dir === "up" ? "調升" : b.dir === "down" ? "調降" : b.dir === "keep" ? "維持" : "";
+    if (dirTxt && b.prev_target > 0 && b.dir !== "keep") dirTxt += "(前次 " + tpFmt(b.prev_target) + ")";
+    var urls = (b.urls || []).filter(function (u) { return /^https:\/\/money\.udn\.com\//.test(u); });
+    var links = urls.map(function (u, k) {
+      return '<a href="' + esc(u) + '" target="_blank" rel="noopener">新聞' + (urls.length > 1 ? " " + (k + 1) : "") + "</a>";
+    }).join(" · ");
+    return '<li class="bk"><div class="bk-main"><span class="bk-d num">' + esc(dt) + '</span><b class="bk-n">' + esc(b.broker) + "</b>" +
+      (b.rating ? '<span class="bk-r">' + esc(b.rating) + "</span>" : "") + '<b class="bk-t num">' + tpFmt(b.target) + "</b></div>" +
+      '<div class="bk-sub"><span>喊價幅度 ' + (prem == null ? "—" : MR.sign(prem * 100, 0) + "%") + "</span><span>" + status + "</span>" +
+      (dirTxt ? "<span>" + esc(dirTxt) + "</span>" : "") + (links ? "<span>" + links + "</span>" : "") + "</div>" +
+      (withRec ? '<p class="bk-rec" data-bk="' + esc(b.broker) + '">券商紀錄載入中…</p>' : "") + (extra || "") + "</li>";
+  }
+  function brkGroup(g, doc) {
+    var old = g.slice(1);
+    return brkRow(g[0], doc, g[0].broker !== BRK_ANON, old.length ? '<details class="bk-more"><summary>看全部 ' + g.length + " 筆</summary><ul class=\"bk-list\">" +
+      old.map(function (o) { return brkRow(o, doc, false); }).join("") + "</ul></details>" : "");
+  }
+  function brkHtml(doc, hasTgt) {
+    var evs = (doc.extra || {}).brk;
+    evs = Array.isArray(evs) ? evs.filter(function (b) { return b && b.date && b.broker && b.target > 0; }) : [];
+    if (!evs.length) return hasTgt ? '<p class="fvhow tp-nobrk">近一年沒有收到這檔的券商目標價新聞(只收錄經濟日報有報導的)</p>' : "";
+    var help = MR.help("brk", "逐家券商目標價與券商紀錄怎麼看",
+      "<p>列表是經濟日報報導的券商目標價,用規則式程式從新聞標題與內文解析,<b>可能漏抓或誤抓</b>(例如一篇提到多家券商、金額對不到該檔);只收約一年內、有被報導的,調降常沒被報導,樣本偏樂觀。畫面只放事實與「新聞」連結,請點進新聞核對。同一家券商只列最新一筆,其餘收在「看全部」。</p>" +
+      "<p><b>喊價幅度</b> = 目標價 ÷ 發布日前一個交易日收盤價 − 1。「已達標」= 發布後收盤價曾經 ≥ 目標價;喊價幅度 ≤ 0(目標價不高於當時股價)不判斷達標。發布日早於面板股價資料範圍(約近半年)的,喊價幅度顯示「—」。</p>" +
+      "<p>每列下方的<b>券商紀錄</b>是這家券商在全市場所有個股的歷史合算,不限這一檔:</p>" +
+      "<ul><li><b>6／12 個月內達標率</b>:發布後 126／252 個交易日內,任一日收盤 ≥ 目標價的比例;只算喊價幅度 &gt; 0 且已滿期的紀錄,未滿期的不論是否已達標都不算。</li>" +
+      "<li><b>調升後 3 個月跑贏大盤／調降後 3 個月落後大盤</b>:發布後 63 個交易日,個股報酬與同期加權指數比較。</li>" +
+      "<li><b>平均喊價幅度</b>:該券商所有紀錄(含目標價低於當時股價的)的平均。</li>" +
+      "<li><b>無效紀錄</b>:股價用未還原價格,計算期間內個股單日漲跌超過 ±11%(多半是除權、減資、面額變更)的紀錄不算進達標率與方向。</li>" +
+      "<li>任一項算進去的筆數不到 10 筆,該項寫「紀錄不足」,不給百分比。「未具名」(只寫外資、法人)的列不算紀錄。</li></ul>" +
+      "<p>只陳述歷史比例,不是預測,也不構成投資建議。</p>");
+    var groups = [], seen = {};
+    evs.forEach(function (b) {
+      if (b.broker === BRK_ANON) { groups.push([b]); return; }
+      if (seen[b.broker]) seen[b.broker].push(b); else { seen[b.broker] = [b]; groups.push(seen[b.broker]); }
+    });
+    var rest = groups.slice(BRK_MAX);
+    return '<h5 class="bk-h">逐家券商目標價' + help + '</h5><ul class="bk-list">' + groups.slice(0, BRK_MAX).map(function (g) { return brkGroup(g, doc); }).join("") + "</ul>" +
+      (rest.length ? '<details class="bk-more bk-rest"><summary>其餘 ' + rest.length + ' 家</summary><ul class="bk-list">' + rest.map(function (g) { return brkGroup(g, doc); }).join("") + "</ul></details>" : "") +
+      '<p class="fvhow tp-src">逐家券商:經濟日報新聞整理<span class="bk-at"></span>;只收得到有報導的,調降常沒被報導,樣本偏樂觀。</p>';
+  }
+  // 面板插入後呼叫:讀 scores.json 填各家券商紀錄;讀失敗只影響紀錄行
+  function fillBrk(root) {
+    var recs = root.querySelectorAll(".bk-rec");
+    if (!recs.length) return;
+    brkScores().then(function (sc) {
+      recs.forEach(function (n) {
+        var r = brkRecord(sc, n.getAttribute("data-bk"));
+        n.textContent = "";
+        if (typeof r === "string") { n.textContent = r; return; }
+        r.forEach(function (it) {
+          var sp = document.createElement("span");
+          sp.className = "bk-it";
+          sp.appendChild(document.createTextNode(it[0]));
+          if (it[1]) { var b = document.createElement("b"); b.textContent = it[1]; sp.appendChild(b); }
+          if (it[2]) sp.appendChild(document.createTextNode(it[2]));
+          n.appendChild(sp);
+        });
+      });
+      var at = root.querySelector(".bk-at");
+      if (at && sc.meta && sc.meta.fetched) at.textContent = "," + String(sc.meta.fetched).slice(0, 10) + " 更新";
+    }).catch(function () {
+      recs.forEach(function (n) { n.textContent = "券商紀錄暫時無法載入"; });
+    });
+  }
   function tpHtml(doc) {
     var ex = doc.extra || {}, fv = ex.fv, t = fv && fv.tgt, px = doc.summary.close;
-    var brk = ex.brk && (Array.isArray(ex.brk) ? ex.brk.length : Object.keys(ex.brk).length) ? '<div class="tp-brk"></div>' : "";
     if (t && !(t.mean > 0 && px > 0)) t = null;
+    var bh = brkHtml(doc, !!t), brk = bh ? '<div class="tp-brk">' + bh + "</div>" : "";
     var help = MR.help("tp", "分析師目標價怎麼看",
       "<p>上面是 Yahoo Finance 彙整的分析師目標價:<b>平均</b>、<b>最高</b>、<b>最低</b>,上漲空間 = 目標價 ÷ 面板資料日收盤價 − 1。</p>" +
       "<p>圖的左半是近 120 個交易日的收盤價,右半是「未來 12 個月」:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。淡色區塊是目標價的範圍,虛線是平均。</p>" +
@@ -393,6 +492,12 @@
       row("最高", hi) + row("平均", t.mean) + row("最低", lo) + "</tbody></table>" +
       '<p class="fvhow tp-src">' + (cnt ? cnt + "<br>" : "") + "資料:Yahoo Finance 匯總" + (t.at ? "," + esc(String(t.at).slice(0, 10)) + " 更新" : "") + "。</p>" +
       brk + "</div>";
+  }
+  // (a) 高峰風險:fv.peak 為真時,基本估值的狀態標籤換成這個(status 本身不變,前瞻估值與排序篩選不受影響)
+  function peakTag() {
+    return '<span class="tag2 warn">高峰風險</span>' + MR.help("peak", "高峰風險是什麼",
+      "<p>也就是常說的「高峰陷阱」。三個條件同時成立才標:月營收年增率最近 3 個月(且最近一個月是最新營收月份)都 ≥ 30%;本益比法合理價 ≥ 股價 × 1.2(看起來被低估或合理);但用自己過去 5 年淨值比中位數算出的合理價 ≤ 股價 × 0.8(淨值比已在歷史高檔)。</p>" +
+      "<p>只判斷「依過去四季 EPS」的基本估值,前瞻估值不變。回測 12 個月內跌 30% 以上的機率約 1/3;只降低大跌機率,沒有證據能提升報酬。</p>");
   }
   // 模型合理價:公式固定,把每一步算式攤開讓人可以自己驗算
   function fvHtml(doc) {
@@ -446,9 +551,10 @@
       "<div><span>模型合理價</span><b>" + e.fair + "</b></div>" +
       "<div><span>合理區間</span><b>" + e.low + " ~ " + e.high + "</b></div>" +
       '<div><span>潛在空間</span><b class="' + MR.dir(e.up) + '">' + MR.sign(e.up, 1) + "%</b></div>" +
-      '<div><span>評價</span><b class="' + cls + '">' + e.status + "</b></div></div>" +
+      "<div><span>評價</span>" + (e.peak ? "<b>" + peakTag() + "</b>" : '<b class="' + cls + '">' + e.status + "</b>") + "</div></div>" +
       '<div class="fvbar" aria-hidden="true"><i style="left:' + at(e.low) + ";width:calc(" + at(e.high) + " - " + at(e.low) + ')"></i>' +
       '<u style="left:' + at(e.fair) + '"></u><s style="left:' + at(px) + '"></s></div>' +
+      (e.peak ? '<p class="fvhow">本益比法看起來便宜,但營收年增連 3 個月 ≥ 30%、淨值比已在自己的歷史高檔,所以不標「' + esc(e.status) + "」,改標高峰風險。</p>" : "") +
       '<p class="fvhow">' + how + "</p>" +
       (e.extreme ? '<p class="fvhow" style="color:var(--down)">⚠ 合理價與股價差距超過常理範圍,多半是景氣轉折(獲利剛開始暴增或衰退)、一次性損益或市場重新評價,這個固定公式不適用於這檔。</p>' : "") +
       '<p class="fvhow">公式固定、沒有人為調整;假設淨利率不變、評價回到自己的歷史中位數,實際上兩者都會變。回測顯示:2023–2026 被判「低估」的股票之後反而表現較差,這個合理價目前沒有預測力,只供了解估值位置。</p></div>';
@@ -719,6 +825,7 @@
     Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile(code)])
       .then(function (res) {
         d.innerHTML = stockHtml(res[0], res[1], res[2]);
+        fillBrk(d);
         starStats().then(function (S) { var n = d.querySelector("#health"); if (n) n.innerHTML = healthHtml(res[0].health, res[0].rating, S); });
         // 盤中或今日收盤後:用即時報價取代排程資料的收盤價(live.js 有載入且已設定 Worker 才會有)
         if (MR.intradayOne) MR.intradayOne(code, res[0].date).then(function (lv) {

@@ -16,7 +16,7 @@ NAMES = {
     "3037": "欣興", "3189": "景碩", "4958": "臻鼎-KY", "3653": "健策", "5274": "信驊",
     "2383": "台光電", "3105": "穩懋", "3017": "奇鋐", "6805": "富世達", "2408": "南亞科",
     "1303": "南亞", "6669": "緯穎", "3661": "世芯-KY", "6830": "汎銓", "2327": "國巨*",
-    "2308": "台達電", "6505": "台塑化", "1216": "統一", "2881": "富邦金", "2317": "鴻海",
+    "2059": "川湖", "2308": "台達電", "6505": "台塑化", "1216": "統一", "2881": "富邦金", "2317": "鴻海",
 }
 IDX = brokers.build_index(NAMES)
 # 來源網址前綴,下面每則只寫後半
@@ -92,7 +92,7 @@ class TitleTest(unittest.TestCase):
 
     def test_reaffirm_with_rating(self):
         # 5607/9776546:「重申」→ keep;評等「買進」
-        one(self, P("聯發科<u>目標價</u> 瑞銀喊7,300元 重申買進評等"), "2454", "瑞銀", 7300, "keep", None, "買進")
+        one(self, P("聯發科<u>目標價</u> 瑞銀喊7,300元 重申買進評等"), "2454", "瑞銀", 7300, None, None, "買進")   # 重申買進評等 ≠ 維持目標價
 
     def test_up_with_rating_in_quotes(self):
         # 5607/9783450:「調升…評等為「買進」目標價大升至 108 元」
@@ -168,7 +168,7 @@ class BodyTest(unittest.TestCase):
     def test_unnamed_title_upgraded_by_body(self):
         # 合成案例(非真實新聞):標題只寫「外資」,內文有同檔同金額的具名券商 → 補上券商名
         ev = P("外資喊台積電<u>目標價</u>4,000元", "高盛指出，台積電目標價為4,000元，維持「買進」評等。")
-        one(self, ev, "2330", "高盛", 4000, "keep", None, "買進")
+        one(self, ev, "2330", "高盛", 4000, None, None, "買進")   # 維持「買進」是評等,不是維持目標價
 
     def test_adr_usd_ignored(self):
         # 合成案例:美元／ADR 目標價不是台幣目標價
@@ -197,6 +197,125 @@ class LoadNamesTest(unittest.TestCase):
         self.assertEqual(names.get("2330"), "台積電")
 
 
+# ---------- T05 退件修正:非目標價數字、prev_target、維持／重申、合理性過濾 ----------
+
+class NotTargetTest(unittest.TestCase):
+    def test_eps_before_target_price(self):
+        one(self, P("大摩:川湖今年 EPS 可達140元 維持4,750元目標價"), "2059", "摩根士丹利", 4750, dir_="keep")
+
+    def test_eps_in_body_with_from_to(self):
+        t = "信驊每股純益上修12.5%到300元,大摩把目標價由12,000元上調至15,000元。"
+        one(self, P("信驊目標價上調", t), "5274", "摩根士丹利", 15000, dir_="up", prev=12000)
+        e = P("x", "高盛指出,信驊每股純益上修12.5%到300元,目標價由12,000元上調至15,000元")
+        one(self, e, "5274", "高盛", 15000, dir_="up", prev=12000)
+
+    def test_bloomberg_average_no_event(self):
+        self.assertEqual(P("第一金投信:台積電彭博平均目標價為1,800元"), [])
+        self.assertEqual(P("x", "第一金投顧指出,彭博平均目標價在1,800元,台積電還有空間"), [])
+        self.assertEqual(P("花旗:台積電市場共識目標價 1,900元"), [])
+
+    def test_year_is_not_amount(self):
+        self.assertEqual(P("高盛:國巨2026年目標價看好"), [])
+        one(self, P("高盛:國巨2026年 目標價2,100元"), "2327", "高盛", 2100)
+
+    def test_year_extra_amount_dropped(self):
+        e = P("高盛:台積電目標價喊到1,800、2026元")
+        self.assertEqual([x["target"] for x in e], [1800])
+
+
+class PrevTargetBodyTest(unittest.TestCase):
+    def test_title_move_without_prev_takes_body(self):
+        e = P("大摩調升台積電目標價至2,288元", "摩根士丹利把台積電目標價從2,088元調升至2,288元。")
+        one(self, e, "2330", "摩根士丹利", 2288, dir_="up", prev=2088)
+
+    def test_no_move_keyword_no_body_needed(self):
+        self.assertFalse(brokers.needs_body("大摩:台積電目標價2,288元", P("大摩:台積電目標價2,288元")))
+        self.assertTrue(brokers.needs_body("大摩調升台積電目標價至2,288元", P("大摩調升台積電目標價至2,288元")))
+
+
+    def test_collect_fetches_body_for_move_title(self):
+        u = BASE + "5607/21"
+        pages = {brokers.SEARCH.format(page=1): _search_html([(u, "高盛調升台積電<u>目標價</u>至2,288元", "2026-10-20")]),
+                 brokers.SEARCH.format(page=2): _search_html([]),
+                 u: _article_html("高盛把台積電目標價從2,088元調升至2,288元。")}
+        ev, _, fail, _ = brokers.collect(pages.__getitem__, NAMES, set(), 3, [], log=lambda *_: None)
+        self.assertEqual(fail, 0)
+        self.assertEqual([(e["target"], e["prev_target"], e["dir"]) for e in ev], [(2288, 2088, "up")])
+
+
+    def test_from_without_yuan_and_long_gap(self):
+        b = "給予「優於大盤」評級,目標價由2,088升至2,288元。"
+        one(self, P("大摩上調台積電目標價至2,288元", "摩根士丹利指出," + b), "2330", "摩根士丹利", 2288, dir_="up", prev=2088, rating="優於大盤")
+        b = "小摩目標價由125元更一舉狂升至法人圈天價的200元。"
+        one(self, P("小摩狂調南亞目標價至200元", b), "1303", "摩根大通", 200, dir_="up", prev=125)
+
+    def test_range_not_target(self):
+        self.assertEqual(P("x", "高盛看好台積電目標價,券商估計資本支出將升至 480–500 億美元。"), [])
+
+
+class KeepTest(unittest.TestCase):
+    def test_reaffirm_rating_only_is_not_keep(self):
+        e = P("花旗重申買進,台積電目標價2,055元")
+        one(self, e, "2330", "花旗", 2055, dir_=None)
+
+    def test_maintain_target_is_keep(self):
+        one(self, P("高盛維持台積電目標價2,055元"), "2330", "高盛", 2055, dir_="keep")
+        one(self, P("高盛重申台積電目標價2,055元"), "2330", "高盛", 2055, dir_="keep")
+
+
+class RatioTest(unittest.TestCase):
+    @staticmethod
+    def base(code, date):
+        return {"2330": 1000, "2454": None}.get(code)
+
+    def test_ratio(self):
+        self.assertAlmostEqual(brokers.ratio(self.base, "2330", "2026-01-01", 1500), 1.5)
+        self.assertIsNone(brokers.ratio(self.base, "2454", "2026-01-01", 1500))   # 查不到收盤 → 保留
+        self.assertIsNone(brokers.ratio(None, "2330", "2026-01-01", 1500))
+
+    def test_collect_drops_out_of_range(self):
+        brokers.DROPPED.clear()
+        pages = {
+            brokers.SEARCH.format(page=1): _search_html([
+                (BASE + "5607/11", "高盛 台積電<u>目標價</u>喊1,800元", "2026-10-20"),
+                (BASE + "5607/12", "高盛 台積電<u>目標價</u>喊12元", "2026-10-20"),
+                (BASE + "5607/13", "高盛 聯發科<u>目標價</u>喊12元", "2026-10-20")]),
+            brokers.SEARCH.format(page=2): _search_html([]),
+        }
+        ev, _, _, _ = brokers.collect(pages.__getitem__, NAMES, set(), 3, [], log=lambda *_: None, base_fn=self.base)
+        self.assertEqual(sorted((e["code"], e["target"]) for e in ev), [("2330", 1800), ("2454", 12)])
+        self.assertEqual([d[3] for d in brokers.DROPPED], [12])
+        self.assertEqual(brokers.DROPPED[0][1], "2330")
+
+    def test_save_adds_base(self):
+        import tempfile
+        old = (brokers.OUT_DIR, brokers.EVENTS, brokers.SCORES, brokers.SEEN)
+        d = tempfile.mkdtemp()
+        brokers.OUT_DIR = d
+        brokers.EVENTS, brokers.SCORES, brokers.SEEN = (os.path.join(d, n) for n in ("e.json", "s.json", "seen.json"))
+        orig = brokers.build_scores
+        brokers.build_scores = lambda ev: {}
+        try:
+            out = brokers.save([_ev("2026-01-05", "高盛", 1500, code="2330"), _ev("2026-01-05", "高盛", 1500, code="2454")],
+                               set(), base_fn=lambda c, dt: 1000.456 if c == "2330" else None)
+        finally:
+            brokers.build_scores = orig
+            brokers.OUT_DIR, brokers.EVENTS, brokers.SCORES, brokers.SEEN = old
+        by = {e["code"]: e for e in out}
+        self.assertEqual(by["2330"]["base"], 1000.46)
+        self.assertNotIn("base", by["2454"])
+
+    def test_check_events_flags_ratio(self):
+        evs = [_ev("2026-01-0%d" % (i + 1), b, 1000 + i * 100, code=c)
+               for c in ("2330", "2454") for i, b in enumerate(("高盛", "花旗", "大摩", "瑞銀", "麥格理"))]
+        evs[0]["target"] = 12
+        evs[0]["urls"] = [BASE + "7/7"]
+        bad = brokers.check_events(evs, NAMES, self.base)
+        self.assertTrue(any("倍" in b for b in bad), bad)
+        evs[0]["target"] = 1100
+        self.assertEqual(brokers.check_events(evs, NAMES, self.base), [])
+
+
 # ---------- T05:dir 規則 ②、重跑不重複、--check ----------
 
 def _ev(date, broker, target, code="2454", **kw):
@@ -211,6 +330,7 @@ class TestApplyDir(unittest.TestCase):
         out = brokers.apply_dir([_ev("2026-01-05", "高盛", 1000), _ev("2026-06-01", "高盛", 1200),
                                  _ev("2026-08-01", "高盛", 1200, dir="up"), _ev("2026-09-01", "高盛", 900)])
         self.assertEqual([e["dir"] for e in out], [None, "up", "keep", "down"])  # 第一筆沒有前一筆 → 維持原本
+        self.assertEqual([e["prev_target"] for e in out], [None, 1000, 1200, 1200])  # ② 也填 prev_target
 
     def test_rule1_not_overwritten(self):
         # 新聞寫明前次 1500(① 得 up),我們前一筆是 2000,若用 ② 會變 down;① 優先
@@ -263,7 +383,7 @@ class TestCollect(unittest.TestCase):
         self.u1, self.u2, self.u3 = BASE + "5607/1", BASE + "5607/2", BASE + "5607/3"
         self.pages = {
             brokers.SEARCH.format(page=1): _search_html([
-                (self.u1, "高盛 調升聯發科<u>目標價</u>至1,800元", "2026-10-20"),
+                (self.u1, "高盛 聯發科<u>目標價</u>喊1,800元", "2026-10-20"),
                 (self.u2, "法人看好聯發科 調升<u>目標價</u>", "2026-10-19"),
                 (self.u3, "今天天氣很好", "2026-10-18")]),
             brokers.SEARCH.format(page=2): _search_html([]),

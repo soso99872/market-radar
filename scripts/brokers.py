@@ -80,21 +80,30 @@ _NAME_SUFFIX = re.compile(r"(-KY|-創|-DR|\*)+$")
 
 _UP_RE = re.compile(r"調升|上修|調高|上調|大升|同步升|升至|升到|升目標|升[^，。；\s]{0,6}?目標價|提高目標價")
 _DOWN_RE = re.compile(r"調降|下修|調低|下調|降至|降到|降目標|降[^，。；\s]{0,6}?目標價")
-_KEEP_RE = re.compile(r"維持|重申")
+# ③ 的維持／重申只在後面接目標價時才算(「重申買進」只是評等)
+_KEEP_RE = re.compile(r"(?:維持|重申)(?:[^，,。；;、\s]|(?<=\d),(?=\d)){0,10}?(?:目標價|目標股價)|目標價(?:維持|不變)")
+# 標題寫了調升／調降卻沒給前次目標價 → 內文找「從 X 元…至 Y 元」補 prev_target
+_MOVE_RE = re.compile(r"調(?!整|查)|上修|下修|升至|降至|升到|降到|大升|提高")
 
 _RATINGS = "強力買進|買進|買入|增持|優於大盤|跑贏大盤|超越大盤|加碼|中立|中性|持有|減碼|減持|賣出|劣於大盤|落後大盤|表現遜於大盤"
 _RATING_RE = re.compile(r"[「『](" + _RATINGS + r")[」』]|(" + _RATINGS + r")(?=評等)|(?:評等|建議|給予|維持|予以)(?:至|為|於|調升至|調降至)?[「『]?(" + _RATINGS + ")")
 
 _NUM = r"\d[\d,]*(?:\.\d+)?"
-_BAD_UNIT = r"(?![\d,.]*[美港日歐%％倍億萬月日年檔家張季點成度xX])"
+_BAD_UNIT = r"(?!\d)(?![.,]\d)(?![\d,.]*[美港日歐%％倍億萬月日年檔家張季點成度xX])(?![–—~～-]\d)"   # 後面接單位或「480–500」這種範圍都不是目標價
 # 「從 X 元…至 Y 元」「由 X 元直衝 Y 元」「從 500 元升到 725 元」
-_FROM_TO = re.compile(r"[從由]\s*(" + _NUM + r")\s*元\s*([^\d，。；、]{0,8}?)\s*(" + _NUM + r")\s*元")
+_FROM_TO = re.compile(r"[從由]\s*(" + _NUM + r")\s*元?\s*([^\d，。；、]{0,14}?)\s*(" + _NUM + r")\s*元")
 # 金額觸發:強觸發可省略「元」;弱觸發一定要有「元」
 _STRONG = r"(?:目標價維持|目標價為|目標價|目標股價|調升至|上調至|調高至|上修至|調降至|下調至|下修至|提高至|升至|升到|降至|降到|喊到|喊|上看)"
 _WEAK = r"(?:看到|看|為|至|到|達)"
 _AMT_STRONG = re.compile(_STRONG + r"\s*(" + _NUM + r")" + _BAD_UNIT + r"(元)?((?:、" + _NUM + r"元?)*)")
 _AMT_WEAK = re.compile(_WEAK + r"\s*(" + _NUM + r")\s*元((?:、" + _NUM + r"元?)*)")
+# 「維持4,750元目標價」這種金額在前、目標價在後的寫法
+_AMT_POST = re.compile(r"(" + _NUM + r")\s*元\s*(?:的)?目標(?:股)?價")
 _TP_RE = re.compile(r"目標價|目標股價")
+# 非目標價的金額:前 15 字(最近一個「元」之後)有獲利類字眼;彭博／平均／共識的目標價;年份
+_EPS_RE = re.compile(r"EPS|每股純益|每股盈餘|獲利|營收", re.I)
+_CONSENSUS_RE = re.compile(r"彭博|平均|共識")
+_YEAR_RE = re.compile(r"(?:19|20)\d\d")
 _FX_RE = re.compile(r"人民幣|美元|美金|日圓|港幣|ADR")
 
 
@@ -232,12 +241,30 @@ def _foreign(clause, pos):
     return bool(_FX_RE.search(head))
 
 
+def _not_target(clause, start, num_at, num, yuan):
+    """這個金額不是目標價(EPS 等獲利金額、彭博／平均／共識目標價、年份)就回傳 True。
+    start = 金額（含觸發詞）在子句的起點;num_at = 數字本身的起點;yuan = 數字後面有沒有「元」。
+    EPS 類字眼只看數字前 15 字,且只看最近一個「元」或「目標價」之後(前面的字眼屬於別的金額)。"""
+    head = clause[max(0, num_at - 15):num_at]
+    for cut in ("元", "目標價", "目標股價"):
+        head = head[head.rfind(cut) + 1:] if cut in head else head
+    if _EPS_RE.search(head):
+        return True
+    if _CONSENSUS_RE.search(clause[max(0, start - 8):start + 6]):
+        return True
+    if not yuan and _YEAR_RE.fullmatch(num):
+        return True
+    return False
+
+
 def _amounts(clause, carry_tp):
     """抽出子句裡的目標價 [(位置, 目標價, 前次目標價)]。子句沒有「目標價」且前面也沒有時不抽。"""
     if not (_TP_RE.search(clause) or carry_tp):
         return []
     found, used = [], []
     for m in _FROM_TO.finditer(clause):
+        if _not_target(clause, m.start(), m.start(3), m.group(3), True):
+            continue
         found.append((m.start(), _num(m.group(3)), _num(m.group(1))))
         used.append((m.start(), m.end()))
 
@@ -249,19 +276,32 @@ def _amounts(clause, carry_tp):
             continue
         if _foreign(clause, m.start()):
             continue
+        if _not_target(clause, m.start(), m.start(1), m.group(1), bool(m.group(2))):
+            continue
         used.append((m.start(), m.end()))
         found.append((m.start(), _num(m.group(1)), None))
         for extra in re.findall(_NUM, m.group(3) or ""):
-            found.append((m.start(), _num(extra), None))
+            if not _YEAR_RE.fullmatch(extra):
+                found.append((m.start(), _num(extra), None))
     for m in _AMT_WEAK.finditer(clause):
         if not free(m.start(), m.end()):
             continue
         if _foreign(clause, m.start()):
             continue
+        if _not_target(clause, m.start(), m.start(1), m.group(1), True):
+            continue
         used.append((m.start(), m.end()))
         found.append((m.start(), _num(m.group(1)), None))
         for extra in re.findall(_NUM, m.group(2) or ""):
-            found.append((m.start(), _num(extra), None))
+            if not _YEAR_RE.fullmatch(extra):
+                found.append((m.start(), _num(extra), None))
+    for m in _AMT_POST.finditer(clause):
+        if not free(m.start(), m.end()) or _foreign(clause, m.start()):
+            continue
+        if _not_target(clause, m.start(), m.start(1), m.group(1), True):
+            continue
+        used.append((m.start(), m.end()))
+        found.append((m.start(), _num(m.group(1)), None))
     found.sort(key=lambda x: x[0])
     return [(p, t, pv) for p, t, pv in found if t > 0]
 
@@ -335,14 +375,20 @@ def _pair(stocks, brokers, amts):
     return []
 
 
+def needs_body(title, events):
+    """標題解析的結果還要不要抓內文:沒事件、有未具名、或標題寫調升／調降卻沒有前次目標價。"""
+    if not events or any(e["broker"] == UNNAMED for e in events):
+        return True
+    return bool(_MOVE_RE.search(_clean(title))) and any(e["prev_target"] is None for e in events)
+
+
 def parse(title, body, names):
-    """標題優先;標題抽不到券商或金額時再用內文補。回傳 [{code, broker, target, rating, dir, prev_target}]。"""
+    """標題優先;標題抽不到券商或金額、或缺前次目標價時再用內文補。
+    回傳 [{code, broker, target, rating, dir, prev_target}]。"""
     idx = names if isinstance(names, _Index) else build_index(names)
     title = _clean(title).replace("\n", " ")
     t_events = _analyze(title, idx)
-    if t_events and all(e["broker"] != UNNAMED for e in t_events):
-        return t_events
-    if not body:
+    if not body or not needs_body(title, t_events):
         return t_events
     t_stocks = list(dict.fromkeys(v for _, _, k, v in idx.find(title) if k == "stock"))
     b_events = _analyze(_clean(body), idx, title=title, fallback_stocks=t_stocks)
@@ -350,15 +396,17 @@ def parse(title, body, names):
         b_events = [e for e in b_events if e["code"] in t_stocks]
     result = []
     for e in t_events:
-        if e["broker"] == UNNAMED:      # 內文有同檔同金額的具名券商就補上
-            for b in b_events:
-                if b["code"] == e["code"] and b["target"] == e["target"] and b["broker"] != UNNAMED:
-                    e = dict(e, broker=b["broker"], rating=e["rating"] or b["rating"],
-                             dir=e["dir"] or b["dir"], prev_target=e["prev_target"] or b["prev_target"])
-                    break
+        for b in b_events:      # 內文有同檔同金額的事件:補具名券商、前次目標價
+            if b["code"] == e["code"] and b["target"] == e["target"]:
+                prev = e["prev_target"] if e["prev_target"] is not None else b["prev_target"]
+                broker = b["broker"] if e["broker"] == UNNAMED and b["broker"] != UNNAMED else e["broker"]
+                e = dict(e, broker=broker, rating=e["rating"] or b["rating"], prev_target=prev,
+                         dir=_direction(prev, e["target"]) if prev is not None else e["dir"] or b["dir"])
+                break
         result.append(e)
-    have = {e["code"] for e in result}
-    result += [b for b in b_events if b["code"] not in have]
+    if not t_events or any(e["broker"] == UNNAMED for e in t_events):
+        have = {e["code"] for e in result}
+        result += [b for b in b_events if b["code"] not in have]
     return result
 
 
@@ -430,11 +478,41 @@ def apply_dir(events):
             if cands:
                 p = cands[-1]
                 e["dir"] = "up" if e["target"] > p["target"] else "down" if e["target"] < p["target"] else "keep"
+                e["prev_target"] = p["target"]
         prevs.append(e)
     return evs
 
 
-def collect(fetch_fn, names, seen, pages, existing, log=print):
+RATIO_MIN, RATIO_MAX = 0.3, 5   # 目標價 ÷ 發布日前一交易日收盤 的合理範圍
+DROPPED = []                    # 本次執行被合理性過濾丟掉的 (網址, 代號, 券商, 目標價, 比例)
+
+
+def make_base_fn():
+    """回傳 base_fn(代號, 日期) → 發布日前一交易日收盤(查不到回 None);讀 data/history,逐日快取。"""
+    import bisect
+    import history
+    dates = history.all_dates()
+    cache = {}
+
+    def base_fn(code, date):
+        i = bisect.bisect_left(dates, date) - 1
+        if i < 0:
+            return None
+        d = dates[i]
+        if d not in cache:
+            cache[d] = history.load_day(d).get("s") or {}
+        row = cache[d].get(code)
+        return row[4] if row and len(row) > 4 and row[4] else None
+    return base_fn
+
+
+def ratio(base_fn, code, date, target):
+    """目標價 ÷ 前一交易日收盤;沒有 base_fn 或查不到收盤回 None(保留)。"""
+    base = base_fn(code, date) if base_fn else None
+    return target / base if base else None
+
+
+def collect(fetch_fn, names, seen, pages, existing, log=print, base_fn=None):
     """抓搜尋頁 → 解析 → (事件 list, seen set, 單篇失敗數, 搜尋頁是否失敗)。fetch_fn(url) → 文字。"""
     idx = build_index(names)
     seen = set(seen)
@@ -458,7 +536,7 @@ def collect(fetch_fn, names, seen, pages, existing, log=print):
                 continue
             try:
                 found = parse(it["title"], None, idx)
-                if not found or any(e["broker"] == UNNAMED for e in found):
+                if needs_body(it["title"], found):
                     body = parse_article(fetch_fn(it["url"]))
                     found = parse(it["title"], body, idx)
             except Exception as e:  # noqa: BLE001
@@ -467,6 +545,11 @@ def collect(fetch_fn, names, seen, pages, existing, log=print):
                 continue
             seen.add(it["url"])
             for f in found:
+                r = ratio(base_fn, f["code"], it["date"], f["target"])
+                if r is not None and not RATIO_MIN <= r <= RATIO_MAX:
+                    DROPPED.append((it["url"], f["code"], f["broker"], f["target"], round(r, 3)))
+                    log("合理性過濾丟棄:%s %s %s %s(目標價/收盤 %.2f)" % (it["url"], f["code"], f["broker"], f["target"], r))
+                    continue
                 events.append({"date": it["date"], "code": f["code"], "broker": f["broker"], "target": f["target"],
                                "rating": f["rating"], "prev_target": f["prev_target"], "dir": f["dir"],
                                "urls": [it["url"]], "title": re.sub(r"<[^>]+>", "", it["title"])})
@@ -504,11 +587,17 @@ def build_scores(events):
     return broker_stats.scores(named, closes, dates, taiex)
 
 
-def save(events, seen, now=None):
-    """合併 → 補 dir → 寫 events.json、seen.json、scores.json;回傳存檔的事件。"""
+def save(events, seen, now=None, base_fn=None):
+    """合併 → 補 dir → 加 base → 寫 events.json、seen.json、scores.json;回傳存檔的事件。"""
     import broker_stats
     events = apply_dir(broker_stats.merge(events))
     events.sort(key=lambda e: (e["date"], e["broker"], e["code"]))
+    for e in events:    # base = 發布日前一交易日收盤(同 broker_stats 的基準價);查不到就不放
+        b = base_fn(e["code"], e["date"]) if base_fn else None
+        if b:
+            e["base"] = round(b, 2)
+        else:
+            e.pop("base", None)
     _dump(EVENTS, events)
     _dump(SEEN, sorted(seen))
     now = now or datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -516,7 +605,7 @@ def save(events, seen, now=None):
     return events
 
 
-def check_events(events, names):
+def check_events(events, names, base_fn=None):
     """AC-B2 檢查,回傳問題清單(空 = 通過)。"""
     import broker_stats
     bad = []
@@ -537,6 +626,9 @@ def check_events(events, names):
         us = e.get("urls")
         if not isinstance(us, list) or not all(isinstance(u, str) and urllib.parse.urlparse(u).hostname == "money.udn.com" for u in us):
             bad.append("%s:urls 不是 money.udn.com 網址 list" % tag)
+        r = ratio(base_fn, e.get("code"), e.get("date") or "", t) if isinstance(t, (int, float)) and t > 0 else None
+        if r is not None and not RATIO_MIN <= r <= RATIO_MAX:
+            bad.append("%s:目標價 %s 是前一交易日收盤的 %.2f 倍(合理範圍 %s～%s)" % (tag, t, r, RATIO_MIN, RATIO_MAX))
     if not bad:
         if len(broker_stats.merge(events)) != len(events):
             bad.append("有同券商＋股票＋目標價在 7 天內沒合併的事件")
@@ -554,16 +646,18 @@ def main(argv=None):
     a = ap.parse_args(argv)
     names = load_names()
     if a.check:
-        bad = check_events(_load(EVENTS, None), names)
+        bad = check_events(_load(EVENTS, None), names, make_base_fn())
         for b in bad[:50]:
             print("X", b)
         print("檢查%s:%d 個問題" % ("未通過" if bad else "通過", len(bad)))
         return 1 if bad else 0
+    base_fn = make_base_fn()
     existing = _load(EVENTS, [])
     seen = set(_load(SEEN, []))
-    events, seen, fail, page_fail = collect(fetch, names, seen, MAX_PAGES if a.backfill else DEFAULT_PAGES, existing)
-    saved = save(events, seen)
-    print("事件 %d(原 %d),單篇失敗 %d,已處理網址 %d" % (len(saved), len(existing), fail, len(seen)))
+    events, seen, fail, page_fail = collect(fetch, names, seen, MAX_PAGES if a.backfill else DEFAULT_PAGES, existing,
+                                         base_fn=base_fn)
+    saved = save(events, seen, base_fn=base_fn)
+    print("事件 %d(原 %d),單篇失敗 %d,已處理網址 %d,合理性過濾丟棄 %d" % (len(saved), len(existing), fail, len(seen), len(DROPPED)))
     return 1 if page_fail else 0
 
 

@@ -922,6 +922,8 @@ def fair_all(rp, close, last):
             if k.get("tgt"):
                 e["tgt"] = {"mean": k["tgt"], "lo": k.get("tgt_lo"), "hi": k.get("tgt_hi"),
                             "up": _f((k["tgt"] / price - 1) * 100, 1)}
+                if k.get("n1"):
+                    e["tgt"]["n1"] = k["n1"]   # EPS 預估家數(沒有 fwd 的股票也要顯示)
                 if k.get("n_tgt"):
                     e["tgt"]["n_tgt"] = k["n_tgt"]
                 if k.get("at"):

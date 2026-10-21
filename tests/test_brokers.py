@@ -312,6 +312,22 @@ class TestCollect(unittest.TestCase):
         ev, seen, fail, pf = self.run_once([], set())
         self.assertTrue(pf)
 
+    def test_404_after_last_page_is_end(self):
+        import urllib.error
+        def fake(url):
+            if url == brokers.SEARCH.format(page=2):
+                raise urllib.error.HTTPError(url, 404, "Not Found", None, None)
+            return self.fake(url)
+        ev, seen, fail, pf = brokers.collect(fake, NAMES, set(), 3, [], log=lambda *_: None)
+        self.assertFalse(pf)
+        self.assertEqual(len(seen), 3)
+
+    def test_404_on_first_page_is_failure(self):
+        import urllib.error
+        def fake(url):
+            raise urllib.error.HTTPError(url, 404, "Not Found", None, None)
+        self.assertTrue(brokers.collect(fake, NAMES, set(), 3, [], log=lambda *_: None)[3])
+
     def test_parse_search_ignores_sidebar(self):
         self.assertEqual(len(brokers.parse_search(self.pages[brokers.SEARCH.format(page=1)])), 3)
 

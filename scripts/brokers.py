@@ -24,6 +24,7 @@ import os
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -442,6 +443,11 @@ def collect(fetch_fn, names, seen, pages, existing, log=print):
     for page in range(1, pages + 1):
         try:
             items = parse_search(fetch_fn(SEARCH.format(page=page)))
+        except urllib.error.HTTPError as e:
+            if e.code == 404 and page > 1:   # 超過最後一頁,經濟日報回 404
+                break
+            log("搜尋頁 %d 失敗:%s" % (page, e))
+            return events, seen, fail, True
         except Exception as e:  # noqa: BLE001
             log("搜尋頁 %d 失敗:%s" % (page, e))
             return events, seen, fail, True

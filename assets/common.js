@@ -369,31 +369,38 @@
     });
     return SCORES_P;
   }
-  // 回傳每個項目 [標籤, 粗體百分比或 null, 後綴];由 fillBrk 用 createElement 組成,不用 innerHTML
+  // 回傳 [有百分比的項目…] 與一句「紀錄不足」;由 fillBrk 用 createElement 組成,不用 innerHTML
   function brkRecord(sc, broker) {
-    var s = sc.scores[broker], parts = [];
+    var s = sc.scores[broker], ok = [], lack = [];
     if (!s) return "這家券商的紀錄不足(0 筆)";
-    function item(label, o) {
-      if (!o) return null;
-      return o.rate == null ? [label + " 紀錄不足(" + o.n + " 筆)", null, ""] : [label + " ", Math.round(o.rate * 100) + "%", "(" + o.n + " 筆)"];
-    }
     if ([s.hit6, s.hit12, s.up3, s.down3].every(function (o) { return !o || o.rate == null; })) return "這家券商的紀錄不足(" + (s.n || 0) + " 筆)";
-    [item("6 個月內達標率", s.hit6), item("12 個月內達標率", s.hit12), item("調升後 3 個月跑贏大盤", s.up3), item("調降後 3 個月落後大盤", s.down3)].forEach(function (t) { if (t) parts.push(t); });
-    if (s.premium != null) parts.push(["平均喊價幅度 ", MR.sign(s.premium * 100, 0) + "%", ""]);
-    return parts;
+    [["6 月達標", "6 月達標率", s.hit6], ["12 月達標", "12 月達標率", s.hit12], ["調升後贏大盤", "調升後贏大盤", s.up3], ["調降後落後", "調降後落後大盤", s.down3]].forEach(function (a) {
+      var o = a[2];
+      if (!o) return;
+      if (o.rate == null) lack.push(a[0]); else ok.push([a[1] + " ", Math.round(o.rate * 100) + "%", "(" + o.n + " 筆)"]);
+    });
+    if (lack.length) ok.push([lack.join("、").replace("6 月達標、12 月達標", "6／12 月達標") + ":紀錄不足", null, ""]);
+    if (s.premium != null) ok.push(["平均喊價 ", MR.sign(s.premium * 100, 0) + "%", ""]);
+    return ok;
+  }
+  // 日期:跟面板資料日同年顯示 M/D,不同年顯示 YYYY/M/D
+  function brkDate(iso, doc) {
+    var md = iso.slice(5).replace(/(^|-)0/g, "$1").replace("-", "/");
+    return iso.slice(0, 4) === String(doc.date).slice(0, 4) ? md : iso.slice(0, 4) + "/" + md;
   }
   function brkRow(b, doc, withRec, extra) {
     var rows = doc.rows, px = doc.summary.close, base = null, hit = null, i;
-    for (i = 0; i < rows.length; i++) if (rows[i][0] < b.date) base = rows[i][4];
+    // 基準價優先用事件的 base(發布日前一交易日收盤),沒有才用面板 120 日收盤找,都沒有就不算
+    if (b.base > 0) base = b.base;
+    else for (i = 0; i < rows.length; i++) if (rows[i][0] < b.date) base = rows[i][4];
     var prem = base > 0 ? b.target / base - 1 : null;
     var status;
     if (prem != null && prem <= 0) status = "目標價不高於當時股價";
     else {
       if (prem != null) for (i = 0; i < rows.length; i++) if (rows[i][0] >= b.date && rows[i][4] >= b.target) { hit = rows[i][0]; break; }
-      status = hit ? "已達標(" + MR.md(hit).replace(/(^|\/)0/g, "$1") + ")" : b.target > px ? "距目標 " + MR.sign((b.target / px - 1) * 100, 1) + "%" : "現價已高於目標價";
+      status = hit ? "已達標" + (b.date < rows[0][0] ? "" : "(" + brkDate(hit, doc) + ")") : b.target > px ? "距目標 " + MR.sign((b.target / px - 1) * 100, 1) + "%" : "現價已高於目標價";
     }
-    var md = b.date.slice(5).replace(/(^|-)0/g, "$1").replace("-", "/");
-    var dt = b.date.slice(0, 4) === String(doc.date).slice(0, 4) ? md : b.date.slice(0, 4) + "/" + md;
+    var dt = brkDate(b.date, doc);
     var dirTxt = b.dir === "up" ? "調升" : b.dir === "down" ? "調降" : b.dir === "keep" ? "維持" : "";
     if (dirTxt && b.prev_target > 0 && b.dir !== "keep") dirTxt += "(前次 " + tpFmt(b.prev_target) + ")";
     var urls = (b.urls || []).filter(function (u) { return /^https:\/\/money\.udn\.com\//.test(u); });
@@ -417,10 +424,10 @@
     if (!evs.length) return hasTgt ? '<p class="fvhow tp-nobrk">近一年沒有收到這檔的券商目標價新聞(只收錄經濟日報有報導的)</p>' : "";
     var help = MR.help("brk", "逐家券商目標價與券商紀錄怎麼看",
       "<p>列表是經濟日報報導的券商目標價,用規則式程式從新聞標題與內文解析,<b>可能漏抓或誤抓</b>(例如一篇提到多家券商、金額對不到該檔);只收約一年內、有被報導的,調降常沒被報導,樣本偏樂觀。畫面只放事實與「新聞」連結,請點進新聞核對。同一家券商只列最新一筆,其餘收在「看全部」。</p>" +
-      "<p><b>喊價幅度</b> = 目標價 ÷ 發布日前一個交易日收盤價 − 1。「已達標」= 發布後收盤價曾經 ≥ 目標價;喊價幅度 ≤ 0(目標價不高於當時股價)不判斷達標。發布日早於面板股價資料範圍(約近半年)的,喊價幅度顯示「—」。</p>" +
+      "<p><b>喊價幅度</b> = 目標價 ÷ 發布日前一個交易日收盤價 − 1。「已達標」= 發布後收盤價曾經 ≥ 目標價;喊價幅度 ≤ 0(目標價不高於當時股價)不判斷達標。優先用資料裡記錄的基準價;沒有時改用面板近 120 個交易日的收盤價,發布日早於這個範圍又沒有基準價的,喊價幅度顯示「—」,「已達標」也只看面板這段期間內是否收盤達標(發布日早於這段期間的不標達標日期)。</p>" +
       "<p>每列下方的<b>券商紀錄</b>是這家券商在全市場所有個股的歷史合算,不限這一檔:</p>" +
       "<ul><li><b>6／12 個月內達標率</b>:發布後 126／252 個交易日內,任一日收盤 ≥ 目標價的比例;只算喊價幅度 &gt; 0 且已滿期的紀錄,未滿期的不論是否已達標都不算。</li>" +
-      "<li><b>調升後 3 個月跑贏大盤／調降後 3 個月落後大盤</b>:發布後 63 個交易日,個股報酬與同期加權指數比較。</li>" +
+      "<li><b>調升後贏大盤(跑贏大盤)／調降後落後大盤</b>(3 個月):發布後 63 個交易日,個股報酬與同期加權指數比較。</li>" +
       "<li><b>平均喊價幅度</b>:該券商所有紀錄(含目標價低於當時股價的)的平均。</li>" +
       "<li><b>無效紀錄</b>:股價用未還原價格,計算期間內個股單日漲跌超過 ±11%(多半是除權、減資、面額變更)的紀錄不算進達標率與方向。</li>" +
       "<li>任一項算進去的筆數不到 10 筆,該項寫「紀錄不足」,不給百分比。「未具名」(只寫外資、法人)的列不算紀錄。</li></ul>" +
@@ -446,7 +453,7 @@
         if (typeof r === "string") { n.textContent = r; return; }
         r.forEach(function (it) {
           var sp = document.createElement("span");
-          sp.className = "bk-it";
+          sp.className = it[1] || it[0].indexOf("紀錄不足") < 0 ? "bk-it" : "bk-it bk-lack";
           sp.appendChild(document.createTextNode(it[0]));
           if (it[1]) { var b = document.createElement("b"); b.textContent = it[1]; sp.appendChild(b); }
           if (it[2]) sp.appendChild(document.createTextNode(it[2]));

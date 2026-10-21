@@ -352,7 +352,7 @@ table.tk.lg.st { min-width: 0; }
 
   // (a) 基本估值觸發高峰風險時顯示的標籤(前瞻估值有值時附在前瞻那行後面,不取代前瞻評價)
   function peakTag() {
-    return ' <span class="tag2 warn" title="基本估值(過去四季 EPS)判定高峰風險:本益比法看便宜,但營收年增連 3 月 ≥ 30% 且淨值比在歷史高檔;回測 12 個月內跌 30% 以上的機率約 1/3,沒有證據能提升報酬">基本估值:高峰風險</span>';
+    return ' <span class="tag2 warn">基本估值:高峰風險</span>' + MR.peakHelp();
   }
   function fvLine(x) {
     var e = x.fv, w = e && e.fwd;
@@ -360,7 +360,7 @@ table.tk.lg.st { min-width: 0; }
       '<span class="st3 ' + (w.status === "低估" ? "lo" : w.status === "高估" ? "hi" : "") + '">前瞻' + w.status + "</span>" + (e.peak ? peakTag() : "") + "</p>";
     if (!e) return '<p class="fvl">估值:資料不足</p>';
     return '<p class="fvl">無分析師預估;依過去四季 EPS 的合理價 <b>' + e.fair + "</b>(" + e.low + "~" + e.high + ")· 空間 <b class=\"" + dir(e.up) + "\">" + sign(e.up, 0) + "%</b>" + (e.extreme ? '(⚠ 偏離太大,公式不適用)' : "") + " · " +
-      (e.peak ? '<span class="tag2 warn" title="本益比法看便宜,但營收年增連 3 月 ≥ 30% 且淨值比在歷史高檔;回測 12 個月內跌 30% 以上的機率約 1/3,沒有證據能提升報酬">高峰風險</span>'
+      (e.peak ? '<span class="tag2 warn">高峰風險</span>' + MR.peakHelp()
         : '<span class="st3 ' + (e.status === "低估" ? "lo" : e.status === "高估" ? "hi" : "") + '">' + e.status + "</span>") + "</p>";
   }
 

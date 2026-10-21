@@ -309,6 +309,94 @@
       (price <= mos ? ",<b>已在安全邊際內</b>" : ",要再跌 " + Math.round((1 - mos / price) * 100) + "% 才到") + ")。<span class=\"evb\">僅供參考</span></p>";
   }
 
+  // ---- 分析師目標價區塊(Yahoo 匯總):兩格大數字、扇形圖、匯總表。扇形圖只是把今天的價格連到目標價範圍,不是走勢預測 ----
+  function tpFmt(v) {
+    if (v == null || isNaN(v)) return "—";
+    return v >= 1000 ? Math.round(v).toLocaleString("en-US") : v >= 100 ? v.toFixed(1) : v.toFixed(2);
+  }
+  function tpChart(rows, t) {
+    var n = rows.length;
+    if (n < 2) return "";
+    var W = 380, H = 214, X0 = 6, XT = 170, XR = 286, YT = 24, YB = 200;
+    var cl = rows.map(function (r) { return r[4]; });
+    var hi = Math.max(Math.max.apply(null, cl), t.hi), lo = Math.min(Math.min.apply(null, cl), t.lo);
+    var pad = (hi - lo) * 0.06 || 1;
+    hi += pad; lo = Math.max(0, lo - pad);
+    function y(v) { return (YT + (hi - v) / (hi - lo) * (YB - YT)).toFixed(1); }
+    function x(i) { return (X0 + i / (n - 1) * (XT - X0)).toFixed(1); }
+    var o = [];
+    [hi, (hi + lo) / 2, lo].forEach(function (g) {
+      o.push('<line x1="' + X0 + '" x2="' + XR + '" y1="' + y(g) + '" y2="' + y(g) + '" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+        '<text x="' + X0 + '" y="' + (+y(g) - 3).toFixed(1) + '" class="tp-ax">' + tpFmt(g) + "</text>");
+    });
+    var last = cl[n - 1], ys = y(last);
+    o.push('<polygon points="' + XT + "," + ys + " " + XR + "," + y(t.hi) + " " + XR + "," + y(t.lo) + '" fill="color-mix(in srgb, var(--accent) 16%, transparent)"/>');
+    o.push('<polyline points="' + cl.map(function (v, i) { return x(i) + "," + y(v); }).join(" ") + '" fill="none" stroke="var(--text)" stroke-width="1.4" vector-effect="non-scaling-stroke"/>');
+    [t.hi, t.lo].forEach(function (v) {
+      o.push('<line x1="' + XT + '" x2="' + XR + '" y1="' + ys + '" y2="' + y(v) + '" stroke="var(--accent)" stroke-opacity=".6" stroke-width="1" vector-effect="non-scaling-stroke"/>');
+    });
+    o.push('<line x1="' + XT + '" x2="' + XR + '" y1="' + ys + '" y2="' + y(t.mean) + '" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"/>');
+    o.push('<line x1="' + XT + '" x2="' + XT + '" y1="' + (YT - 6) + '" y2="' + YB + '" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>');
+    o.push('<circle cx="' + XT + '" cy="' + ys + '" r="3" fill="var(--text)"/>');
+    o.push('<text x="' + (XT - 4) + '" y="12" text-anchor="end" class="tp-ax">今天</text><text x="' + (XT + 4) + '" y="12" class="tp-ax">未來 12 個月</text>');
+    // 右端文字:三個價位靠得近時往下推開,避免疊字
+    var L = [[t.hi, "最高 ", "var(--muted)"], [t.mean, "平均 ", "var(--accent)"], [t.lo, "最低 ", "var(--muted)"]].map(function (a) {
+      return { yy: +y(a[0]), txt: a[1] + tpFmt(a[0]), col: a[2] };
+    });
+    for (var i = 1; i < 3; i++) if (L[i].yy < L[i - 1].yy + 15) L[i].yy = L[i - 1].yy + 15;
+    if (L[2].yy > YB + 8) { L[2].yy = YB + 8; for (i = 1; i >= 0; i--) if (L[i].yy > L[i + 1].yy - 15) L[i].yy = L[i + 1].yy - 15; }
+    L.forEach(function (a) {
+      o.push('<text x="' + (XR + 4) + '" y="' + (a.yy + 4).toFixed(1) + '" class="tp-end" fill="' + a.col + '">' + esc(a.txt) + "</text>");
+    });
+    return '<div class="kchart tp-chart"><div class="klegend"><span><i style="background:var(--text)"></i>股價</span>' +
+      '<span><i style="background:var(--accent)"></i>目標價</span></div>' +
+      '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="近 ' + n + " 日收盤價與分析師目標價範圍:最高 " + tpFmt(t.hi) + "、平均 " + tpFmt(t.mean) + "、最低 " + tpFmt(t.lo) + '">' +
+      o.join("") + '</svg><div class="cap"><span>' + MR.md(rows[0][0]) + "</span><span>近 " + n + " 個交易日</span><span>" + MR.md(rows[n - 1][0]) + "</span></div></div>";
+  }
+  function tpHtml(doc) {
+    var ex = doc.extra || {}, fv = ex.fv, t = fv && fv.tgt, px = doc.summary.close;
+    var brk = ex.brk && (Array.isArray(ex.brk) ? ex.brk.length : Object.keys(ex.brk).length) ? '<div class="tp-brk"></div>' : "";
+    if (t && !(t.mean > 0 && px > 0)) t = null;
+    var help = MR.help("tp", "分析師目標價怎麼看",
+      "<p>上面是 Yahoo Finance 彙整的分析師目標價:<b>平均</b>、<b>最高</b>、<b>最低</b>,上漲空間 = 目標價 ÷ 面板資料日收盤價 − 1。</p>" +
+      "<p>圖的左半是近 120 個交易日的收盤價,右半是「未來 12 個月」:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。淡色區塊是目標價的範圍,虛線是平均。</p>" +
+      "<p>最高除以最低超過 1.8 倍時,表示分析師之間看法差很多,平均值的參考性較低。</p>" +
+      "<p>資料來源:Yahoo Finance 匯總(一天更新一次);目標價共識從 2026-10 才開始存快照,準不準還沒辦法回測,僅供參考。</p>");
+    var head = '<h4>分析師目標價<span class="evb">僅供參考</span>' + help + "</h4>";
+    if (!t) {
+      return '<div class="fvbox tp">' + head + (brk || '<p class="flat tp-none">這檔沒有分析師目標價資料</p>') + "</div>";
+    }
+    var hi = t.hi || t.mean, lo = t.lo || t.mean;
+    var up = function (v) { return (v / px - 1) * 100; };
+    var mu = t.up != null ? t.up : up(t.mean);
+    var ntgt = t.n_tgt != null ? t.n_tgt : fv.n_tgt;
+    var n1 = fv.fwd && fv.fwd.n;
+    var cnt = ntgt != null ? "目標價家數:" + Math.round(ntgt) + " 家" : n1 != null ? "EPS 預估家數:" + Math.round(n1) + " 家" : "";
+    var div = t.hi && t.lo && t.hi / t.lo > 1.8 ? '<span class="tag2 warn">分析師看法分歧大</span>' : "";
+    function row(label, v) {
+      var u = up(v);
+      return "<tr><th>" + label + '</th><td class="num">' + tpFmt(v) + '</td><td class="num ' + MR.dir(u) + '">' + MR.sign(u, 1) + "%</td></tr>";
+    }
+    return '<div class="fvbox tp">' + head +
+      '<div class="tp-big"><div><span>平均目標價</span><b class="tp-mean">' + tpFmt(t.mean) + "</b></div>" +
+      '<div><span>上漲空間</span><b class="' + MR.dir(mu) + '">' + MR.sign(mu, 1) + "%</b></div></div>" +
+      tpChart(doc.rows, { hi: hi, mean: t.mean, lo: lo }) + (div ? '<div class="tp-div">' + div + "</div>" : "") +
+      '<table class="tp-tbl srt-ok"><thead><tr><th>項目</th><th>目標價</th><th>上漲空間</th></tr></thead><tbody>' +
+      row("最高", hi) + row("平均", t.mean) + row("最低", lo) + "</tbody></table>" +
+      '<p class="fvhow tp-src">' + (cnt ? cnt + "<br>" : "") + "資料:Yahoo Finance 匯總" + (t.at ? ",<span>" + esc(String(t.at).slice(0, 10)) + "</span> 更新" : '<span class="tp-at"></span>') + "。</p>" +
+      brk + "</div>";
+  }
+  var estP;
+  function tpFillDate(d, code) {
+    var el = d.querySelector(".tp-at");
+    if (!el) return;
+    if (!estP) estP = MR.json("data/estimates/latest.json").catch(function () { estP = null; return null; });
+    estP.then(function (E) {
+      var r = E && E.s && E.s[code];
+      if (r && r.at && d.contains(el)) el.textContent = "," + String(r.at).slice(0, 10) + " 更新";
+    });
+  }
+
   // 模型合理價:公式固定,把每一步算式攤開讓人可以自己驗算
   function fvHtml(doc) {
     var ex = doc.extra || {}, e = ex.fv, px = doc.summary.close;
@@ -599,7 +687,7 @@
       }).join("") + "</div>" : "") +
       '</div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
       '<div class="sh-body">' + '<div id="health">' + healthHtml(doc.health, doc.rating, null) + "</div>" +
-      profileHtml(prof && prof[doc.code]) + fvHtml(doc) +
+      profileHtml(prof && prof[doc.code]) + fvHtml(doc) + tpHtml(doc) +
       '<div class="kgrid">' +
       "<div><span>5 日漲跌</span><b>" + MR.pct(s.ret5) + "</b></div>" +
       "<div><span>20 日漲跌</span><b>" + MR.pct(s.ret20) + "</b></div>" +
@@ -634,6 +722,7 @@
     Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile(code)])
       .then(function (res) {
         d.innerHTML = stockHtml(res[0], res[1], res[2]);
+        tpFillDate(d, res[0].code);
         starStats().then(function (S) { var n = d.querySelector("#health"); if (n) n.innerHTML = healthHtml(res[0].health, res[0].rating, S); });
         // 盤中或今日收盤後:用即時報價取代排程資料的收盤價(live.js 有載入且已設定 Worker 才會有)
         if (MR.intradayOne) MR.intradayOne(code, res[0].date).then(function (lv) {

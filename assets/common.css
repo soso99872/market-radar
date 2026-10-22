@@ -100,6 +100,19 @@ dialog.sheet::backdrop { background: rgb(0 0 0 / .55); }
 @media (max-width: 700px) {
   dialog.sheet { margin: auto 0 0; width: 100vw; border-radius: 16px 16px 0 0; border-bottom: 0; max-height: 90vh; }
 }
+/* 個股面板(dialog.sheet.stk-sheet):桌面放寬到 1080px,面板內不出現橫向捲軸 */
+dialog.sheet.stk-sheet { width: min(1080px, 100vw - 48px); }
+.stk-sheet .sh-body { overflow-x: hidden; }
+.stk-sheet .sh-body > * { min-width: 0; }
+@media (max-width: 700px) { dialog.sheet.stk-sheet { width: 100vw; } }
+/* 橫排分頁:選中有底線,窄螢幕可左右滑,黏在面板內容頂端 */
+.stk-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 2; background: var(--panel); border-bottom: 1px solid var(--line); margin: 0 -18px; padding: 0 18px; }
+.stk-tabs::-webkit-scrollbar { display: none; }
+.stk-tabs [role="tab"] { flex: none; min-width: 44px; min-height: 44px; padding: 0 14px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font: inherit; cursor: pointer; white-space: nowrap; transition: color .16s, border-color .16s; }
+.stk-tabs [role="tab"]:hover { color: var(--text); }
+.stk-tabs [role="tab"][aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+.stk-pan[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .stk-tabs [role="tab"] { transition: none; } }
 .sh-head { padding: 14px 18px 0; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: start; }
 .sh-head h3 { margin: 0; font-size: 21px; font-weight: 900; }
 .sh-head .x { background: none; border: 0; font-size: 22px; line-height: 1; padding: 4px 6px; cursor: pointer; color: var(--muted); }
@@ -223,6 +236,15 @@ table.hc { width: 100%; border-collapse: collapse; font-size: 13px; margin: 4px 
 .evb { display: inline-block; margin-left: 6px; font-size: 11px; padding: 0 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--faint); white-space: nowrap; }
 .evb.bt { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
 @media (max-width: 560px) { .hc .hv { white-space: normal; } }
+/* 窄螢幕:健檢列說明改排到數值下方(整列兩行),不擠成窄條 */
+@media (max-width: 900px) {
+  table.hc, .hc tbody { display: block; }
+  .hc tr { display: grid; grid-template-columns: 22px auto 1fr; column-gap: 6px; border-top: 1px solid var(--line); padding: 5px 0; }
+  .hc tr:first-child { border-top: 0; }
+  .hc th, .hc td, .hc tr:first-child td, .hc tr:first-child th { border-top: 0; padding: 0; }
+  .hc .hv { text-align: left; }
+  .hc .hn { grid-column: 2 / -1; padding-top: 2px; }
+}
 
 /* 可排序的表頭 */
 th.srt { cursor: pointer; user-select: none; }

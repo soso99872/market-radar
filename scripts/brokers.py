@@ -92,7 +92,9 @@ _RATING_RE = re.compile(r"[「『](" + _RATINGS + r")[」』]|(" + _RATINGS + r"
 _NUM = r"\d[\d,]*(?:\.\d+)?"
 _BAD_UNIT = r"(?!\d)(?![.,]\d)(?![\d,.]*[美港日歐%％倍億萬月日年檔家張季點成度台片顆支套人股xX])(?![–—~～-]\d)"   # 後面接單位或「480–500」這種範圍都不是目標價
 # 「從 X 元…至 Y 元」「由 X 元直衝 Y 元」「從 500 元升到 725 元」
-_FROM_TO = re.compile(r"[從由]\s*(" + _NUM + r")\s*元?\s*((?:[^\d，。；、]|\d+%){0,14}?)\s*(" + _NUM + r")\s*元")
+_FROM_TO = re.compile(r"[從由](?:原先的?)?\s*(" + _NUM + r")\s*元?\s*((?:[^\d，。；、]|\d+%){0,14}?)\s*(" + _NUM + r")\s*元")
+# 「分別由1,000元、2,000元」前次目標價清單(兩個以上)
+_PREV_LIST = re.compile(r"[從由](?:原先的?)?\s*" + _NUM + r"\s*元?(?:[、與]" + _NUM + r"\s*元?)+")
 # 金額觸發:強觸發可省略「元」;弱觸發一定要有「元」
 _STRONG = r"(?:目標價維持|目標價為|目標價|目標股價|調升至|上調至|調高至|上修至|調降至|下調至|下修至|提高至|升至|升到|降至|降到|喊到|喊|上看)"
 _WEAK = r"(?:看到|看|為|至|到|達)"
@@ -105,9 +107,28 @@ _TP_RE = re.compile(r"目標價|目標股價")
 _EPS_RE = re.compile(r"EPS|每股純益|每股盈餘|獲利|營收", re.I)
 _CONSENSUS_RE = re.compile(r"彭博|平均|共識")
 _SCENE_RE = re.compile(r"樂觀情境|悲觀情境|(?<!基本)情境|牛市|熊市")   # 情境價不是這次的目標價
-_OLD_RE = re.compile(r"先前|此前|之前|稍早|日前")   # 引用舊報告
+_OLD_RE = re.compile(r"先前|此前|之前|稍早|日前|綜合近期")   # 引用舊報告
 _YEAR_RE = re.compile(r"(?:19|20)\d\d")
 _FX_RE = re.compile(r"人民幣|美元|美金|日圓|港幣|ADR")
+
+
+# 被比較對象:「超越瑞銀的11,000元」「高於大摩的目標價」——這家的金額不是這句的主詞
+_CMP_BEFORE = re.compile(r"(?:超越|超過|高於|低於|優於|勝過)[^，。；、\d]{0,3}$")
+_CMP_AFTER = re.compile(r"的\s*(?:目標(?:股)?價\s*)?" + _NUM + r"元?")
+
+
+def _compared(clause, ents):
+    """回傳被比較的券商 [(券商, 金額結束位置)]。有「的＋金額」或前面有超越／高於等字眼才算。"""
+    out = []
+    for s, e, k, v in ents:
+        if k != "broker":
+            continue
+        m = _CMP_AFTER.match(clause, e)
+        if _CMP_BEFORE.search(clause[max(0, s - 8):s]):
+            out.append((v, s, m.end() if m else e))
+        elif m:
+            out.append((v, s, m.end()))
+    return out
 
 
 class _Index:
@@ -314,8 +335,13 @@ def _amounts(clause, carry_tp):
             continue
         used.append((m.start(), m.end()))
         found.append((m.start(), _num(m.group(1)), None))
-    found.sort(key=lambda x: x[0])
-    return [(p, t, pv) for p, t, pv in found if t > 0]
+    found = sorted((f for f in found if f[1] > 0), key=lambda x: x[0])
+    pm = _PREV_LIST.search(clause) if "分別" in clause else None    # 「分別由X元、Y元調高至A元、B元」:前次依序對應
+    if pm:
+        prevs = re.findall(_NUM, pm.group(0))
+        if len(prevs) == len(found) and all(f[2] is None for f in found):
+            found = [(p, t, _num(prevs[i])) for i, (p, t, _) in enumerate(found)]
+    return found
 
 
 def _analyze(text, idx, title="", fallback_stocks=()):
@@ -334,8 +360,10 @@ def _analyze(text, idx, title="", fallback_stocks=()):
             for m in re.finditer(r"[（(](\d{4,5})[）)]", clause):
                 if m.group(1) in idx.stock.values() and m.group(1) not in stocks:
                     stocks.append(m.group(1))
-            brokers = list(dict.fromkeys(v for _, _, k, v in ents if k == "broker"))
-            amts = _amounts(clause, carry_tp)
+            cmp_ = _compared(clause, ents)
+            cmp_names = {c[0] for c in cmp_}
+            brokers = list(dict.fromkeys(v for _, _, k, v in ents if k == "broker" and v not in cmp_names))
+            amts = [a for a in _amounts(clause, carry_tp) if not any(s <= a[0] < e for _, s, e in cmp_)]
             has_tp = bool(_TP_RE.search(clause))
             if len(brokers) == 1:
                 carry_broker = brokers[0]
@@ -349,6 +377,8 @@ def _analyze(text, idx, title="", fallback_stocks=()):
                 continue
             if brokers:
                 bl = brokers
+            elif cmp_ and carry_broker and clause == whole:    # 主詞被拿掉(被比較對象不算)→ 沿用前面的券商,優先於「外資」未具名
+                bl = [carry_broker]
             elif UNNAMED_RE.search(clause):
                 bl = [UNNAMED]
             elif carry_broker and clause == whole:     # 被切開的片段不沿用前面的券商

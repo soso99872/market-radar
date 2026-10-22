@@ -381,6 +381,43 @@ class SupervisorRound2Test(unittest.TestCase):
         self.assertEqual([(e["code"], e["broker"], e["target"], e["dir"]) for e in ev], [("6488", "麥格理", 473, "down")])
 
 
+class SupervisorRound3Test(unittest.TestCase):
+    """T05 主管第 3 次退件:比較句的被比較對象;以及 綜合近期／由原先的／分別補前次。"""
+
+    def test_compared_broker_not_subject(self):
+        # 5607/9303926(經濟日報 2026-02-02):高盛 7,300→12,000,「超越瑞銀的11,000元」瑞銀是被比較對象
+        b = ("外資高盛證券指出,帶動信驊(5274)BMC出貨持續強勁,目標價也大升至12,000元,居內外資法人之冠。"
+             "虞成敬建議「買進」信驊,目標價以2027年調高後EPS 266.66元、適用45倍本益比計算,"
+             "目標價由7,300元大升至12,000元,一舉超越瑞銀的11,000元,躍升至內外資最高。")
+        ev = P("信驊股價逆勢走強 原來是高盛將目標價調高到這個驚人價位!", b)
+        self.assertEqual([(e["code"], e["broker"], e["target"]) for e in ev], [("5274", "高盛", 12000)])
+        self.assertEqual((ev[0]["dir"], ev[0]["prev_target"]), ("up", 7300))
+
+    def test_compared_before_keyword(self):
+        # 「高於大摩的目標價 11,000元」:大摩是被比較對象,不產生事件;主詞野村沿用不到就不產生
+        ev = P("信驊 高盛目標價調升至12,000元,高於大摩的目標價11,000元")
+        self.assertEqual([(e["broker"], e["target"]) for e in ev], [("高盛", 12000)])
+        ev = P("瑞銀喊信驊目標價11,000元,低於高盛12,000元")
+        self.assertEqual([(e["broker"], e["target"]) for e in ev], [("瑞銀", 11000)])
+
+    def test_single_broker_unchanged(self):
+        one(self, P("高盛 聯發科目標價由1,500元調升至1,800元"), "2454", "高盛", 1800, "up", 1500)
+        one(self, P("信驊 瑞銀目標價喊11,000元"), "5274", "瑞銀", 11000)
+
+    def test_old_re_recent_summary(self):
+        # 「綜合近期」引用舊報告,不當新目標價
+        ev = P("聯發科 高盛調升目標價至1,800元,綜合近期外資報告目標價1,700元")
+        self.assertEqual([(e["broker"], e["target"]) for e in ev], [("高盛", 1800)])
+
+    def test_from_original(self):
+        one(self, P("高盛 聯發科目標價由原先的1,500元調升至1,800元"), "2454", "高盛", 1800, "up", 1500)
+
+    def test_respectively_prev_list(self):
+        ev = P("大摩將奇鋐(3017)及富世達目標價分別由2,000元、1,500元調高到2,750元、2,150元")
+        self.assertEqual([(e["code"], e["target"], e["prev_target"], e["dir"]) for e in ev],
+                         [("3017", 2750, 2000, "up"), ("6805", 2150, 1500, "up")])
+
+
 class TestApplyDir(unittest.TestCase):
     def test_rule2_compare_with_previous(self):
         out = brokers.apply_dir([_ev("2026-01-05", "高盛", 1000), _ev("2026-06-01", "高盛", 1200),

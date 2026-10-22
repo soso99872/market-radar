@@ -461,8 +461,8 @@ html.nosplash #splash, #splash.done { opacity: 0; visibility: hidden; pointer-ev
   .bk-sub a { display: inline-block; padding: 13px 10px; margin: -13px -10px; }
   .bk-more > summary { display: list-item; line-height: 28px; padding: 8px 0; margin: -8px 0; min-height: 0; }
 }
-/* 窄螢幕:SVG 等比縮小後圖內字約 9px,放大到可讀 */
+/* 窄螢幕:SVG 等比縮小(375 寬約 0.74 倍)後圖內字太小,.tp-ax 放大到 16px(實際約 11.9px) */
 @media (max-width: 480px) {
-  .tp-ax { font-size: 14px; }
+  .tp-ax { font-size: 16px; }
   .tp-end { font-size: 15px; }
 }

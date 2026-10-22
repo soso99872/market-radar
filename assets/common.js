@@ -207,6 +207,18 @@
     dlg.addEventListener("click", function (e) {
       if (e.target === dlg || e.target.closest("[data-close]")) dlg.close();
     });
+    dlg.addEventListener("click", function (e) {
+      var t = e.target.closest('.stk-tabs [role="tab"]');
+      if (t) pickTab(dlg, +t.id.slice(8));
+    });
+    dlg.addEventListener("keydown", function (e) {
+      var t = e.target.closest && e.target.closest('.stk-tabs [role="tab"]');
+      if (!t) return;
+      var i = +t.id.slice(8), k = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: 4 }[e.key];
+      if (k == null) return;
+      e.preventDefault();
+      pickTab(dlg, k, true);
+    });
     return dlg;
   }
 
@@ -219,6 +231,7 @@
   MR.openHelp = function (key) {
     var h = HELP[key], d = ensureDialog();
     if (!h) return;
+    d.classList.remove("stk-sheet");
     d.innerHTML = '<div class="sh-head"><div><h3 id="stk-title">' + esc(h.title) + '</h3></div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
       '<div class="sh-body help-body">' + h.html + "</div>";
     if (!d.open) d.showModal();
@@ -801,28 +814,57 @@
         return '<a class="th-chip" href="sectors.html#' + esc(t.id) + '">' + esc(t.name) + "</a>";
       }).join("") + "</div>" : "") +
       '</div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
-      '<div class="sh-body">' + '<div id="health">' + healthHtml(doc.health, doc.rating, null) + "</div>" +
-      profileHtml(prof && prof[doc.code]) + fvHtml(doc) + tpHtml(doc) +
-      '<div class="kgrid">' +
-      "<div><span>5 日漲跌</span><b>" + MR.pct(s.ret5) + "</b></div>" +
-      "<div><span>20 日漲跌</span><b>" + MR.pct(s.ret20) + "</b></div>" +
-      "<div><span>距 52 週高點</span><b>" + MR.pct(off) + "</b></div>" +
-      "<div><span>5 日法人</span><b>" + MR.yi(s.net5) + "</b></div>" +
-      "<div><span>20 日法人</span><b>" + MR.yi(s.net20) + "</b></div>" +
-      "<div><span>20 日均成交</span><b>" + (s.avg_value20 == null ? "—" : s.avg_value20.toFixed(1) + " 億") + "</b></div>" +
-      "<div><span>外資連買</span><b>" + s.foreign_streak + " 天</b></div>" +
-      "<div><span>投信連買</span><b>" + s.trust_streak + " 天</b></div>" +
-      "<div><span>今日法人</span><b>" + MR.yi(lastNet(doc)) + "</b></div>" +
-      "</div>" + kchart(doc, names, grades) + revHtml(doc) + gmHtml(doc) + peHtml(doc) +
-      '<div class="mem-tools"><h4>近期訊號 · 歷史 10 日表現</h4></div>' +
-      (recent.length ? '<ul class="siglist">' + recent.map(function (m) {
-        var st = sigs[m[1]], h = st && st.horizons["10"];
-        var stat = h && h.all.n ? "勝過一般股 " + h.all.win + "% · 平均相對 " + MR.sign(h.all.avg_rel, 2) + "%" : "";
-        return '<li><span class="d">' + MR.md(m[0]) + "</span><span>" + esc(st ? st.name : m[1]) + (h ? MR.gradeTag(h.grade) : "") +
-          '</span><span class="w">' + stat + "</span></li>";
-      }).join("") + "</ul>" : '<p class="flat" style="font-size:14px">近 ' + doc.rows.length + " 個交易日沒有觸發訊號。</p>") +
-      '<p class="foot">歷史表現是同一訊號在所有個股上的統計,不是這檔股票的預測;' +
-      '<a href="signals.html">看回測方法與完整數據</a>。只呈現事實,不構成投資建議。</p></div>';
+      '<div class="sh-body">' + tabsHtml([
+        ["概況", '<div id="health">' + healthHtml(doc.health, doc.rating, null) + "</div>" + profileHtml(prof && prof[doc.code]) +
+          '<div class="kgrid">' +
+          "<div><span>5 日漲跌</span><b>" + MR.pct(s.ret5) + "</b></div>" +
+          "<div><span>20 日漲跌</span><b>" + MR.pct(s.ret20) + "</b></div>" +
+          "<div><span>距 52 週高點</span><b>" + MR.pct(off) + "</b></div>" +
+          "<div><span>5 日法人</span><b>" + MR.yi(s.net5) + "</b></div>" +
+          "<div><span>20 日法人</span><b>" + MR.yi(s.net20) + "</b></div>" +
+          "<div><span>20 日均成交</span><b>" + (s.avg_value20 == null ? "—" : s.avg_value20.toFixed(1) + " 億") + "</b></div>" +
+          "<div><span>外資連買</span><b>" + s.foreign_streak + " 天</b></div>" +
+          "<div><span>投信連買</span><b>" + s.trust_streak + " 天</b></div>" +
+          "<div><span>今日法人</span><b>" + MR.yi(lastNet(doc)) + "</b></div></div>"],
+        ["走勢與籌碼", kchart(doc, names, grades) +
+          '<div class="mem-tools"><h4>近期訊號 · 歷史 10 日表現</h4></div>' +
+          (recent.length ? '<ul class="siglist">' + recent.map(function (m) {
+            var st = sigs[m[1]], h = st && st.horizons["10"];
+            var stat = h && h.all.n ? "勝過一般股 " + h.all.win + "% · 平均相對 " + MR.sign(h.all.avg_rel, 2) + "%" : "";
+            return '<li><span class="d">' + MR.md(m[0]) + "</span><span>" + esc(st ? st.name : m[1]) + (h ? MR.gradeTag(h.grade) : "") +
+              '</span><span class="w">' + stat + "</span></li>";
+          }).join("") + "</ul>" : '<p class="flat" style="font-size:14px">近 ' + doc.rows.length + " 個交易日沒有觸發訊號。</p>") +
+          '<p class="foot">歷史表現是同一訊號在所有個股上的統計,不是這檔股票的預測;' +
+          '<a href="signals.html">看回測方法與完整數據</a>。只呈現事實,不構成投資建議。</p>'],
+        ["估值", fvHtml(doc) + peHtml(doc)],
+        ["目標價", tpHtml(doc)],
+        ["營收獲利", revHtml(doc) + gmHtml(doc)]
+      ]) + "</div>";
+  }
+
+  // 個股面板橫排分頁:記住上次看的分頁(同一次瀏覽,重新整理就回概況)
+  var stkTab = 0;
+  function tabsHtml(tabs) {
+    return '<div class="stk-tabs" role="tablist" aria-label="個股資料分頁">' + tabs.map(function (t, i) {
+      return '<button type="button" role="tab" id="stk-tab-' + i + '" aria-controls="stk-pan-' + i + '" aria-selected="' + (i === stkTab) +
+        '" tabindex="' + (i === stkTab ? 0 : -1) + '">' + t[0] + "</button>";
+    }).join("") + "</div>" + tabs.map(function (t, i) {
+      return '<div role="tabpanel" class="stk-pan" id="stk-pan-' + i + '" aria-labelledby="stk-tab-' + i + '"' + (i === stkTab ? "" : " hidden") + ">" +
+        (t[1] || '<p class="flat">這個分頁目前沒有資料。</p>') + "</div>";
+    }).join("");
+  }
+  function pickTab(d, i, focus) {
+    var tabs = d.querySelectorAll('.stk-tabs [role="tab"]');
+    if (!tabs.length) return;
+    stkTab = (i + tabs.length) % tabs.length;
+    Array.prototype.forEach.call(tabs, function (b, k) {
+      var on = k === stkTab;
+      b.setAttribute("aria-selected", on);
+      b.tabIndex = on ? 0 : -1;
+      d.querySelector("#stk-pan-" + k).hidden = !on;
+    });
+    if (focus) tabs[stkTab].focus();
+    tabs[stkTab].scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
   function lastNet(doc) {
@@ -832,6 +874,7 @@
 
   MR.openStock = function (code) {
     var d = ensureDialog();
+    d.classList.add("stk-sheet");
     d.innerHTML = '<div class="sh-head"><div><h3 id="stk-title">' + esc(code) + '</h3></div><button type="button" class="x" data-close aria-label="關閉">×</button></div><div class="sh-body"><p class="flat">載入中…</p></div>';
     if (!d.open) d.showModal();
     Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile(code)])
@@ -852,6 +895,7 @@
 
   // 沒有詳細面板的股票:用查詢索引顯示精簡資料
   function brief(d, code) {
+    d.classList.remove("stk-sheet"); // 精簡面板內容少,不放寬也不分頁
     Promise.all([MR.index(), MR.profile(code), starStats()]).then(function (res) {
       var I = res[0], x = I && I.s[code], body = d.querySelector(".sh-body");
       if (!x) { body.innerHTML = '<p class="flat">查無這檔股票(只收錄上市櫃普通股)。</p>'; return; }

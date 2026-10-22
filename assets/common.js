@@ -339,25 +339,33 @@
     function y(v) { return (YT + (hi - v) / (hi - lo) * (YB - YT)).toFixed(1); }
     function x(i) { return (X0 + i / (n - 1) * (XT - X0)).toFixed(1); }
     var o = [];
-    // y 軸刻度文字放在繪圖區左側外面,不會壓到折線
-    [hi, (hi + lo) / 2, lo].forEach(function (g) {
+    // y 軸 5 個刻度,數字放在繪圖區左側外面,不壓線
+    for (var gi = 0; gi < 5; gi++) {
+      var g = lo + (hi - lo) * gi / 4;
       o.push('<line x1="' + X0 + '" x2="' + XR + '" y1="' + y(g) + '" y2="' + y(g) + '" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
         '<text x="' + (X0 - 5) + '" y="' + (+y(g) + 4).toFixed(1) + '" text-anchor="end" class="tp-ax">' + tpFmt(g) + "</text>");
-    });
-    var last = cl[n - 1], ys = y(last);
-    if (t.hi != null && t.lo != null) o.push('<polygon points="' + XT + "," + ys + " " + XR + "," + y(t.hi) + " " + XR + "," + y(t.lo) + '" fill="color-mix(in srgb, var(--accent) 16%, transparent)"/>');
+    }
+    var last = cl[n - 1], ys = +y(last), dx = XR - XT;
+    // 從今天收盤到目標價的 S 形曲線:前段爬升、後段持平
+    function curve(v, rev) {
+      var ye = +y(v), a = [XT + dx * 0.4, ys + (ye - ys) * 0.03], b = [XT + dx * 0.55, ye];
+      return rev ? "C" + b + " " + a + " " + XT + "," + ys : "C" + a + " " + b + " " + XR + "," + ye;
+    }
+    if (t.hi != null && t.lo != null) o.push('<path d="M' + XT + "," + ys + curve(t.hi) + "L" + XR + "," + y(t.lo) + curve(t.lo, 1) + 'Z" fill="color-mix(in srgb, var(--accent) 16%, transparent)"/>');
     o.push('<polyline points="' + cl.map(function (v, i) { return x(i) + "," + y(v); }).join(" ") + '" fill="none" stroke="var(--text)" stroke-width="1.4" vector-effect="non-scaling-stroke"/>');
-    [t.hi, t.lo].forEach(function (v) {
-      if (v == null) return;
-      o.push('<line x1="' + XT + '" x2="' + XR + '" y1="' + ys + '" y2="' + y(v) + '" stroke="var(--accent)" stroke-opacity=".6" stroke-width="1" vector-effect="non-scaling-stroke"/>');
+    [[t.hi, 1.3, "4 4", ".65"], [t.lo, 1.3, "4 4", ".65"], [t.mean, 2.2, "6 4", "1"]].forEach(function (a) {
+      if (a[0] == null) return;
+      o.push('<path d="M' + XT + "," + ys + curve(a[0]) + '" fill="none" stroke="var(--accent)" stroke-opacity="' + a[3] + '" stroke-width="' + a[1] + '" stroke-dasharray="' + a[2] + '" vector-effect="non-scaling-stroke"/>');
     });
-    o.push('<line x1="' + XT + '" x2="' + XR + '" y1="' + ys + '" y2="' + y(t.mean) + '" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"/>');
     o.push('<line x1="' + XT + '" x2="' + XT + '" y1="' + (YT - 6) + '" y2="' + YB + '" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>');
     o.push('<circle cx="' + XT + '" cy="' + ys + '" r="3" fill="var(--text)"/>');
-    o.push('<text x="' + (XT - 4) + '" y="12" text-anchor="end" class="tp-ax">今天</text><text x="' + (XT + 4) + '" y="12" class="tp-ax">未來 12 個月</text>');
-    // 日期直接畫在圖裡:起始日對齊折線左端,資料日對齊「今天」虛線
+    o.push('<text x="' + (XT - 4) + '" y="12" text-anchor="end" class="tp-ax">今天</text>');
+    // x 軸日期畫在圖裡:起始日、中間日、資料日(對齊「今天」虛線);右半標「未來 12 個月」
+    var mid = Math.round((n - 1) * 0.55);
     o.push('<text x="' + X0 + '" y="' + (YB + 18) + '" class="tp-ax">' + MR.md(rows[0][0]) + '</text>' +
-      '<text x="' + XT + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[n - 1][0]) + "</text>");
+      '<text x="' + x(mid) + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[mid][0]) + "</text>" +
+      '<text x="' + XT + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[n - 1][0]) + "</text>" +
+      '<text x="' + (XR + 36) + '" y="' + (YB + 18) + '" text-anchor="end" class="tp-ax">未來 12 個月</text>');
     // 右端文字:三個價位靠得近時往下推開,避免疊字;缺的價位不畫
     var L = [[t.hi, "最高 ", "var(--muted)"], [t.mean, "平均 ", "var(--accent)"], [t.lo, "最低 ", "var(--muted)"]].filter(function (a) { return a[0] != null; }).map(function (a) {
       return { yy: +y(a[0]), txt: a[1] + tpFmt(a[0]), col: a[2] };

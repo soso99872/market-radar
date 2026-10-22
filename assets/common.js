@@ -327,10 +327,11 @@
     if (v == null || isNaN(v)) return "—";
     return v >= 1000 ? Math.round(v).toLocaleString("en-US") : v >= 100 ? v.toFixed(1) : v.toFixed(2);
   }
-  function tpChart(rows, t) {
-    var n = rows.length;
-    if (n < 2) return "";
-    var W = 420, H = 232, X0 = 58, XT = 188, XR = 300, YT = 24, YB = 200;
+  // 窄版與寬版各畫一張(CSS 依視窗寬度顯示其中一張):寬版 viewBox 較寬,桌面不用把窄圖放大
+  var TP_NARROW = { W: 420, H: 232, X0: 58, XT: 188, XR: 300, YT: 24, YB: 200, gap: 21, mid: 0 };
+  var TP_WIDE = { W: 800, H: 290, X0: 64, XT: 350, XR: 700, YT: 24, YB: 256, gap: 18, mid: 1 };
+  function tpSvg(rows, t, c, cls) {
+    var n = rows.length, W = c.W, H = c.H, X0 = c.X0, XT = c.XT, XR = c.XR, YT = c.YT, YB = c.YB;
     var cl = rows.map(function (r) { return r[4]; });
     var vs = cl.concat([t.hi, t.lo, t.mean].filter(function (v) { return v != null; }));
     var hi = Math.max.apply(null, vs), lo = Math.min.apply(null, vs);
@@ -359,27 +360,35 @@
     });
     o.push('<line x1="' + XT + '" x2="' + XT + '" y1="' + (YT - 6) + '" y2="' + YB + '" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>');
     o.push('<circle cx="' + XT + '" cy="' + ys + '" r="3" fill="var(--text)"/>');
-    o.push('<text x="' + (XT - 4) + '" y="12" text-anchor="end" class="tp-ax">今天</text>');
-    // x 軸日期畫在圖裡:起始日、中間日、資料日(對齊「今天」虛線);右半標「未來 12 個月」
-    var mid = Math.round((n - 1) * 0.55);
+    // 頂端同一列:「今天」在虛線左,「未來 12 個月」在未來那半邊正中央
+    o.push('<text x="' + (XT - 4) + '" y="12" text-anchor="end" class="tp-ax">今天</text>' +
+      '<text x="' + (XT + XR) / 2 + '" y="12" text-anchor="middle" class="tp-ax">未來 12 個月</text>');
+    // x 軸日期畫在圖裡:起始日、資料日(對齊「今天」虛線);寬版多一個中間日
     o.push('<text x="' + X0 + '" y="' + (YB + 18) + '" class="tp-ax">' + MR.md(rows[0][0]) + '</text>' +
-      '<text x="' + x(mid) + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[mid][0]) + "</text>" +
-      '<text x="' + XT + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[n - 1][0]) + "</text>" +
-      '<text x="' + (XR + 36) + '" y="' + (YB + 18) + '" text-anchor="end" class="tp-ax">未來 12 個月</text>');
-    // 右端文字:三個價位靠得近時往下推開,避免疊字;缺的價位不畫
+      '<text x="' + XT + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[n - 1][0]) + "</text>");
+    if (c.mid) {
+      var mid = Math.round((n - 1) * 0.55);
+      o.push('<text x="' + x(mid) + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[mid][0]) + "</text>");
+    }
+    // 右端文字:三個價位靠得近時往下推開(間距 ≥ 字級×1.4(文字框高約字級×1.35)),避免疊字;缺的價位不畫
     var L = [[t.hi, "最高 ", "var(--muted)"], [t.mean, "平均 ", "var(--accent)"], [t.lo, "最低 ", "var(--muted)"]].filter(function (a) { return a[0] != null; }).map(function (a) {
       return { yy: +y(a[0]), txt: a[1] + tpFmt(a[0]), col: a[2] };
     });
-    var m = L.length, i;
-    for (i = 1; i < m; i++) if (L[i].yy < L[i - 1].yy + 15) L[i].yy = L[i - 1].yy + 15;
-    if (L[m - 1].yy > YB + 8) { L[m - 1].yy = YB + 8; for (i = m - 2; i >= 0; i--) if (L[i].yy > L[i + 1].yy - 15) L[i].yy = L[i + 1].yy - 15; }
+    var m = L.length, i, G = c.gap;
+    for (i = 1; i < m; i++) if (L[i].yy < L[i - 1].yy + G) L[i].yy = L[i - 1].yy + G;
+    if (m && L[m - 1].yy > YB + 8) { L[m - 1].yy = YB + 8; for (i = m - 2; i >= 0; i--) if (L[i].yy > L[i + 1].yy - G) L[i].yy = L[i + 1].yy - G; }
     L.forEach(function (a) {
       o.push('<text x="' + (XR + 4) + '" y="' + (a.yy + 4).toFixed(1) + '" class="tp-end" fill="' + a.col + '">' + esc(a.txt) + "</text>");
     });
+    return '<svg class="' + cls + '" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="近 ' + n + " 日收盤價與分析師目標價範圍:最高 " + tpFmt(t.hi) + "、平均 " + tpFmt(t.mean) + "、最低 " + tpFmt(t.lo) + '">' +
+      o.join("") + "</svg>";
+  }
+  function tpChart(rows, t) {
+    var n = rows.length;
+    if (n < 2) return "";
     return '<div class="kchart tp-chart"><div class="klegend"><span><i style="background:var(--text)"></i>股價(近 ' + n + ' 個交易日)</span>' +
       '<span><i style="background:var(--accent)"></i>目標價</span></div>' +
-      '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="近 ' + n + " 日收盤價與分析師目標價範圍:最高 " + tpFmt(t.hi) + "、平均 " + tpFmt(t.mean) + "、最低 " + tpFmt(t.lo) + '">' +
-      o.join("") + "</svg></div>";
+      tpSvg(rows, t, TP_NARROW, "tp-s-n") + tpSvg(rows, t, TP_WIDE, "tp-s-w") + "</div>";
   }
   // ---- 逐家券商目標價(經濟日報新聞整理,extra.brk)與券商紀錄(data/brokers/scores.json,每頁只載一次) ----
   var BRK_MAX = 8, BRK_ANON = "未具名", SCORES_P = null;
@@ -497,7 +506,7 @@
     var bh = brkHtml(doc, !!t), brk = bh ? '<div class="tp-brk">' + bh + "</div>" : "";
     var help = MR.help("tp", "分析師目標價怎麼看",
       "<p>上面是 Yahoo Finance 彙整的分析師目標價:<b>平均</b>、<b>最高</b>、<b>最低</b>,上漲空間 = 目標價 ÷ 面板資料日收盤價 − 1。</p>" +
-      "<p>圖的左半是近 120 個交易日的收盤價,右半是「未來 12 個月」:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。淡色區塊是目標價的範圍,虛線是平均。</p>" +
+      "<p>圖的左半是近 120 個交易日的收盤價,右半是「未來 12 個月」:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。粗虛線是平均目標價,上下兩條細虛線是最高和最低,中間淡色是範圍。</p>" +
       "<p>最高除以最低超過 1.8 倍時,表示分析師之間看法差很多,平均值的參考性較低。</p>" +
       "<p>資料來源:Yahoo Finance 匯總(一天更新一次);目標價共識從 2026-10 才開始存快照,準確度還沒辦法回測,僅供參考。</p>");
     var head = '<h4>分析師目標價<span class="evb">僅供參考</span>' + help + "</h4>";

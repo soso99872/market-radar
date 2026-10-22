@@ -211,6 +211,7 @@
       var t = e.target.closest('.stk-tabs [role="tab"]');
       if (t) pickTab(dlg, +t.id.slice(8));
     });
+    dlg.addEventListener("scroll", function (e) { if (e.target.classList && e.target.classList.contains("stk-tabs")) tabsFade(dlg); }, true);
     dlg.addEventListener("keydown", function (e) {
       var t = e.target.closest && e.target.closest('.stk-tabs [role="tab"]');
       if (!t) return;
@@ -857,13 +858,19 @@
       return '<button type="button" role="tab" id="stk-tab-' + i + '" aria-controls="stk-pan-' + i + '" aria-selected="' + (i === stkTab) +
         '" tabindex="' + (i === stkTab ? 0 : -1) + '">' + t[0] + "</button>";
     }).join("") + "</div>" + tabs.map(function (t, i) {
-      return '<div role="tabpanel" class="stk-pan" id="stk-pan-' + i + '" aria-labelledby="stk-tab-' + i + '"' + (i === stkTab ? "" : " hidden") + ">" +
+      return '<div role="tabpanel" class="stk-pan" id="stk-pan-' + i + '" aria-labelledby="stk-tab-' + i + '" tabindex="0"' + (i === stkTab ? "" : " hidden") + ">" +
         (t[1] || '<p class="flat">這個分頁目前沒有資料。</p>') + "</div>";
     }).join("");
+  }
+  // 右緣淡出提示:分頁列還能往右滑時加 .more
+  function tabsFade(d) {
+    var el = d.querySelector(".stk-tabs");
+    if (el) el.classList.toggle("more", el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
   }
   function pickTab(d, i, focus) {
     var tabs = d.querySelectorAll('.stk-tabs [role="tab"]');
     if (!tabs.length) return;
+    var body = d.querySelector(".sh-body"), bar = d.querySelector(".stk-tabs");
     stkTab = (i + tabs.length) % tabs.length;
     Array.prototype.forEach.call(tabs, function (b, k) {
       var on = k === stkTab;
@@ -871,8 +878,11 @@
       b.tabIndex = on ? 0 : -1;
       d.querySelector("#stk-pan-" + k).hidden = !on;
     });
+    var top = d.querySelector("#stk-pan-" + stkTab).offsetTop - bar.offsetHeight;
+    if (body.scrollTop > top) body.scrollTop = top; // 已捲過分頁列:新分頁第一行貼著分頁列
     if (focus) tabs[stkTab].focus();
     tabs[stkTab].scrollIntoView({ block: "nearest", inline: "nearest" });
+    tabsFade(d);
   }
 
   function lastNet(doc) {
@@ -888,6 +898,7 @@
     Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile(code)])
       .then(function (res) {
         d.innerHTML = stockHtml(res[0], res[1], res[2]);
+        tabsFade(d);
         fillBrk(d);
         starStats().then(function (S) { var n = d.querySelector("#health"); if (n) n.innerHTML = healthHtml(res[0].health, res[0].rating, S); });
         // 盤中或今日收盤後:用即時報價取代排程資料的收盤價(live.js 有載入且已設定 Worker 才會有)

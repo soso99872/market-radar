@@ -102,17 +102,23 @@ dialog.sheet::backdrop { background: rgb(0 0 0 / .55); }
 }
 /* 個股面板(dialog.sheet.stk-sheet):桌面放寬到 1080px,面板內不出現橫向捲軸 */
 dialog.sheet.stk-sheet { width: min(1080px, 100vw - 48px); }
-.stk-sheet .sh-body { overflow-x: hidden; }
+.stk-sheet .sh-body { overflow-x: hidden; position: relative; padding-top: 0; }
 .stk-sheet .sh-body > * { min-width: 0; }
 @media (max-width: 700px) { dialog.sheet.stk-sheet { width: 100vw; } }
 /* 橫排分頁:選中有底線,窄螢幕可左右滑,黏在面板內容頂端 */
 .stk-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 2; background: var(--panel); border-bottom: 1px solid var(--line); margin: 0 -18px; padding: 0 18px; }
 .stk-tabs::-webkit-scrollbar { display: none; }
 .stk-tabs [role="tab"] { flex: none; min-width: 44px; min-height: 44px; padding: 0 14px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font: inherit; cursor: pointer; white-space: nowrap; transition: color .16s, border-color .16s; }
+.stk-tabs.more { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
 .stk-tabs [role="tab"]:hover { color: var(--text); }
+.stk-tabs [role="tab"]:active { background: var(--panel-2); color: var(--text); }
+.stk-tabs [role="tab"]:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.stk-pan:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stk-pan:not([hidden]) { animation: stk-in .18s ease-out; }
+@keyframes stk-in { from { opacity: 0; transform: translateY(4px); } }
 .stk-tabs [role="tab"][aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
 .stk-pan[hidden] { display: none; }
-@media (prefers-reduced-motion: reduce) { .stk-tabs [role="tab"] { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .stk-tabs [role="tab"] { transition: none; } .stk-pan:not([hidden]) { animation: none; } }
 .sh-head { padding: 14px 18px 0; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: start; }
 .sh-head h3 { margin: 0; font-size: 21px; font-weight: 900; }
 .sh-head .x { background: none; border: 0; font-size: 22px; line-height: 1; padding: 4px 6px; cursor: pointer; color: var(--muted); }

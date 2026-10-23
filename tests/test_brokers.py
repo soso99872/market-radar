@@ -431,12 +431,17 @@ class TestApplyDir(unittest.TestCase):
                                  _ev("2026-04-01", "高盛", 1800, prev_target=1500, dir="up")])
         self.assertEqual(out[1]["dir"], "up")
 
-    def test_rule2_overrides_keyword(self):
+    def test_rule2_never_contradicts_keyword(self):
+        # 原文關鍵字 up、② 比出 down(配股前後基準不同):以原文為準,不採用 ②
         out = brokers.apply_dir([_ev("2026-03-01", "高盛", 1000), _ev("2026-04-01", "高盛", 900, dir="up")])
-        self.assertEqual(out[1]["dir"], "down")
+        self.assertEqual((out[1]["dir"], out[1]["prev_target"]), ("up", None))
+
+    def test_rule2_overrides_keep_keyword(self):
+        out = brokers.apply_dir([_ev("2026-03-01", "高盛", 1000), _ev("2026-04-01", "高盛", 1200, dir="keep")])
+        self.assertEqual((out[1]["dir"], out[1]["prev_target"]), ("up", 1000))
 
     def test_window_365_days(self):
-        out = brokers.apply_dir([_ev("2025-01-01", "高盛", 1000), _ev("2026-01-01", "高盛", 1200, dir="down"),
+        out = brokers.apply_dir([_ev("2025-01-01", "高盛", 1000), _ev("2026-01-01", "高盛", 1200, dir="keep"),
                                  _ev("2026-01-02", "花旗", 1300, dir="keep")])
         self.assertEqual(out[1]["dir"], "up")      # 剛好 365 天內
         out = brokers.apply_dir([_ev("2025-01-01", "高盛", 1000), _ev("2026-01-02", "高盛", 1200, dir="down")])
@@ -885,6 +890,41 @@ class TestRound7(unittest.TestCase):
         self.assertEqual(P5("記憶體股外資喊價", b), [])
         b = "外資圈上調南亞科（2408）目標價。瑞銀因此給予買進評等，目標價大升至300元。"
         self.assertEqual(sig(P5("記憶體股外資喊價", b)), [("2408", "瑞銀", 300, None)])
+
+
+class TestRound9(unittest.TestCase):
+    def test_9626092_range_not_target(self):
+        b = "而本土投顧圈對大立光的最高目標價喊上6,340元，其他多數落在5,000至5,500元不等。"
+        self.assertNotIn(5500, [e["target"] for e in P5("大立光目標價喊上5,020元", b)])
+
+    def test_range_between_not_target(self):
+        b = "大立光（3008）法人目標價介於5,000至5,500元之間。"
+        self.assertEqual(P5("大立光研究報告", b), [])
+
+    def test_9099615_adjust_list_takes_last(self):
+        b = "華邦電仍為大摩首選個股，且目標價在一個半月之內四度上調，從30元升至38元、42元、50元、65元，翻了一倍有餘。"
+        got = P5("大摩上調華邦電（2344）目標價", b)
+        self.assertEqual([(e["broker"], e["target"], e["prev_target"]) for e in got], [("摩根士丹利", 65, 50)])
+
+    def test_9114648_adjust_list_with_clause_before_last(self):
+        b = "大摩最近一個多月來，連續三度調降聯發科目標價，從1,800元降至1,588元、1,388元、法說前夕再降至1,288元，評等則早於9月中下旬即領先市場由「優於大盤」降至「中立」，相當罕見。"
+        got = P5("外資紛紛下調聯發科（2454）評等與目標價", b)
+        self.assertEqual([(e["broker"], e["target"], e["prev_target"]) for e in got], [("摩根士丹利", 1288, 1388)])
+
+    def test_9798461_spaced_unit_not_target(self):
+        b = "高盛預測 2027 及 2028 年資本支出分別上調至 850 億美元與 980 億美元。"
+        self.assertEqual(P5("台積電（2330）目標價上修潮", b), [])
+
+    def test_9798461_respectively_with_ji(self):
+        b = ("隨台積電（2330）法說會逐漸接近，外資圈開始湧現一波目標價調升潮。繼摩根大通（小摩）證券後，"
+             "最新如摩根士丹利（大摩）與高盛等證券分別上調至 3,088 元及 3,300 元，評等則均給予正向的「優於大盤」與「買進」。")
+        self.assertEqual({(e["broker"], e["target"]) for e in P5("台積電目標價上修潮來了", b)},
+                         {("摩根士丹利", 3088), ("高盛", 3300)})
+
+    def test_9768749_rule2_keeps_keyword_dir(self):
+        out = brokers.apply_dir([_ev("2026-05-01", "高盛", 6300, code="3777"),
+                                 _ev("2026-08-01", "高盛", 3777, code="3777", dir="up")])
+        self.assertEqual((out[1]["dir"], out[1]["prev_target"]), ("up", None))
 
 
 class TestRound8(unittest.TestCase):

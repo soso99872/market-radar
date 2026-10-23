@@ -94,16 +94,18 @@ _RATING_RE = re.compile(r"[「『](" + _RATINGS + r")[」』]|(" + _RATINGS + r"
 _NUM = r"\d[\d,]*(?:\.\d+)?"
 _BAD_UNIT = r"(?!\d)(?![.,]\d)(?![\d,.]*[美港日歐%％倍億萬月日年檔家張季點成度台片顆支套人股xX])(?![–—~～-]\d)(?!元?以上)"   # 後面接單位或「480–500」這種範圍都不是目標價
 # 「從 X 元…至 Y 元」「由 X 元直衝 Y 元」「從 500 元升到 725 元」
-_FROM_TO = re.compile(r"[從由](?:原先的?)?\s*(" + _NUM + r")\s*元?\s*((?:[^\d，。；、]|\d+%){0,14}?)\s*(" + _NUM + r")\s*元")
+_FROM_TO = re.compile(r"[從由](?:原先的?)?\s*(" + _NUM + r")\s*元?\s*((?:[^\d，。；、]|\d+%){0,14}?)\s*(" + _NUM + r")\s*元((?:[、與及]\s*" + _NUM + r"(?!\d)(?![.,]\d)元?(?![^\d，。；、]{0,3}[升降調修]))*(?:、[^\d，,。；、]{0,10}?(?:再|又)?[升降調修]+至\s*" + _NUM + r"(?!\d)(?![.,]\d)元?)?)")   # 第 4 組:「從30元升至38元、42元、50元」連續調整清單
 # 「分別由A元上調至B元、C元上調至D元」第二組沒有「由」,前面接「、」,中間一定要有升降字眼
 _FROM_TO_B = re.compile(r"(?<=、)\s*(" + _NUM + r")\s*元([^\d，,。；、]{0,3}[升降調修][^\d，,。；、]{0,10}?)\s*(" + _NUM + r")\s*元")
 # 「分別由1,000元、2,000元」前次目標價清單(兩個以上)
+# 「落在5,000至5,500元不等」「介於…之間」是統計區間,不是某份報告的目標價
+_RANGE = re.compile(r"(落在|介於)?\s*(" + _NUM + r")\s*元?\s*[至到~～-]\s*(" + _NUM + r")\s*元?\s*(不等|之間|區間)?")
 _PREV_LIST = re.compile(r"[從由](?:原先的?)?\s*" + _NUM + r"\s*元?(?:[、與]" + _NUM + r"\s*元?)+")
 # 金額觸發:強觸發可省略「元」;弱觸發一定要有「元」
 _STRONG = r"(?:目標價維持|目標價為|目標價|目標股價|調升至|上調至|調高至|上修至|調降至|下調至|下修至|提高至|升至|升到|降至|降到|喊到|喊|上看)"
 _WEAK = r"(?:看到|看|為|至|到|達)"
-_AMT_STRONG = re.compile(_STRONG + r"\s*(" + _NUM + r")" + _BAD_UNIT + r"(元)?((?:[、與]" + _NUM + r"元?)*)")
-_AMT_WEAK = re.compile(_WEAK + r"\s*(" + _NUM + r")\s*元(?!以上)((?:[、與]" + _NUM + r"元?)*)")
+_AMT_STRONG = re.compile(_STRONG + r"\s*(" + _NUM + r")" + _BAD_UNIT + r"(元)?((?:[、與及]\s*" + _NUM + r"元?)*)")
+_AMT_WEAK = re.compile(_WEAK + r"\s*(" + _NUM + r")\s*元(?!以上)((?:[、與及]\s*" + _NUM + r"元?)*)")
 # 「維持4,750元目標價」這種金額在前、目標價在後的寫法
 _AMT_POST = re.compile(r"(" + _NUM + r")\s*元\s*(?:的)?目標(?:股)?價")
 _TP_RE = re.compile(r"目標價|目標股價|合理股價")
@@ -279,12 +281,15 @@ def load_names(root=ROOT):
 _FULL = str.maketrans("０１２３４５６７８９，．", "0123456789,.")
 
 
+_NUM_UNIT_GAP = re.compile(r"(\d) (?=[億萬兆美元%％倍])")    # 「850 億美元」「3,088 元」:數字與單位之間的空白去掉,單位排除才擋得到
+
+
 def _clean(text):
     """去標籤、全形數字轉半形、連續空白壓成一個。換行保留給內文斷句。"""
     text = re.sub(r"<[^>]+>", "", text or "")
     text = text.translate(_FULL)
     text = re.sub(r"[ \t　\xa0]+", " ", text)
-    return text
+    return _NUM_UNIT_GAP.sub(lambda m: m.group(1), text)
 
 
 def _num(s):
@@ -350,6 +355,8 @@ def _not_target(clause, start, num_at, num, yuan, sentence=""):
         return True
     if not yuan and _YEAR_RE.fullmatch(num):
         return True
+    if any((m.group(1) or m.group(4)) and m.start(2) <= num_at < m.end(3) for m in _RANGE.finditer(clause)):
+        return True
     if _SCENE_RE.search(clause[max(0, num_at - 40):num_at]):    # 10 字抓不到「樂觀情境，…目標價跟著提升到」
         return True
     if "目標" not in clause[start:num_at] and _PRICE_RE.search(clause, max(0, num_at - 10), num_at):
@@ -381,7 +388,11 @@ def _amounts(clause, carry_tp, sentence=""):
             continue
         if _not_target(clause, m.start(), m.start(3), m.group(3), True, sentence):
             continue
-        found.append((m.start(), _num(m.group(3)), _num(m.group(1))))
+        tail = re.findall(_NUM, m.group(4)) if m.re.groups > 3 and "分別" not in clause else []
+        if tail:    # 連續調整:最新是清單最後一個,前次是它前面那個
+            found.append((m.start(), _num(tail[-1]), _num((m.group(1), m.group(3), *tail)[-2])))
+        else:
+            found.append((m.start(), _num(m.group(3)), _num(m.group(1))))
         used.append((m.start(), m.end()))
 
     def free(a, b):
@@ -440,7 +451,7 @@ def _analyze(text, idx, title="", fallback_stocks=()):
         sentence = sentence.strip()
         if not sentence:
             continue
-        for whole, clause in [(w, c) for w in sentence.split("；") for c in _SPLIT.split(w)]:
+        for whole, clause in [(w, c) for w in sentence.split("；") for c in ([w] if any(re.search("[升降調修]", m.group(4)) for m in _FROM_TO.finditer(w)) else _SPLIT.split(w))]:    # 連續調整清單最後一項帶說明(「、法說前夕再降至X元」)不能被切開
             ents = idx.find(clause, codes)
             stocks = list(dict.fromkeys(v for _, _, k, v in idx.find(whole, codes) if k == "stock"))
             # 「台積電（2330）」括號代號也算
@@ -454,6 +465,10 @@ def _analyze(text, idx, title="", fallback_stocks=()):
             cmp_names |= {v for s, e, k, v in ents if k == "broker" and re.search("除了?$", clause[max(0, s - 2):s]) and clause.startswith("外", e)}    # 「除了高盛外」的高盛不是主詞
             brokers = list(dict.fromkeys(v for _, _, k, v in ents if k == "broker" and v not in cmp_names))
             amts = [a for a in _amounts(clause, carry_tp, sentence) if not any(s <= a[0] < e for _, s, e in cmp_)]
+            if "分別" in clause and len(amts) > 1 and len(brokers) != len(amts):    # 「繼小摩後,最新如大摩與高盛分別上調至A元及B元」:分別之前上一個逗號以前的券商不算
+                cut = max((m.end() for m in _CLAUSE_END.finditer(clause, 0, clause.find("分別"))), default=0)
+                near = list(dict.fromkeys(v for s, _, k, v in ents if k == "broker" and v not in cmp_names and s >= cut))
+                brokers = near if len(near) == len(amts) else brokers
             has_tp = bool(_TP_RE.search(clause))
             if len(brokers) == 1:
                 carry_broker = brokers[0]
@@ -682,8 +697,10 @@ def apply_dir(events):
                      and not (p["target"] == e["target"] and _days(p["date"], e["date"]) <= 7)]
             if cands:
                 p = cands[-1]
-                e["dir"] = "up" if e["target"] > p["target"] else "down" if e["target"] < p["target"] else "keep"
-                e["prev_target"] = p["target"]
+                d = "up" if e["target"] > p["target"] else "down" if e["target"] < p["target"] else "keep"
+                if {d, e.get("dir")} != {"up", "down"}:    # 原文關鍵字說上修,規則②卻比出下降(配股前後價格基準不同)→ 以原文為準
+                    e["dir"] = d
+                    e["prev_target"] = p["target"]
         prevs.append(e)
     return evs
 

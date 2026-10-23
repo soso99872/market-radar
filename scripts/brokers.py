@@ -118,6 +118,9 @@ _OLD_VETO = re.compile(r"先前|此前|之前|稍早")    # 標題金額要不�
 _OLD_SENT = re.compile(r"綜合近期|第[一二三四五]家為|(?:\d+月[底初]|年初)[^，。；]{0,4}?(?:率先|曾)")   # 整句(到句號)都是舊報告回顧
 _TOP_NOW = re.compile(r"目前以[^，。；]{0,12}?的\s*(" + _NUM + r")\s*元")
 _OLD_NUM = re.compile(r"(?:先前|此前|之前|稍早|日前)(?:的|為)?(?=\d)")    # 「從先前的3,000元調升至3,300元」:舊的是前次金額,不是這份報告
+# 排名／彙整說法:裡面的金額沒有調整動作(由／從…至、調升…)就是現況彙整,不是新報告
+_RANKING = re.compile(r"最高目標價(?:則)?(?:是|為)|目標價最高的是|以[^。；]{0,20}?最高，其次|其次(?:依序)?(?:為|是)|居次|第[二三]是|(?:彙整|檢視|盤點)[^，。；]{0,10}目標價")
+_ACTION = re.compile(r"[由從]\s*\d|調升|上調|調高|升至|升到|上修|大升|下調|調降|降至|降到|下修|調低")
 _PRICE_RE = re.compile(r"盤中|(?<!合理)(?<!目標)股價|收盤|衝達|一度|壓至|新高|漲停")
 _CLAUSE_END = re.compile(r"[，,](?!\d{3})")
 _YEAR_RE = re.compile(r"(?:19|20)\d\d")
@@ -324,14 +327,67 @@ def _direction(prev, target, *texts):
 _RATING_MOVE = re.compile(r"[從由][「『]?(?:" + _RATINGS + r")[」』]?(?:上調|調高|調升|升級|上修|下調|調降|調低|降級|下修|調整|升|降)(?:至|到)[「『]?(" + _RATINGS + ")")
 
 
-def _rating(*texts):
-    for t in texts:
-        m = _RATING_MOVE.search(t)
+def _rating_tokens(text, bare=True):
+    """文字裡所有評等詞 [(起, 迄, 評等, 是否裸詞)]:「從A調到B」整段算一個(取 B)、有「」／評等字眼的,bare=True 時再加上其餘裸評等詞。"""
+    toks = []
+    for rx in (_RATING_MOVE, _RATING_RE):
+        for m in rx.finditer(text):
+            if not any(m.start() < e and s < m.end() for s, e, _, _ in toks):
+                toks.append((m.start(), m.end(), next(g for g in m.groups() if g), False))
+    for m in re.finditer(_RATINGS, text) if bare else ():
+        if not any(m.start() < e and s < m.end() for s, e, _, _ in toks):
+            toks.append((m.start(), m.end(), m.group(), True))
+    return sorted(toks)
+
+
+_ALL_RATING = re.compile(r"(?:均|皆|都)(?:為|是|給予|維持)[「『]?(" + _RATINGS + r")(?![」』]?[或、及與])")   # 「評等均為「優於大盤」」「均給予…評等」套用子句裡全部事件(後面接「或」另一種評等就不套)
+_LINK = re.compile(r"(?:[（(]\d{4,5}[）)])?[、與及和]")
+_NEAR_RATING_END = re.compile(r"[，,](?!\d{3})")
+
+
+def _group(clause, ents, i):
+    """ents[i] 與它用「、與及和」直接連起來的同類名稱(「高盛、滙豐近期重申「買進」」)的 (起, 迄) 清單。"""
+    lo = hi = i
+    while hi + 1 < len(ents) and ents[hi + 1][2] == ents[i][2] and _LINK.fullmatch(clause[ents[hi][1]:ents[hi + 1][0]]):
+        hi += 1
+    while lo and ents[lo - 1][2] == ents[i][2] and _LINK.fullmatch(clause[ents[lo - 1][1]:ents[lo][0]]):
+        lo -= 1
+    return [e[:2] for e in ents[lo:hi + 1]]
+
+
+def _rating(clause, sentence, ents, code, broker, n_stocks, n_brokers):
+    """這個事件的評等。評等詞要緊鄰該事件的券商名或股票名(中間沒夾別的股票／券商名):「」／評等字眼的可往後跨逗號,
+    裸評等詞只限同子句;緊鄰的評等有兩種以上、或對不準就留空。整句只有一個股票、一個券商、一種評等詞時,才用整句的。"""
+    m = _ALL_RATING.search(clause)
+    if m:
+        return m.group(1)
+    toks = _rating_tokens(clause)
+    if not toks:    # 子句自己沒寫評等,下一個「；」段落寫「皆為「優於大盤」評等」就是共用的(「奇鋐…；富世達…,皆為「優於大盤」評等」)
+        segs = sentence.split("；")
+        i = next((i for i, w in enumerate(segs) if clause in w), None)
+        m = _ALL_RATING.search(segs[i + 1]) if i is not None and i + 1 < len(segs) else None
         if m:
             return m.group(1)
-        m = _RATING_RE.search(t)
-        if m:
-            return next(g for g in m.groups() if g)
+    for kind, own in (("broker", broker), ("stock", code)):
+        vals = set()
+        for i, (ms, me, k, v) in enumerate(ents):
+            if k != kind or v != own:
+                continue
+            grp = _group(clause, ents, i)
+            for ts, te, val, bare in toks:
+                own_grp = [] if "分別" in clause[ms:ts] else grp    # 「分別給予…」各家評等不同,不共用
+                others = [x[:2] for x in ents if x[3] not in (code, broker) and x[:2] not in own_grp]
+                a, b = (me, ts) if ts >= me else (te, ms)
+                if te > ms and ts < me:
+                    continue
+                if any(s < b and a < e for s, e in others) or ((bare or ts < me) and _NEAR_RATING_END.search(clause, a, b)):
+                    continue
+                vals.add(val)
+        if vals:
+            return vals.pop() if len(vals) == 1 else None
+    if n_stocks == 1 and n_brokers == 1:
+        vals = {t[2] for t in _rating_tokens(sentence, False)}
+        return vals.pop() if len(vals) == 1 else None
     return None
 
 
@@ -373,6 +429,15 @@ def _not_target(clause, start, num_at, num, yuan, sentence=""):
 
 # 一句裡「A升至X元、B升至Y元」與「…分別調高至X元與Y元」切成片段,各自配對
 _SPLIT = re.compile(r"(?<=元)、(?=[^\d、，]{1,12}?[升降調修喊看])|，(?=[^，]*分別)")
+
+
+def _summary_amt(clause, pos):
+    """clause 是排名／彙整說法,而 pos 那個金額所在的逗號子句沒有調整動作 → True。"""
+    if not _RANKING.search(clause):
+        return False
+    a = max((m.end() for m in _CLAUSE_END.finditer(clause, 0, pos)), default=0)
+    m = _CLAUSE_END.search(clause, pos)
+    return not _ACTION.search(clause[a:m.start() if m else len(clause)])
 
 
 def _amounts(clause, carry_tp, sentence=""):
@@ -429,7 +494,7 @@ def _amounts(clause, carry_tp, sentence=""):
             continue
         used.append((m.start(), m.end()))
         found.append((m.start(), _num(m.group(1)), None))
-    found = sorted((f for f in found if f[1] > 0), key=lambda x: x[0])
+    found = sorted((f for f in found if f[1] > 0 and not _summary_amt(clause, f[0])), key=lambda x: x[0])
     pm = _PREV_LIST.search(clause) if "分別" in clause else None    # 「分別由X元、Y元調高至A元、B元」:前次依序對應
     if pm:
         prevs = re.findall(_NUM, pm.group(0))
@@ -503,13 +568,16 @@ def _analyze(text, idx, title="", fallback_stocks=()):
             if title and len(amts) == 1 and len(stocks) > 1 and len(bl) == 1:    # 只用在內文(標題沒股票可選就交給內文,別擋掉抓內文)
                 stocks = _nearest_stock(clause, ents, amts[0][0]) or stocks
             pairs = _pair(stocks, bl, amts)
+            sent_ents = idx.find(sentence, codes)    # 整句 fallback 用:整句只有一個股票、一個券商才採用
+            n_st = len(set(stocks) | {v for _, _, k, v in sent_ents if k == "stock"})
+            n_bk = len(set(bl) | {v for _, _, k, v in sent_ents if k == "broker"})
             ctx = (clause, sentence, title)
             quoted = re.findall(r"[「『](" + _RATINGS + r")[」』]", clause)
             by_order = "分別" in clause and not _RATING_MOVE.search(clause) and len(pairs) > 1 and len(quoted) == len(pairs)    # 「分別給予「中立」、「優於大盤」…」評等也依序配對
             for i, (code, broker, (_, target, prev)) in enumerate(pairs):
                 events.append({
                     "code": code, "broker": broker, "target": target,
-                    "rating": quoted[i] if by_order else _rating(clause, sentence),
+                    "rating": quoted[i] if by_order else _rating(clause, sentence, ents, code, broker, n_st, n_bk),
                     "dir": _direction(prev, target, *ctx),
                     "prev_target": prev,
                 })

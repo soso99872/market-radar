@@ -256,7 +256,7 @@ class PrevTargetBodyTest(unittest.TestCase):
 class KeepTest(unittest.TestCase):
     def test_reaffirm_rating_only_is_not_keep(self):
         e = P("花旗重申買進,台積電目標價2,055元")
-        one(self, e, "2330", "花旗", 2055, dir_=None)
+        one(self, e, "2330", "花旗", 2055, dir_=None, rating="買進")
 
     def test_maintain_target_is_keep(self):
         one(self, P("高盛維持台積電目標價2,055元"), "2330", "高盛", 2055, dir_="keep")
@@ -938,6 +938,65 @@ class TestRound8(unittest.TestCase):
              "目標價分別為1,200元、1,200元、1,320元。")
         got = {(e["broker"], e["target"]): e["rating"] for e in P5("台光電目標價 喊1,695", b)}
         self.assertEqual(got, {("麥格理", 1200): "中立", ("摩根大通", 1200): "優於大盤", ("大和", 1320): "優於大盤"})
+
+
+NAMES6 = dict(NAMES5, **{
+    "2409": "友達", "3481": "群創", "2337": "旺宏", "6531": "愛普*", "6770": "力積電", "3443": "創意", "2376": "技嘉",
+})
+IDX6 = brokers.build_index(NAMES6)
+
+
+def P6(title, body=None):
+    return brokers.parse(title, body, IDX6)
+
+
+class TestRound6(unittest.TestCase):
+    """第 6 次修正:評等要緊鄰該事件的券商／股票、彙整句裡沒有調整動作的金額不算新報告。原文句子來自 _cache/t05。"""
+
+    def ratings(self, events):
+        return {(e["code"], e["target"]): e["rating"] for e in events}
+
+    def test_9248446_rating_not_taken_from_other_stock(self):
+        b = ("摩根士丹利（大摩）指出面板報價回升。台廠中友達（2409）從「中立」升至「優於大盤」，目標價從12.5元升至16.5元，"
+             "而群創（3481）則維持中立，但目標價從11.5元升至19元，兩者調幅分別達31.2%、65.2%。")
+        r = self.ratings(P6("大摩看面板產業 電視面板報價迎春燕、大升台廠雙虎目標價", b))
+        self.assertEqual((r[("2409", 16.5)], r[("3481", 19)]), ("優於大盤", "中立"))
+
+    def test_9263359_rating_follows_own_broker(self):
+        b = "大和資本給予買進，目標價1,400元；里昂日前也給出優於大盤，目標價1,300元。"
+        r = {(e["broker"], e["target"]): e["rating"] for e in P6("台達電（2308）目標價 最高1,400", b)}
+        self.assertEqual(r[("里昂證券", 1300)], "優於大盤")
+
+    def test_9099615_other_stocks_rating_left_blank(self):
+        b = ("摩根士丹利（大摩）上調五家台廠目標價，即華邦電（2344）、南亞科（2408）、旺宏（2337）、愛普*（6531）、力積電（6770）。"
+             "另外，南亞科從110元升至130元，是DDR4短缺的主要受惠者；旺宏從29元升至40元，預期明年第2季開始生產；"
+             "愛普*從435元升至475元，可望受惠於DDR3漲價；力積電從30元上調至35元，評級從「中立」上調到「優於大盤」，有望意外受惠。")
+        r = self.ratings(P6("記憶體火熱！大摩上調五檔台股目標價", b))
+        self.assertEqual([r.get(("2408", 130)), r.get(("2337", 40)), r.get(("6531", 475))], [None, None, None])
+        self.assertEqual(r.get(("6770", 35)), "優於大盤")
+
+    def test_9510483_two_level_upgrade_left_blank(self):
+        b = "大和資本將目標價從260元調高到422元，投資評等從「持有」上調兩級到最高級「買進」；摩根士丹利（大摩）將目標價從295元上調到375元，維持中立評等。"
+        r = self.ratings(P6("技嘉（2376）受惠於 Neo Cloud 需求高 大和及大摩將目標價調高到422元、375元", b))
+        self.assertEqual((r[("2376", 422)], r[("2376", 375)]), (None, "中立"))
+
+    def test_all_rating_shared(self):
+        b = "摩根大通（小摩）證券指出，小摩將奇鋐（3017）目標價升至5,200元，升幅30%；富世達升至4,000元，升幅53.8%，皆為「優於大盤」評等。"
+        self.assertEqual(set(self.ratings(P6("小摩調升散熱鏈目標價", b)).values()), {"優於大盤"})
+
+    def test_9330839_ranking_amount_is_not_new_report(self):
+        b = ("以目標價的調漲幅度來看，則是野村上調113.6%到2,670元最高，其次是摩根大通調高104%到1,900元、滙豐調高79%到3,120元；"
+             "最高目標價則是摩根士丹利上看3,288元。")
+        self.assertNotIn(3288, [e["target"] for e in P6("創意獲外資法人上調目標價最多", b)])
+
+    def test_9764013_ranking_amount_is_not_new_report(self):
+        b = ("花旗證券上修奇鋐（3017）目標價由3,800元調升至4,350元。奇鋐昨日股價大漲245元收3,430元，距花旗目標價4,350元尚有26.8%差距，"
+             "而外資券商中，目前給奇鋐目標價最高的是麥格理，達4,600元。")
+        self.assertNotIn(4600, [e["target"] for e in P6("花旗上修獲利預估與目標價 奇鋐看旺", b)])
+
+    def test_ranking_after_real_move_is_kept(self):
+        b = "高盛（3017）將奇鋐目標價調升至4,600元，居外資圈最高。"
+        self.assertIn(4600, [e["target"] for e in P6("奇鋐目標價調升至4,600元", b)])
 
 
 if __name__ == "__main__":

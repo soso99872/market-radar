@@ -10,7 +10,7 @@
 月營收視為次月 11 日起才知道(法定公告期限是 10 日)。
 """
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import os
 import re
@@ -750,11 +750,14 @@ SNAP = {}     # 代號 → 查詢索引用的最新營收、產業、60 日漲�
 STARS_BASE = {"A": 5, "B": 4, "C": 3, "D": 3}   # 陷阱(營收減速、外資 20 日大賣)A/B/C 各扣 1 顆;回測見 explosion_study.py
 FO_DUMP = -10            # 外資 20 日買賣超佔成交金額 ≤ −10% 視為大賣
 BRK_MAX = 30   # 每檔最多帶幾筆券商目標價事件進個股檔
+BRK_DAYS = 90  # 面板只列這麼多天內的報告(券商紀錄 broker_stats 照舊用全部歷史)
 
 
-def load_brk(path, limit=BRK_MAX):
+def load_brk(path, limit=BRK_MAX, today=None, days=BRK_DAYS):
     """讀 brokers.py 產生的 events.json,回傳 {代號: 事件 list(新到舊,最多 limit 筆)}。
-    檔案不存在、壞掉或格式不對都回空 dict,不報錯(extra.brk 就不會產生)。"""
+    只留 today 往前 days 天內(含第 days 天)的報告、同券商只留最新一筆;該股 days 天內一筆都沒有時,
+    退回只留最新那一天的事件並標 "stale": True。檔案不存在、壞掉或格式不對都回空 dict,不報錯(extra.brk 就不會產生)。"""
+    cut = ((today or datetime.now().date()) - timedelta(days=days)).isoformat()
     try:
         with open(path, encoding="utf-8") as f:
             ev = json.load(f)
@@ -764,7 +767,15 @@ def load_brk(path, limit=BRK_MAX):
         for x in ev:
             if isinstance(x, dict) and x.get("code"):
                 by.setdefault(str(x["code"]), []).append({k: v for k, v in x.items() if k != "title"})   # 前端不顯示標題,省檔案大小
-        return {c: sorted(v, key=lambda x: str(x.get("date") or ""), reverse=True)[:limit] for c, v in by.items()}
+        out = {}
+        for c, v in by.items():
+            v.sort(key=lambda x: str(x.get("date") or ""), reverse=True)
+            fresh = list({x.get("broker"): x for x in reversed(v) if str(x.get("date") or "")[:10] >= cut}.values())   # 同券商留最新(同日留排序在前的)
+            if not fresh:
+                top = str(v[0].get("date") or "")[:10]
+                fresh = [dict(x, stale=True) for x in v if str(x.get("date") or "")[:10] == top]
+            out[c] = sorted(fresh, key=lambda x: str(x.get("date") or ""), reverse=True)[:limit]
+        return out
     except (OSError, ValueError):
         return {}
 
@@ -846,6 +857,14 @@ def peak_risk(method, fair, price, pb, bh, yoy_pts, months3):
     return price / pb * b[1] <= price * 0.8 + eps_
 
 
+def _day(s):
+    """資料日字串轉 date;不是日期格式回 None(load_brk 就用今天)。"""
+    try:
+        return datetime.strptime(str(s)[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
 def fair_all(rp, close, last):
     """每檔股票的模型合理價(公式見 fairvalue.py)。同時把個股面板要用的歷史資料放進 EXTRAS。"""
     import fairvalue as FV
@@ -860,7 +879,7 @@ def fair_all(rp, close, last):
         cons = json.load(open(os.path.join(history.ROOT, "data", "estimates", "latest.json"), encoding="utf-8")).get("s", {})
     except FileNotFoundError:
         cons = {}
-    brk = load_brk(os.path.join(history.ROOT, "data", "brokers", "events.json"))
+    brk = load_brk(os.path.join(history.ROOT, "data", "brokers", "events.json"), today=_day(last))
     cur_m = (int(last[:4]), int(last[5:7]))
     w1 = (cur_m[1] - 1) / 12   # 未來 12 個月 EPS = 今年預估 × 剩餘比例 + 明年預估 × 已過比例
     vm = [m for m in sorted(VAL) if m < cur_m][-FV.MAX_HIST:]

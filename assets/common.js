@@ -454,7 +454,7 @@
     evs = Array.isArray(evs) ? evs.filter(function (b) { return b && b.date && b.broker && b.target > 0; }) : [];
     if (!evs.length) return hasTgt ? '<p class="fvhow tp-nobrk">近一年沒有收到這檔的券商目標價新聞(只收錄經濟日報有報導的)</p>' : "";
     var help = MR.help("brk", "逐家券商目標價與券商紀錄怎麼看",
-      "<p>列表是經濟日報報導的券商目標價,用規則式程式從新聞標題與內文解析,<b>可能漏抓或誤抓</b>(例如一篇提到多家券商、金額對不到該檔);只收約一年內、有被報導的,調降常沒被報導,樣本偏樂觀。畫面只放事實與「新聞」連結,請點進新聞核對。同一家券商只列最新一筆,其餘收在「看全部」。</p>" +
+      "<p>列表是經濟日報報導的券商目標價,用規則式程式從新聞標題與內文解析,<b>可能漏抓或誤抓</b>(例如一篇提到多家券商、金額對不到該檔);只列近 90 天內的報告,每家券商只列最新一筆;90 天內都沒有時改列最新一筆舊報告並標出日期。有被報導的才收,調降常沒被報導,樣本偏樂觀。畫面只放事實與「新聞」連結,請點進新聞核對。</p>" +
       "<p><b>喊價幅度</b> = 目標價 ÷ 發布日前一個交易日收盤價 − 1。「已達標」= 發布後收盤價曾經 ≥ 目標價;喊價幅度 ≤ 0(目標價不高於當時股價)不判斷達標。優先用資料裡記錄的基準價;沒有時改用面板近 120 個交易日的收盤價,發布日早於這個範圍又沒有基準價的,喊價幅度顯示「—」,「已達標」也只看面板這段期間內是否收盤達標(發布日早於這段期間的不標達標日期)。</p>" +
       "<p>每列下方的<b>券商紀錄</b>是這家券商在全市場所有個股的歷史合算,不限這一檔:</p>" +
       "<ul><li><b>6／12 個月內達標率</b>:發布後 126／252 個交易日內,任一日收盤 ≥ 目標價的比例;只算喊價幅度 &gt; 0 且已滿期的紀錄,未滿期的不論是否已達標都不算。</li>" +
@@ -469,7 +469,7 @@
       if (seen[b.broker]) seen[b.broker].push(b); else { seen[b.broker] = [b]; groups.push(seen[b.broker]); }
     });
     var rest = groups.slice(BRK_MAX);
-    return '<h5 class="bk-h">逐家券商目標價' + help + '</h5><ul class="bk-list">' + groups.slice(0, BRK_MAX).map(function (g) { return brkGroup(g, doc); }).join("") + "</ul>" +
+    return '<h5 class="bk-h">逐家券商目標價' + help + "</h5>" + (evs[0].stale ? '<p class="fvhow bk-stale">近 90 天沒有新的券商報告,以下是最新一筆(' + esc(evs[0].date) + ")</p>" : "") + '<ul class="bk-list">' + groups.slice(0, BRK_MAX).map(function (g) { return brkGroup(g, doc); }).join("") + "</ul>" +
       (rest.length ? '<details class="bk-more bk-rest"><summary>其餘 ' + rest.length + ' 家</summary><ul class="bk-list">' + rest.map(function (g) { return brkGroup(g, doc); }).join("") + "</ul></details>" : "") +
       '<p class="fvhow tp-src">逐家券商:經濟日報新聞整理<span class="bk-at"></span>;只收得到有報導的,調降常沒被報導,樣本偏樂觀。</p>';
   }

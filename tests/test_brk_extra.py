@@ -107,3 +107,26 @@ class TgtStaleTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class BrkTgtTest(unittest.TestCase):
+    def test_empty_or_bad_price(self):
+        self.assertIsNone(radar.brk_tgt([], 100))
+        self.assertIsNone(radar.brk_tgt(None, 100))
+        self.assertIsNone(radar.brk_tgt([ev("2330", "2026-10-20")], 0))
+        self.assertIsNone(radar.brk_tgt([ev("2330", "2026-10-20")], None))
+
+    def test_first_stale(self):
+        self.assertIsNone(radar.brk_tgt([dict(ev("2330", "2026-01-20"), stale=True)], 100))
+
+    def test_same_broker_first_only(self):
+        r = radar.brk_tgt([ev("2330", "2026-10-20", "大摩", 120), ev("2330", "2026-10-10", "大摩", 200)], 100)
+        self.assertEqual(r, {"mean": 120, "n": 1, "up": 20.0})
+
+    def test_anon_each_counts(self):
+        r = radar.brk_tgt([ev("2330", "2026-10-20", "未具名", 110), ev("2330", "2026-10-19", "未具名", 130)], 100)
+        self.assertEqual(r, {"mean": 120, "n": 2, "up": 20.0})
+
+    def test_mean_of_brokers(self):
+        r = radar.brk_tgt([ev("2330", "2026-10-20", "大摩", 100), ev("2330", "2026-10-19", "高盛", 111)], 100)
+        self.assertEqual(r, {"mean": 105.5, "n": 2, "up": 5.5})

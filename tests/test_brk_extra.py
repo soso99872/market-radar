@@ -75,6 +75,35 @@ class LoadBrkTest(unittest.TestCase):
         self.assertEqual({(x["broker"], x["stale"]) for x in r["2454"]}, {("乙", True), ("丙", True)})
         self.assertNotIn("stale", r["2330"][0])
 
+    def test_stale_365_kept_366_dropped(self):
+        d365, d366 = [(TODAY - datetime.timedelta(days=n)).isoformat() for n in (365, 366)]
+        self.write(json.dumps([ev("2454", d365), ev("2330", d366)]))
+        r = radar.load_brk(self.p, today=TODAY)
+        self.assertEqual([x["stale"] for x in r["2454"]], [True])
+        self.assertNotIn("2330", r)
+
+    def test_fresh_not_stale_even_with_old_ones(self):
+        self.write(json.dumps([ev("2454", "2026-10-01", broker="甲"), ev("2454", "2024-01-01", broker="乙")]))
+        r = radar.load_brk(self.p, today=TODAY)["2454"]
+        self.assertEqual([(x["broker"], x.get("stale")) for x in r], [("甲", None)])
+
+
+class TgtStaleTest(unittest.TestCase):
+    def test_6213_dropped(self):
+        self.assertTrue(radar.tgt_stale(777, 134, 1110))
+
+    def test_boundary_kept(self):
+        self.assertFalse(radar.tgt_stale(100, 50, 350))
+        self.assertTrue(radar.tgt_stale(100, 49.9, 100))
+        self.assertTrue(radar.tgt_stale(100, 100, 350.1))
+
+    def test_only_one_side(self):
+        self.assertTrue(radar.tgt_stale(100, None, 400))
+        self.assertTrue(radar.tgt_stale(100, 40, None))
+        self.assertFalse(radar.tgt_stale(100, None, 300))
+        self.assertFalse(radar.tgt_stale(100, 60, None))
+        self.assertFalse(radar.tgt_stale(100, None, None))
+
 
 if __name__ == "__main__":
     unittest.main()

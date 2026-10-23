@@ -58,6 +58,7 @@ FOREIGN_BROKERS = {
     "法巴": ["法國巴黎", "法巴"],
     "杰富瑞": ["杰富瑞"],
     "CLSA": ["CLSA"],
+    "Aletheia": ["Aletheia資本", "Aletheia"],
 }
 # 本土券商:單獨的名字可能是股票(統一、國泰…),所以要求後面接「證券／投顧／證」,
 # 或是不會跟股票撞名的(凱基、元大…,後面不接「金」「控」「銀」)
@@ -85,54 +86,98 @@ _DOWN_RE = re.compile(r"(?:調降|下修|調低|下調|降至|降到)" + _RT + r
 # ③ 的維持／重申只在後面接目標價時才算(「重申買進」只是評等)
 _KEEP_RE = re.compile(r"(?:維持|重申)(?:[^，,。；;、\s]|(?<=\d),(?=\d)){0,10}?(?:目標價|目標股價)|目標價(?:維持|不變)")
 # 標題寫了調升／調降卻沒給前次目標價 → 內文找「從 X 元…至 Y 元」補 prev_target
+_CUM_RE = re.compile(r"今年來|年來|[二兩三四五六七八九十]度|累計|最高|最低|\d點")
 _MOVE_RE = re.compile(r"調(?!整|查)|上修|下修|升至|降至|升到|降到|大升|提高")
 
 _RATING_RE = re.compile(r"[「『](" + _RATINGS + r")[」』]|(" + _RATINGS + r")(?=評等)|(?:評等|建議|給予|維持|予以)(?:至|為|於|調升至|調降至)?[「『]?(" + _RATINGS + ")")
 
 _NUM = r"\d[\d,]*(?:\.\d+)?"
-_BAD_UNIT = r"(?!\d)(?![.,]\d)(?![\d,.]*[美港日歐%％倍億萬月日年檔家張季點成度台片顆支套人股xX])(?![–—~～-]\d)"   # 後面接單位或「480–500」這種範圍都不是目標價
+_BAD_UNIT = r"(?!\d)(?![.,]\d)(?![\d,.]*[美港日歐%％倍億萬月日年檔家張季點成度台片顆支套人股xX])(?![–—~～-]\d)(?!元?以上)"   # 後面接單位或「480–500」這種範圍都不是目標價
 # 「從 X 元…至 Y 元」「由 X 元直衝 Y 元」「從 500 元升到 725 元」
 _FROM_TO = re.compile(r"[從由](?:原先的?)?\s*(" + _NUM + r")\s*元?\s*((?:[^\d，。；、]|\d+%){0,14}?)\s*(" + _NUM + r")\s*元")
+# 「分別由A元上調至B元、C元上調至D元」第二組沒有「由」,前面接「、」,中間一定要有升降字眼
+_FROM_TO_B = re.compile(r"(?<=、)\s*(" + _NUM + r")\s*元([^\d，,。；、]{0,3}[升降調修][^\d，,。；、]{0,10}?)\s*(" + _NUM + r")\s*元")
 # 「分別由1,000元、2,000元」前次目標價清單(兩個以上)
 _PREV_LIST = re.compile(r"[從由](?:原先的?)?\s*" + _NUM + r"\s*元?(?:[、與]" + _NUM + r"\s*元?)+")
 # 金額觸發:強觸發可省略「元」;弱觸發一定要有「元」
 _STRONG = r"(?:目標價維持|目標價為|目標價|目標股價|調升至|上調至|調高至|上修至|調降至|下調至|下修至|提高至|升至|升到|降至|降到|喊到|喊|上看)"
 _WEAK = r"(?:看到|看|為|至|到|達)"
 _AMT_STRONG = re.compile(_STRONG + r"\s*(" + _NUM + r")" + _BAD_UNIT + r"(元)?((?:[、與]" + _NUM + r"元?)*)")
-_AMT_WEAK = re.compile(_WEAK + r"\s*(" + _NUM + r")\s*元((?:[、與]" + _NUM + r"元?)*)")
+_AMT_WEAK = re.compile(_WEAK + r"\s*(" + _NUM + r")\s*元(?!以上)((?:[、與]" + _NUM + r"元?)*)")
 # 「維持4,750元目標價」這種金額在前、目標價在後的寫法
 _AMT_POST = re.compile(r"(" + _NUM + r")\s*元\s*(?:的)?目標(?:股)?價")
-_TP_RE = re.compile(r"目標價|目標股價")
+_TP_RE = re.compile(r"目標價|目標股價|合理股價")
 # 非目標價的金額:前 15 字(最近一個「元」之後)有獲利類字眼;彭博／平均／共識的目標價;年份
 _EPS_RE = re.compile(r"EPS|每股純益|每股盈餘|獲利|營收", re.I)
 _CONSENSUS_RE = re.compile(r"彭博|平均|共識")
 _SCENE_RE = re.compile(r"樂觀情境|悲觀情境|(?<!基本)情境|牛市|熊市")   # 情境價不是這次的目標價
-_OLD_RE = re.compile(r"先前|此前|之前|稍早|日前|綜合近期")   # 引用舊報告
+_OLD_RE = re.compile(r"先前|此前|之前|稍早|日前")   # 引用舊報告(看金額所在子句)
+_OLD_VETO = re.compile(r"先前|此前|之前|稍早")    # 標題金額要不要被內文否決:「日前」常是幾天前的同一份報告,不算
+_OLD_SENT = re.compile(r"綜合近期|第[一二三四五]家為|(?:\d+月[底初]|年初)[^，。；]{0,4}?(?:率先|曾)")   # 整句(到句號)都是舊報告回顧
+_TOP_NOW = re.compile(r"目前以[^，。；]{0,12}?的\s*(" + _NUM + r")\s*元")
+_OLD_NUM = re.compile(r"(?:先前|此前|之前|稍早|日前)(?:的|為)?(?=\d)")    # 「從先前的3,000元調升至3,300元」:舊的是前次金額,不是這份報告
+_PRICE_RE = re.compile(r"盤中|(?<!合理)(?<!目標)股價|收盤|衝達|一度|壓至|新高|漲停")
+_CLAUSE_END = re.compile(r"[，,](?!\d{3})")
 _YEAR_RE = re.compile(r"(?:19|20)\d\d")
 _FX_RE = re.compile(r"人民幣|美元|美金|日圓|港幣|ADR")
 
 
 # 被比較對象:「超越瑞銀的11,000元」「高於大摩的目標價」——這家的金額不是這句的主詞
-_CMP_BEFORE = re.compile(r"(?:超越|超過|高於|低於|優於|勝過)[^，。；、\d]{0,3}$")
+_CMP_BEFORE = re.compile(r"(?:超越|超過|高於|低於|優於|勝過)[^，。；、\d「」『』]{0,3}$")
 _CMP_AFTER = re.compile(r"的\s*(?:目標(?:股)?價\s*)?" + _NUM + r"元?")
 
 
 def _compared(clause, ents):
     """回傳被比較的券商 [(券商, 金額結束位置)]。有「的＋金額」或前面有超越／高於等字眼才算。"""
     out = []
+    names = {v for _, _, k, v in ents if k == "broker"}
     for s, e, k, v in ents:
         if k != "broker":
             continue
         m = _CMP_AFTER.match(clause, e)
-        if _CMP_BEFORE.search(clause[max(0, s - 8):s]):
+        if clause.startswith("率先", e):    # 「Aletheia率先喊出萬元價後,大摩…」:率先的是先前那份報告,不是這句的主詞
+            out.append((v, s, clause.find("後", e) + 1 or e))
+        elif _CMP_BEFORE.search(clause[max(0, s - 8):s]):
             out.append((v, s, m.end() if m else e))
-        elif m:
+        elif m and names - {v}:    # 「X的金額」要同子句還有另一家券商當主詞才算被比較
             out.append((v, s, m.end()))
     return out
 
 
+# 股票名剛好是一般詞(材料、新產、三星…):同篇有「（代號）」或名稱後面直接接「目標價」「評等」才算股票
+AMBIGUOUS_STOCK = {
+    "材料", "新產", "大中", "三星", "大成", "新興", "至上", "數字", "宏觀", "藍天", "資通", "雙喜", "泰山",
+    "可成", "力士", "日成", "上銀", "業旺", "新建", "世紀", "中工", "台產", "光明", "中租", "冠軍", "大量",
+    "國產", "海光", "南亞", "惠光",    # 惠光:「受惠光通訊」
+}
+# 本土券商單獨名後面接這些是 ETF／期貨(富邦旗艦50、群益半導體),不是券商
+_ETF_AFTER = ("台", "臺", "旗艦", "費城", "半導體", "精選", "期貨")
+_BIG_AFTER = "關幅升增漲跌降減"          # 元大 + 這些字:「大關」「大幅」「大升」,不是券商
+_BIG_BEFORE = "千萬億兆美 	"             # 元大 前面是數字或這些字:「1兆美元大關」「20 元大幅」
+
+
+def _broker_ok(text, s, e, alias, bare_domestic):
+    """比對到的券商寫法在上下文裡是不是真的券商(排除 ETF、元大＋大關／大幅、中信建投、衛星展等)。"""
+    before, after = text[max(0, s - 2):s], text[e:e + 3]
+    if before.endswith("主動"):
+        return False
+    if alias == "中信" and text.startswith("建投", e):
+        return False
+    if alias == "星展" and before.endswith("衛"):
+        return False
+    if bare_domestic:
+        if text.startswith(_ETF_AFTER, e):
+            return False
+        if alias == "元大":
+            if after[:1] and after[0] in _BIG_AFTER:
+                return False
+            if s and (text[s - 1].isdigit() or text[s - 1] in _BIG_BEFORE):
+                return False
+    return True
+
+
 class _Index:
-    """名稱比對用的索引:股票名稱與券商寫法合成一個正規表示式,同位置取最長。"""
+    """名稱比對用的索引:股票名稱與券商寫法分開找出所有候選(含重疊),重疊時依 find 的規則取捨。"""
 
     def __init__(self, names):
         stock = {}   # 名稱／簡稱 → 代號
@@ -148,7 +193,11 @@ class _Index:
             if code in names and short not in stock:
                 stock[short] = code
         self.stock = stock
+        self.stock_by_first = {}     # 首字 → 名稱(長的在前),找候選不用逐字比整張表
+        for n in sorted(stock, key=lambda x: -len(x)):
+            self.stock_by_first.setdefault(n[0], []).append(n)
         self.broker = {}   # 寫法 → 正規名稱
+        self.domestic = set()
         forms = []         # (排序用長度, 正規表示式片段)
         for canon, aliases in FOREIGN_BROKERS.items():
             for a in aliases:
@@ -157,34 +206,48 @@ class _Index:
         for canon, aliases in DOMESTIC_BROKERS.items():
             for a in aliases:
                 self.broker[a] = canon
+                self.domestic.add(a)
                 forms.append((len(a) + 2, re.escape(a) + r"(?:證券|投顧|證)"))
                 if a not in stock:     # 不會撞到股票名的,單獨寫也算(後面不接金／控／銀／台灣)
                     forms.append((len(a), re.escape(a) + r"(?![金控銀台])"))
-        for s in stock:
-            forms.append((len(s), re.escape(s)))
         forms.sort(key=lambda x: -x[0])
-        self.regex = re.compile("|".join(p for _, p in forms))
+        self.regex = re.compile("(?=(" + "|".join(p for _, p in forms) + "))")   # lookahead:每個位置都能找出候選
 
-    def find(self, text):
-        """回傳依出現順序、不重疊的 [(起, 迄, 'stock'|'broker', 值)]。"""
-        out = []
-        pos = 0
+    def find(self, text, codes=()):
+        """回傳依出現順序、不重疊的 [(起, 迄, 'stock'|'broker', 值)]。
+        先找出所有候選(含重疊),重疊時 ①長的贏 ②一樣長時股票名贏單獨券商名(不帶證券／投顧) ③都是股票名時後面的贏。
+        codes = 同篇出現「（代號）」的代號集合,AMBIGUOUS_STOCK 要靠它或「目標價」才算股票。"""
+        cands = []   # (起, 迄, kind, 值, 優先序)
         for m in self.regex.finditer(text):
-            if m.start() < pos:
-                continue
-            s = m.group(0)
-            kind, val = None, None
-            base = _broker_base(s, self.broker)
-            if m.start() and text[m.start() - 1].isdigit() and s not in self.stock:
+            s = m.group(1)
+            st = m.start()
+            if st and text[st - 1].isdigit() and s not in self.stock:
                 continue     # 「2,988元大幅」的元大不是券商
-            if s in self.stock:
-                kind, val = "stock", self.stock[s]
-            elif base is not None:
-                kind, val = "broker", base
-            if kind:
-                out.append((m.start(), m.end(), kind, val))
-                pos = m.end()
-        return out
+            base = _broker_base(s, self.broker)
+            if base is None:
+                continue
+            alias = s if s in self.broker else next(a for a in self.domestic if s.startswith(a))
+            bare = s in self.domestic
+            if _broker_ok(text, st, st + len(s), alias, bare):
+                cands.append((st, st + len(s), "broker", base, 1 if bare else 0))
+        for i, ch in enumerate(text):
+            for n in self.stock_by_first.get(ch, ()):
+                if not text.startswith(n, i):
+                    continue
+                e = i + len(n)
+                if text[max(0, i - 2):i] == "主動":
+                    continue
+                code = self.stock[n]
+                if n in AMBIGUOUS_STOCK and code not in codes and not text.startswith(("目標價", "目標股價", "評等"), e):
+                    continue
+                cands.append((i, e, "stock", code, 0))
+        cands.sort(key=lambda c: (-(c[1] - c[0]), c[4], -c[0]))
+        taken = []
+        for c in cands:
+            if not any(c[0] < t[1] and t[0] < c[1] for t in taken):
+                taken.append(c)
+        taken.sort()
+        return [c[:4] for c in taken]
 
 
 def _broker_base(s, table):
@@ -252,8 +315,15 @@ def _direction(prev, target, *texts):
     return None
 
 
+# 「從「中立」上調到「優於大盤」」「評等由A調降至B」:評等取調整後的 B
+_RATING_MOVE = re.compile(r"[從由][「『]?(?:" + _RATINGS + r")[」』]?(?:上調|調高|調升|升級|上修|下調|調降|調低|降級|下修|調整|升|降)(?:至|到)[「『]?(" + _RATINGS + ")")
+
+
 def _rating(*texts):
     for t in texts:
+        m = _RATING_MOVE.search(t)
+        if m:
+            return m.group(1)
         m = _RATING_RE.search(t)
         if m:
             return next(g for g in m.groups() if g)
@@ -267,7 +337,7 @@ def _foreign(clause, pos):
     return bool(_FX_RE.search(head))
 
 
-def _not_target(clause, start, num_at, num, yuan):
+def _not_target(clause, start, num_at, num, yuan, sentence=""):
     """這個金額不是目標價(EPS 等獲利金額、彭博／平均／共識目標價、年份)就回傳 True。
     start = 金額（含觸發詞）在子句的起點;num_at = 數字本身的起點;yuan = 數字後面有沒有「元」。
     EPS 類字眼只看數字前 15 字,且只看最近一個「元」或「目標價」之後(前面的字眼屬於別的金額)。"""
@@ -282,21 +352,34 @@ def _not_target(clause, start, num_at, num, yuan):
         return True
     if _SCENE_RE.search(clause[max(0, num_at - 40):num_at]):    # 10 字抓不到「樂觀情境，…目標價跟著提升到」
         return True
-    seg = clause[clause.rfind("，", 0, num_at) + 1:num_at]    # 金額所在子句;觸發詞有「調升至」類動作表示是新動作
-    return bool(_OLD_RE.search(seg)) and not re.search("[升降調修]", clause[start:num_at])
+    if "目標" not in clause[start:num_at] and _PRICE_RE.search(clause, max(0, num_at - 10), num_at):
+        return True     # 沒有「目標價」觸發詞的金額,前面是股價說法(盤中衝達2,770元)不是目標價
+    off = max(sentence.find(clause), 0)
+    if any(m.start() < off + num_at for m in _OLD_SENT.finditer(sentence)):    # 回顧舊報告的字眼在金額前面
+        return True
+    m = _TOP_NOW.search(clause)     # 「目前以里昂證券的3,030元目標價最高」:拿來排名的舊報告
+    if m and m.start(1) == num_at:
+        return True
+    seg = _OLD_NUM.sub("", _CLAUSE_END.split(clause[:num_at])[-1])    # 金額所在子句(_clean 把全形逗號都轉成半形,所以兩種都要認;千分位逗號不算)
+    return bool(_OLD_RE.search(seg))
 
 
 # 一句裡「A升至X元、B升至Y元」與「…分別調高至X元與Y元」切成片段,各自配對
 _SPLIT = re.compile(r"(?<=元)、(?=[^\d、，]{1,12}?[升降調修喊看])|，(?=[^，]*分別)")
 
 
-def _amounts(clause, carry_tp):
+def _amounts(clause, carry_tp, sentence=""):
     """抽出子句裡的目標價 [(位置, 目標價, 前次目標價)]。子句沒有「目標價」且前面也沒有時不抽。"""
     if not (_TP_RE.search(clause) or carry_tp):
         return []
     found, used = [], []
-    for m in _FROM_TO.finditer(clause):
-        if _not_target(clause, m.start(), m.start(3), m.group(3), True):
+    pl = _PREV_LIST.search(clause) if "分別" in clause else None
+    for m in list(_FROM_TO.finditer(clause)) + list(_FROM_TO_B.finditer(clause)):
+        if any(m.start() < ue and us < m.end() for us, ue in used):
+            continue
+        if pl and pl.start() <= m.start() < pl.end():    # 「由A元、B元調高到…」前次清單交給後面依序配對
+            continue
+        if _not_target(clause, m.start(), m.start(3), m.group(3), True, sentence):
             continue
         found.append((m.start(), _num(m.group(3)), _num(m.group(1))))
         used.append((m.start(), m.end()))
@@ -309,7 +392,7 @@ def _amounts(clause, carry_tp):
             continue
         if _foreign(clause, m.start()):
             continue
-        if _not_target(clause, m.start(), m.start(1), m.group(1), bool(m.group(2))):
+        if _not_target(clause, m.start(), m.start(1), m.group(1), bool(m.group(2)), sentence):
             continue
         used.append((m.start(), m.end()))
         found.append((m.start(), _num(m.group(1)), None))
@@ -321,7 +404,7 @@ def _amounts(clause, carry_tp):
             continue
         if _foreign(clause, m.start()):
             continue
-        if _not_target(clause, m.start(), m.start(1), m.group(1), True):
+        if _not_target(clause, m.start(), m.start(1), m.group(1), True, sentence):
             continue
         used.append((m.start(), m.end()))
         found.append((m.start(), _num(m.group(1)), None))
@@ -331,7 +414,7 @@ def _amounts(clause, carry_tp):
     for m in _AMT_POST.finditer(clause):
         if not free(m.start(), m.end()) or _foreign(clause, m.start()):
             continue
-        if _not_target(clause, m.start(), m.start(1), m.group(1), True):
+        if _not_target(clause, m.start(), m.start(1), m.group(1), True, sentence):
             continue
         used.append((m.start(), m.end()))
         found.append((m.start(), _num(m.group(1)), None))
@@ -349,21 +432,28 @@ def _analyze(text, idx, title="", fallback_stocks=()):
     events = []
     carry_broker = None
     carry_tp = False
-    for sentence in re.split(r"[。！？\n]+", text) if "\n" in text or "。" in text else [text]:
+    orphans = []
+    codes = {c for c in re.findall(r"[（(](\d{4,5})[）)]", text)}
+    last = (None, -9)    # (前面句子只提到的那一檔股票, 句序):下一句沒寫股票名就沿用
+    si = 0
+    for si, sentence in enumerate(re.split(r"[。！？\n]+", text) if "\n" in text or "。" in text else [text]):
         sentence = sentence.strip()
         if not sentence:
             continue
         for whole, clause in [(w, c) for w in sentence.split("；") for c in _SPLIT.split(w)]:
-            ents = idx.find(clause)
-            stocks = list(dict.fromkeys(v for _, _, k, v in idx.find(whole) if k == "stock"))
+            ents = idx.find(clause, codes)
+            stocks = list(dict.fromkeys(v for _, _, k, v in idx.find(whole, codes) if k == "stock"))
             # 「台積電（2330）」括號代號也算
-            for m in re.finditer(r"[（(](\d{4,5})[）)]", clause):
-                if m.group(1) in idx.stock.values() and m.group(1) not in stocks:
-                    stocks.append(m.group(1))
+            for c in re.findall(r"[（(](\d{4,5})[）)]", clause):
+                if c in idx.stock.values() and c not in stocks:
+                    stocks.append(c)
+            if len(stocks) == 1:
+                last = (stocks[0], si)
             cmp_ = _compared(clause, ents)
             cmp_names = {c[0] for c in cmp_}
+            cmp_names |= {v for s, e, k, v in ents if k == "broker" and re.search("除了?$", clause[max(0, s - 2):s]) and clause.startswith("外", e)}    # 「除了高盛外」的高盛不是主詞
             brokers = list(dict.fromkeys(v for _, _, k, v in ents if k == "broker" and v not in cmp_names))
-            amts = [a for a in _amounts(clause, carry_tp) if not any(s <= a[0] < e for _, s, e in cmp_)]
+            amts = [a for a in _amounts(clause, carry_tp, sentence) if not any(s <= a[0] < e for _, s, e in cmp_)]
             has_tp = bool(_TP_RE.search(clause))
             if len(brokers) == 1:
                 carry_broker = brokers[0]
@@ -371,12 +461,20 @@ def _analyze(text, idx, title="", fallback_stocks=()):
                 carry_tp = True
             if not amts:
                 continue
+            from_last = False
             if not stocks and len(fallback_stocks) == 1:
                 stocks = list(fallback_stocks)
+            elif not stocks and last[0] and si - last[1] <= 1:
+                stocks = [last[0]]
+                from_last = True
             if not stocks:
+                who = brokers[0] if len(brokers) == 1 else None if brokers or clause != whole else carry_broker
+                orphans += [(t, pv, who) for _, t, pv in amts if pv is not None]    # 前次目標價寫在沒有股票名的下一句
                 continue
             if brokers:
                 bl = brokers
+            elif _person_subject(clause, ents, amts[0][0]):    # 「李明2日重申…」句首是分析師人名:不是前一句的券商
+                continue
             elif cmp_ and carry_broker and clause == whole:    # 主詞被拿掉(被比較對象不算)→ 沿用前面的券商,優先於「外資」未具名
                 bl = [carry_broker]
             elif UNNAMED_RE.search(clause):
@@ -385,21 +483,67 @@ def _analyze(text, idx, title="", fallback_stocks=()):
                 bl = [carry_broker]
             else:
                 continue
+            if from_last and bl == [UNNAMED] and all(a[2] is None for a in amts):
+                continue    # 沿用前一句的股票,只有券商明確(或有前次金額)才算
+            if title and len(amts) == 1 and len(stocks) > 1 and len(bl) == 1:    # 只用在內文(標題沒股票可選就交給內文,別擋掉抓內文)
+                stocks = _nearest_stock(clause, ents, amts[0][0]) or stocks
             pairs = _pair(stocks, bl, amts)
             ctx = (clause, sentence, title)
-            for code, broker, (_, target, prev) in pairs:
+            quoted = re.findall(r"[「『](" + _RATINGS + r")[」』]", clause)
+            by_order = "分別" in clause and not _RATING_MOVE.search(clause) and len(pairs) > 1 and len(quoted) == len(pairs)    # 「分別給予「中立」、「優於大盤」…」評等也依序配對
+            for i, (code, broker, (_, target, prev)) in enumerate(pairs):
                 events.append({
                     "code": code, "broker": broker, "target": target,
-                    "rating": _rating(clause, sentence),
+                    "rating": quoted[i] if by_order else _rating(clause, sentence),
                     "dir": _direction(prev, target, *ctx),
                     "prev_target": prev,
                 })
+    for e in events:    # 補前次:「…上看10,500元」下一句「目標價由6,890元大升至10,500元」
+        for t, pv, who in orphans:
+            if e["prev_target"] is None and e["target"] == t and who in (None, e["broker"]):
+                e["prev_target"], e["dir"] = pv, _direction(pv, t)
     uniq = {}
     for e in events:    # 同檔同券商同金額只留一筆,有前次目標價的優先
         k = (e["code"], e["broker"], e["target"])
         if k not in uniq or (uniq[k]["prev_target"] is None and e["prev_target"] is not None):
             uniq[k] = e
-    return list(uniq.values())
+    return _drop_unnamed(list(uniq.values()))
+
+
+_PERSON_RE = re.compile(r"(?:^|[，,])(?!因此|因而|所以|同時|其中|另外|此外|主要|目前|不過|但是|並且|而且|此時|因為|由於|基於|整體|未來|後續|隨著|隨後|同步|同樣|接著|最新)([一-鿿]{2,3})(?:\d+日(?:則|也)?(?:重申|表示|指出|認為|預期|預估|看好|給予)|則?給予)")
+
+
+def _person_subject(clause, ents, limit):
+    """子句裡有「2～3 字人名＋(日期)＋動詞」(例「李明2日重申」「高多斯給予」(沒有日期的只認「給予」,免得「鄭盛元預估…」同一券商的分析師被擋)),且那幾個字不是股票或券商名。"""
+    for m in _PERSON_RE.finditer(clause, 0, limit):    # 只看第一個金額之前
+        if not UNNAMED_RE.search(m.group(1)) and not any(s < m.end(1) and m.start(1) < e for s, e, _, _ in ents):
+            return True
+    return False
+
+
+def _drop_unnamed(events):
+    """同檔同金額已有具名券商時,未具名那筆併進去(缺的前次目標價、方向補給具名那筆)後丟掉。"""
+    named = {(e["code"], e["target"]): e for e in events if e["broker"] != UNNAMED}
+    out = []
+    for e in events:
+        n = named.get((e["code"], e["target"]))
+        if e["broker"] == UNNAMED and n:
+            if n["prev_target"] is None and e["prev_target"] is not None:
+                n["prev_target"], n["dir"] = e["prev_target"], _direction(e["prev_target"], e["target"])
+            continue
+        out.append(e)
+    return out
+
+
+def _nearest_stock(clause, ents, pos):
+    """一個金額、同句多檔股票:取金額前最近的一檔,條件是其他股票都在更早的分句(金額所在分句與前一分句裡只有它)。"""
+    before = [(s, v) for s, e, k, v in ents if k == "stock" and s < pos]
+    if not before:
+        return None
+    cuts = [m.start() for m in _CLAUSE_END.finditer(clause, 0, pos)]
+    seg_start = cuts[-2] if len(cuts) >= 2 else 0     # 金額所在分句的前一個分句起點
+    near = {v for s, v in before if s >= seg_start}
+    return list(near) if len(near) == 1 else None
 
 
 def _pair(stocks, brokers, amts):
@@ -420,7 +564,24 @@ def needs_body(title, events):
     """標題解析的結果還要不要抓內文:沒事件、有未具名、或標題寫調升／調降卻沒有前次目標價。"""
     if not events or any(e["broker"] == UNNAMED for e in events):
         return True
-    return bool(_MOVE_RE.search(_clean(title))) and any(e["prev_target"] is None for e in events)
+    t = _clean(title)
+    if _CUM_RE.search(t):    # 累計說法的前次不可靠、「最高」可能是回顧舊報告、「31,000點」是大盤預測的標題(金額可能是彭博共識),看內文確認
+        return True
+    return bool(_MOVE_RE.search(t)) and any(e["prev_target"] is None for e in events)
+
+
+def _stale(body, target):
+    """標題抽到的金額,內文裡每一次出現都是彭博／平均／共識或舊報告的說法 → True(不是這份報告的目標價)。"""
+    amt = re.compile(r"(?<![\d,.])(?:%s|%s)(?![\d,]|\.\d)" % (re.escape("{:,}".format(target)), target))
+    seen = False
+    for sent in re.split(r"[。！？\n]+", body):
+        for m in amt.finditer(sent):
+            seen = True
+            seg = _CLAUSE_END.split(sent[:m.start()])[-1]
+            tn = _TOP_NOW.search(sent)
+            if not (tn and tn.start(1) == m.start()) and not (_CONSENSUS_RE.search(seg[-15:]) or _OLD_VETO.search(seg) or _OLD_SENT.search(sent)):
+                return False
+    return seen
 
 
 def parse(title, body, names):
@@ -431,15 +592,18 @@ def parse(title, body, names):
     t_events = _analyze(title, idx)
     if not body or not needs_body(title, t_events):
         return t_events
-    t_stocks = list(dict.fromkeys(v for _, _, k, v in idx.find(title) if k == "stock"))
+    t_codes = set(re.findall(r"[（(](\d{4,5})[）)]", title))
+    t_stocks = list(dict.fromkeys(v for _, _, k, v in idx.find(title, t_codes) if k == "stock"))
     b_events = _analyze(_clean(body), idx, title=title, fallback_stocks=t_stocks)
     if t_stocks:
         b_events = [e for e in b_events if e["code"] in t_stocks]
+    body_text = _clean(body)
+    t_events = [e for e in t_events if not _stale(body_text, e["target"])]
     result = []
     for e in t_events:
         for b in b_events:      # 內文有同檔同金額的事件:補具名券商、前次目標價
             if b["code"] == e["code"] and b["target"] == e["target"]:
-                prev = e["prev_target"] if e["prev_target"] is not None else b["prev_target"]
+                prev = b["prev_target"] if b["prev_target"] is not None else e["prev_target"]   # 內文「由X至Y」優先(標題可能是累計說法)
                 broker = b["broker"] if e["broker"] == UNNAMED and b["broker"] != UNNAMED else e["broker"]
                 e = dict(e, broker=broker, rating=e["rating"] or b["rating"], prev_target=prev,
                          dir=_direction(prev, e["target"]) if prev is not None else e["dir"] or b["dir"])
@@ -448,7 +612,7 @@ def parse(title, body, names):
     if not t_events or any(e["broker"] == UNNAMED for e in t_events):
         have = {e["code"] for e in result}
         result += [b for b in b_events if b["code"] not in have]
-    return result
+    return _drop_unnamed(result)
 
 
 # ---------- 抓取、合併、輸出 ----------

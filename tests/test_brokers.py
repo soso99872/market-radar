@@ -340,11 +340,11 @@ class SupervisorRound2Test(unittest.TestCase):
         one(self, P("聯發科目標價 喊5,088", b), "2454", "摩根士丹利", 5088, dir_="up", prev=2988)
 
     def test_respectively_pairs_in_order(self):
-        # 5607/9596199:分別調高 = 依序一對一;Aletheia 不在券商表,不產生
+        # 5607/9596199:分別調高 = 依序一對一;Aletheia 已加進券商表(第 5 次修正),第一家就是它
         t = "外資啟動台積電新一波目標價上修潮"
         b = "台積電(2330)近來外資圈掀起一波目標價調升潮。繼Aletheia資本升至3,500元、麥格理證券升至3,380元後,最新瑞銀、里昂等證券也分別調高至3,400元與3,330元。"
         ev = P(t, b.replace(",", "，"))
-        self.assertEqual([(e["broker"], e["target"]) for e in ev], [("麥格理", 3380), ("瑞銀", 3400), ("里昂證券", 3330)])
+        self.assertEqual([(e["broker"], e["target"]) for e in ev], [("Aletheia", 3500), ("麥格理", 3380), ("瑞銀", 3400), ("里昂證券", 3330)])
         later = "里昂相當看好台積電,目標價由3,250元升至3,330元。"
         ev = P(t, b.replace(",", "，") + later)
         self.assertEqual([(e["broker"], e["target"], e["prev_target"]) for e in ev if e["broker"] == "里昂證券"], [("里昂證券", 3330, 3250)])
@@ -583,6 +583,321 @@ class TestCheck(unittest.TestCase):
 
     def test_empty(self):
         self.assertTrue(brokers.check_events([], NAMES))
+
+
+# 第 5 次修正:名稱重疊、別名衝突、舊報告、標題與內文矛盾等。句子都是經濟日報原文(新聞編號寫在測試名稱)
+NAMES5 = dict(NAMES, **{
+    "6239": "力成", "2376": "技嘉", "8996": "高力", "5439": "高技", "6923": "中台", "2204": "中華", "2344": "華邦電",
+    "6508": "惠光", "2892": "第一金", "2368": "金像電",
+    "1210": "大成", "1218": "泰山", "1475": "業旺", "1806": "冠軍", "2038": "海光", "2049": "上銀", "2362": "藍天",
+    "2471": "資通", "2474": "可成", "2504": "國產", "2515": "中工", "2516": "新建", "2605": "新興", "2832": "台產",
+    "2850": "新產", "3167": "大量", "5007": "三星", "8112": "至上", "4420": "光明", "4923": "力士", "5287": "數字",
+    "5516": "雙喜", "6435": "大中", "6568": "宏觀", "6274": "台燿", "9901": "材料", "9902": "世紀", "9903": "中租", "9904": "日成",
+})
+IDX5 = brokers.build_index(NAMES5)
+
+
+def P5(title, body=None):
+    return brokers.parse(title, body, IDX5)
+
+
+def found(text, codes=()):
+    """_Index.find 的結果簡化成 [(文字, 種類, 值)]。"""
+    return [(text[s:e], k, v) for s, e, k, v in IDX5.find(text, codes)]
+
+
+def sig(events):
+    return [(e["code"], e["broker"], e["target"], e["prev_target"]) for e in events]
+
+
+def brokers_of(events):
+    return [e["broker"] for e in events]
+
+
+class TestOverlap(unittest.TestCase):
+    """第 1 點:名稱重疊 ①長的贏 ②一樣長股票名贏單獨券商名 ③都是股票名時後面的贏。"""
+
+    def test_stock_beats_bare_broker_equal_length(self):
+        self.assertEqual(found("其中信驊（5274）"), [("信驊", "stock", "5274")])
+
+    def test_later_stock_wins(self):
+        self.assertEqual(found("調高力成"), [("力成", "stock", "6239")])
+        self.assertEqual(found("其中台光電"), [("台光電", "stock", "2383")])
+        self.assertEqual(found("其中華邦電"), [("華邦電", "stock", "2344")])
+        self.assertEqual(found("調高技嘉"), [("技嘉", "stock", "2376")])
+
+    def test_longer_wins(self):
+        self.assertEqual(found("元大證券看好"), [("元大證券", "broker", "元大")])
+
+    def test_broker_suffix_still_broker(self):
+        self.assertEqual(found("中信投顧")[0][1:], ("broker", "中信"))
+
+
+class TestAliasTable(unittest.TestCase):
+    """第 2 點表格:語料掃描找到的別名衝突,每一列一個測試(句子用原文)。"""
+
+    def no_broker(self, text):
+        self.assertEqual([f for f in found(text) if f[1] == "broker"], [], found(text))
+
+    def test_row_zhongxin_xinhua_stock(self):
+        self.assertEqual(found("其中信驊（5274）、欣興（3037）")[0][1:], ("stock", "5274"))
+
+    def test_row_zhongxin_jiantou(self):
+        self.no_broker("中國券商中信建投證券指出")
+
+    def test_row_yuanda_daguan(self):
+        for t in ("台積電股價挑戰千元大關", "突破萬元大關", "市值首度突破 1 兆美元大關", "市值10兆元大關", "股價破4億元大關"):
+            self.no_broker(t)
+
+    def test_row_yuanda_dafu(self):
+        for t in ("億美元大幅提高", "20 元大幅上修", "鄭盛元大升金像電目標價至2,440元"):
+            self.no_broker(t)
+
+    def test_row_yuanda_real_broker(self):
+        self.assertEqual(found("元大投顧調升目標價")[0][1:], ("broker", "元大"))
+        self.assertEqual(found("元大給予買進")[0][1:], ("broker", "元大"))
+
+    def test_row_etf_names(self):
+        for t in ("富邦旗艦50", "群益半導體", "國泰費城半導體", "新光臺灣半導體", "台新臺灣IC", "永豐期貨指出"):
+            self.no_broker(t)
+
+    def test_row_active_etf_not_stock_nor_broker(self):
+        for t in ("主動統一台股增長", "主動第一金台股優"):
+            self.assertEqual(found(t), [], t)
+
+    def test_row_daiwa_satellite(self):
+        self.no_broker("美國衛星展亦將展")
+        self.assertEqual(found("星展指出")[0][1:], ("broker", "星展"))
+
+    def test_row_ambiguous_stock_words(self):
+        # 股票名當一般詞:不認成股票
+        for t in ("材料", "新產業", "大中華區", "韓國三星", "三大成長", "新興市場", "甚至上看", "數字", "宏觀環境",
+                  "藍天", "資通訊", "雙喜臨門", "穩如泰山", "仍可成長", "SK海力士", "日成", "加上銀行", "業旺",
+                  "新建案", "世紀", "中工", "台產", "美光明年", "中租", "冠軍", "大量", "國產", "海光", "東南亞", "受惠光通訊"):
+            self.assertEqual([f for f in found(t) if f[1] == "stock" and f[0] in brokers.AMBIGUOUS_STOCK], [], t)
+
+    def test_row_ambiguous_with_code_or_target(self):
+        self.assertEqual(found("美光明年", {"4420"}), [("光明", "stock", "4420")])    # 同篇有「（4420）」
+        self.assertEqual(found("光明目標價2,000元")[0][1:], ("stock", "4420"))          # 名稱後面直接接目標價
+        self.assertEqual(found("瑞銀上調南亞評等至「買進」")[-1][1:], ("stock", "1303"))
+
+    def test_row_ambiguous_list_covers_table(self):
+        for n in ("材料", "新產", "大中", "三星", "大成", "新興", "至上", "數字", "宏觀", "藍天", "資通", "雙喜", "泰山", "可成",
+                  "力士", "日成", "上銀", "業旺", "新建", "世紀", "中工", "台產", "光明", "中租", "冠軍", "大量", "國產",
+                  "海光", "南亞"):
+            self.assertIn(n, brokers.AMBIGUOUS_STOCK)
+
+    def test_row_real_broker_event_still_works(self):
+        one(self, P5("富邦投顧 台積電目標價2,000元"), "2330", "富邦", 2000)
+
+
+class TestRegression(unittest.TestCase):
+    """前 4 次主管抓到的錯例,每筆一個測試,名稱帶新聞編號,句子用原文。"""
+
+    def test_9388949_eps_300_not_target(self):
+        b = "因此，高盛將信驊2026年營收年增率預估從49%上調到64%，預估每股純益調高12.4%到185.26元，2027年營收年增率從49%上調到53%，預估每股純益上修12.5%到300元，毛利率從71%調高71.2%。"
+        self.assertEqual(P5("信驊目標價 外資喊萬五", b), [])
+
+    def test_9176614_bloomberg_average_not_first_gold(self):
+        b = "台積電單季EPS已經從原本的7~8元水準大幅成長，估計今年可達64元，若以目前1,400元來看，PE僅18.6倍，彭博平均目標價在1,800元，明年台積電將進一步帶領台股上攻31,000點。"
+        self.assertEqual(P5("第一金投顧：2026年台股上看31,000點 台積電目標價1,800元", b), [])
+
+    def test_9313214_12_not_target(self):
+        b = "台達電（2308）挾自製能力，預計下半年出貨400V電源櫃，法人看好獲利成長動能，調高目標價至1,550元。"
+        self.assertEqual([(e["broker"], e["target"]) for e in P5("法人調高這檔電源龍頭股目標價", b)], [("未具名", 1550)])
+
+    def test_9248621_eps_not_target(self):
+        b = "張博凱預估鴻海今年營收將由去年的8.09兆元增加至11.14兆元，EPS由14.97元成長至今年的19.06元，明（2027）年上看22.52元。"
+        self.assertEqual(P5("鴻海目標價 喊到444", b), [])
+
+    def test_9352725_eps_140(self):
+        self.assertEqual(sig(P5("大摩：川湖今年 EPS 可達140元 維持4,750元目標價")), [("2059", "摩根士丹利", 4750, None)])
+
+    def test_9639830_5000_units(self):
+        b = "其中，AMD Helios機櫃出貨量預估自2,000台調升至5,000台，且緯穎將持續穩固在大型CSP客戶端的供應鏈關鍵地位。"
+        self.assertEqual(P5("緯穎目標價 喊7,000元", b), [])
+
+    def test_9527265_yuanda_dafu_not_broker(self):
+        t = "聯發科目標價 喊5,088"
+        b = "聯發科（2454）迎來股價上修潮，在摩根士丹利證券（大摩）釋出最新報告中，將聯發科目標價從2,988元大幅上調70%到5,088元，在這波外資調高目標價中上調幅度最高。"
+        self.assertEqual(sig(P5(t, b)), [("2454", "摩根士丹利", 5088, 2988)])
+
+    def test_9596199_respectively_pairs(self):
+        b = "台積電(2330)近來外資圈掀起一波目標價調升潮。繼Aletheia資本升至3,500元、麥格理證券升至3,380元後，最新瑞銀、里昂等證券也分別調高至3,400元與3,330元。"
+        got = {(e["broker"], e["target"]) for e in P5("外資啟動台積電新一波目標價上修潮", b)}
+        self.assertEqual(got, {("Aletheia", 3500), ("麥格理", 3380), ("瑞銀", 3400), ("里昂證券", 3330)})
+
+    def test_9596199_above_is_not_target(self):
+        t = "法說會前的「最後上車機會」！外資啟動台積電新一波目標價上修潮"
+        b = "AI重點        外資在法說會前密集上調台積電目標價至3300元以上。"
+        self.assertEqual(P5(t, b), [])
+
+    def test_9376699_scenario_prices(self):
+        b = ("在樂觀情境，大摩給予奇鋐的本益比拉高到39倍，目標價跟著提升到3,217元，基於三大利多。"
+             "但在悲觀情境，大摩給予奇鋐的本益比降低到17倍，目標價跟著調降到1,383元，以反映資料中心的散熱設計升級速度不如預期。")
+        t = "大摩：奇鋐今年 EPS 可達82.63元 目標價從1,800元大幅調高到2,300元"
+        self.assertEqual([(e["target"], e["prev_target"]) for e in P5(t, b)], [(2300, 1800)])
+
+    def test_9449064_old_report_title_vetoed_by_body(self):
+        t = "台積電好威 十外資升目標價 里昂喊3,030元最高"
+        b = ("台積電（2330）法說優於預期，各大外資券商陸續出具最新報告，統計已有花旗、野村、滙豐等十家調升台積電目標價，其中花旗調升至2,875元最高；"
+             "但若統計今年來外資報告，以里昂證券先前喊出的3,030元，為目前市場最高。")
+        self.assertNotIn("里昂證券", brokers_of(P5(t, b)))
+
+    def test_9429714_old_report_late_january(self):
+        t = "三大外資法人看台積電：強勁 AI 需求將支撐多年成長 目標價上看3,030元"
+        b = ("台積電（2330）將於16日舉行法說會，在法人圈中，目前以里昂證券的3,030元目標價最高。"
+             "里昂在1月底率先將台積電目標價從2,000元一口氣巨幅調高到3,030元，也是目前唯一喊上「三字頭」的主要法人。")
+        self.assertNotIn("里昂證券", brokers_of(P5(t, b)))
+
+    def test_9461622_old_report_xianqian(self):
+        b = "高盛先前也將聯發科目標價調升至2,454元，並重申買進評等，主因看好AI ASIC業務將帶動營收與獲利結構改善。"
+        self.assertEqual(P5("台股火力全開 外資目標價再成多頭想像", b), [])
+
+    def test_9451505_prev_second_group(self):
+        b = "在相關台股中，大摩最看好奇鋐（3017），目標價從2,300元上調至2,750元，富世達目標價則從2,000 元升至2,150元。"
+        i5 = brokers.build_index(dict(NAMES, **{"6805": "富世達"}))
+        self.assertIn(("6805", "摩根士丹利", 2150, 2000), sig(brokers.parse("大摩 上調奇鋐及富世達目標價", b, i5)))
+
+    def test_9303926_compared_broker(self):
+        b = "虞成敬（高盛）建議「買進」信驊（5274），目標價由7,300元大升至12,000元，一舉超越瑞銀的11,000元，躍升至內外資最高。"
+        self.assertNotIn("瑞銀", brokers_of(P5("原來是高盛將目標價調高到這個驚人價位", b)))
+
+    def test_9299465_recent_summary(self):
+        b = "綜合近期各外資看股王信驊，里昂證券將目標價由7,500元上調至10,000元；瑞銀證券由8,000元升至11,000元，大摩目前則維持7,500元。"
+        self.assertNotIn("里昂證券", brokers_of(P5("AI 投資不回頭！大摩點兵半導體配置 這些台廠慘降目標價", b)))
+
+    def test_9115052_respectively_second_prev(self):
+        b = "台光電（2383），外資圈中高盛、滙豐近期重申「買進」評等，並上調目標價，分別由1,530元上調至1,695元、1,212元上調至1,530元。"
+        got = sig(P5("台光電目標價 喊1,695", b))
+        self.assertIn(("2383", "滙豐", 1530, 1212), got)
+        self.assertIn(("2383", "高盛", 1695, 1530), got)
+
+    def test_9295077_yuanxian_prev(self):
+        t = "里昂把台積電目標價喊上3,030元 首家越過三字頭"
+        b = "里昂一舉將台積電目標價由原先的2,000元大升至3,030元，評等仍維持「強力看好」。"
+        self.assertEqual(sig(P5(t, b)), [("2330", "里昂證券", 3030, 2000)])
+
+    def test_9455787_qizhong_xinhua_not_citic(self):
+        b = "台廠中，外資圈看好12檔個股，其中信驊（5274）、欣興（3037）、台達電（2308）等均獲調升目標價。其中信驊除受惠通用伺服器出貨動能強勁，更受惠因CPU延遲問題所觸發的伺服器出貨量增長。"
+        self.assertNotIn("中信", brokers_of(P5("外資圈大點兵 多檔台廠獲大摩調升目標價", b)))
+
+    def test_9486422_prev_from_body(self):
+        t = "高盛看好信驊四利多 今年來目標價從7,300元四度調高到22,000元"
+        b = "高盛將信驊目標價由20,000元調升至22,000元，維持「買進」評等。今年來，高盛已四次調高信驊目標價，從7,300元一路調高到22,000元。"
+        self.assertEqual(sig(P5(t, b)), [("5274", "高盛", 22000, 20000)])
+
+    def test_9455327_no_prev(self):
+        b = "如大和資本據此大升信驊（5274）目標價至17,330元，居內外資最高；永豐投顧也大升至17,160元、瑞銀證券則大調至15,000元。"
+        got = {(e["broker"], e["target"], e["prev_target"]) for e in P5("股王信驊因這題材再衝高 外資目標價竟給到這個價位！", b)}
+        self.assertIn(("瑞銀", 15000, None), got)
+
+    def test_9263471_prev_next_sentence(self):
+        b = ("繼元大投顧給予股王信驊（5274）9,500元的目標價後，凱基投顧就出具報告上看10,500元。"
+             "凱基投顧上調信驊2026-2027年每股稅後純益預估值各14.3%、11.7%，至157.46元、209.98元。"
+             "給予「增加持股」評等，目標價由6,890元大升至10,500元。")
+        got = {(e["broker"], e["target"], e["prev_target"]) for e in P5("這家電子廠法人給出破萬目標價、上看10,500元", b)}
+        self.assertIn(("凱基", 10500, 6890), got)
+
+    def test_9245506_dollar_daguan_not_yuanda(self):
+        b = "台積電去年大漲 44%，市值首度突破 1 兆美元大關，這反映在AI浪潮中。李明2日重申台積電（2330）目標價為1,800元。"
+        self.assertNotIn("元大", brokers_of(P5("至少八分析師重申或調高目標價", b)))
+
+    def test_cmp_after_needs_other_broker(self):
+        # 第 7 點:「高盛的目標價1,500元」同子句沒有別的券商 → 不是被比較的對象
+        self.assertEqual(sig(P5("高盛的目標價1,500元 台積電")), [("2330", "高盛", 1500, None)])
+
+    def test_cmp_before_quote_breaks(self):
+        # 第 7 點:「」』也當斷句,「超越」和後面的券商之間隔了引號就不算被比較
+        clause = "超越」瑞銀喊11,000元"
+        self.assertEqual(brokers._compared(clause, IDX5.find(clause)), [])
+        clause = "超越瑞銀喊11,000元"
+        self.assertEqual(len(brokers._compared(clause, IDX5.find(clause))), 1)
+
+
+class TestAletheia(unittest.TestCase):
+    def test_9796461_aletheia_broker(self):
+        b = "Aletheia資本最新報告，給予台光電（2383）買進評等，目標價10,000元。"
+        self.assertEqual([(e["broker"], e["target"]) for e in P5("台光電目標價 喊1萬元", b)], [("Aletheia", 10000)])
+
+
+class TestRound6(unittest.TestCase):
+    """組長檢核後再修一輪:人名句首不沿用券商、標題未具名被舊報告否決、前一句沒寫股票名、合理股價前次、評等取調整後。"""
+
+    def test_9245506_person_subject_not_carry_broker(self):
+        b = ("高盛在內八位分析師重申或調高台積電（2330）目標價，其中高盛一口氣將台積電目標價調高35%至2,330元。"
+             "李明2日重申台積電目標價為1,800元。")
+        got = [(e["broker"], e["target"]) for e in P5("至少八分析師重申或調高目標價", b)]
+        self.assertNotIn(("高盛", 1800), got)
+
+    def test_9429714_unnamed_title_vetoed_by_old_body(self):
+        t = "三大外資法人看台積電：強勁 AI 需求將支撐多年成長 目標價上看3,030元"
+        b = ("台積電（2330）將於16日舉行法說會，在法人圈中，目前以里昂證券的3,030元目標價最高。"
+             "里昂在1月底率先將台積電目標價從2,000元一口氣巨幅調高到3,030元，也是目前唯一喊上「三字頭」的主要法人。")
+        self.assertEqual(P5(t, b), [])
+
+    def test_9624296_next_sentence_stock_and_person(self):
+        b = ("外資圈上調南亞科（2408）目標價。其中瑞銀證券由495元上調至555元，調幅12.1%；摩根士丹利（大摩）證券則由550元調高至580元，調幅5.4%。"
+             "基於未來獲利強勁增長，高多斯給予南亞科（2408）「買進」評等，目標價上調至555元；詹家鴻則給予「優於大盤」評級，目標價上調至580元。")
+        got = sig(P5("這檔記憶體股獲利暴衝密碼曝光 外資集體點讚、<u>目標價</u>上看6字頭", b))
+        self.assertIn(("2408", "瑞銀", 555, 495), got)
+        self.assertIn(("2408", "摩根士丹利", 580, 550), got)
+        self.assertNotIn("摩根士丹利", [g[1] for g in got if g[2] == 555])
+
+    def test_9363496_reasonable_price_prev(self):
+        b = "外資不僅維持南亞科（2408）「買進」評等，更將推測合理股價由340元調升至360元，並同步調高美光、SK海力士與三星等國際大廠目標價。"
+        got = sig(P5("昨漲停今爆量跌8%！南亞科帶記憶體坐上大怒神 外資仍喊目標價360元", b))
+        self.assertEqual([(g[2], g[3]) for g in got], [(360, 340)])
+
+    def test_9822647_rating_after_adjust(self):
+        b = "大摩上調大立光（3008），其中，大立光從「中立」上調到「優於大盤」，目標價從7,100元調高到9,040元。"
+        got = P5("大摩上調 OE 預估出貨 同步調高大立光及玉晶光目標價", b)
+        self.assertEqual([(e["target"], e["rating"]) for e in got if e["code"] == "3008"], [(9040, "優於大盤")])
+
+    def test_9226339_rating_after_adjust(self):
+        b = "麥格理證券發布報告指出，因此將環球晶（6488）評等從「中性」調高到「優於大盤」，但目標價則下調5%到473元。"
+        got = P5("麥格理：環球晶走出景氣谷底 評等升至「優於大盤」目標價調降5%", b)
+        self.assertEqual([(e["target"], e["rating"]) for e in got], [(473, "優於大盤")])
+
+
+class TestRound7(unittest.TestCase):
+    def test_9385906_chuliao_gao_not_subject_carry_updates(self):
+        b = ("除了高盛外，事實上，麥格理證券也按讚台光電（2383）。"
+             "由於預期首季營運成長動能強於預期，因此第2季起，平均銷售單價（ASP）將向上揚升，帶動毛利率將逾30%，因此將目標價升至2,840元。")
+        self.assertEqual([(e["broker"], e["target"]) for e in P5("這二檔 PCB 股 各外資紛紛上調目標價", b)], [("麥格理", 2840)])
+
+    def test_9385906_goldman_second_stock_in_clause(self):
+        b = ("展望未來，高盛指出，隨M9等級CCL滲透率持續提升，將嘉惠台光電（2383）與台燿（6274）的營收與獲利表現，"
+             "因此給予台光電「買進」評等，目標價由2,585元上調至3,200元；台燿同為「買進」，目標價由740元上調至900元水準。")
+        got = sig(P5("這二檔 PCB 股 各外資紛紛上調目標價", b))
+        self.assertIn(("2383", "高盛", 3200, 2585), got)
+        self.assertIn(("6274", "高盛", 900, 740), got)
+
+    def test_9641092_first_ranked_is_old(self):
+        b = ("伺服器導軌大廠川湖（2059）營運動能強勁，摩根士丹利（大摩）證券看好川湖優異的獲利能力，將目標價由6,650元大幅上調50.3%至10,000元，"
+             "維持「優於大盤」評等，成為第二家上調川湖為「萬金股」的外資券商；第一家為高盛證券，目標價為12,000元，暫居外資圈最高價。")
+        got = {(e["broker"], e["target"]) for e in P5("這家「萬金台廠」大摩暴升目標價50%", b)}
+        self.assertEqual(got, {("摩根士丹利", 10000)})
+
+    def test_last_stock_needs_named_broker(self):
+        # 沒寫股票名的句子沿用前一句的股票:券商要明確(或有前次金額),只有「外資」未具名不沿用
+        b = "外資圈上調南亞科（2408）目標價。外資因此給予買進評等，目標價大升至300元。"
+        self.assertEqual(P5("記憶體股外資喊價", b), [])
+        b = "外資圈上調南亞科（2408）目標價。瑞銀因此給予買進評等，目標價大升至300元。"
+        self.assertEqual(sig(P5("記憶體股外資喊價", b)), [("2408", "瑞銀", 300, None)])
+
+
+class TestRound8(unittest.TestCase):
+    def test_9493771_rating_upgrade_word(self):
+        b = "大和資本證券釋出報告指出，川湖（2059）第1季財報優於預期，目標價由3,880元大升至5,888元，評等從「優於大盤」升級到「買進」。"
+        got = P5("川湖目標價 喊到5,888", b)
+        self.assertEqual([(e["broker"], e["target"], e["prev_target"], e["rating"]) for e in got], [("大和", 5888, 3880, "買進")])
+
+    def test_9115052_ratings_paired_in_order(self):
+        b = ("台光電（2383）其餘外資如麥格理、摩根大通（小摩）、大和資本分別給予，「中立」、「優於大盤」、「優於大盤」的評等，"
+             "目標價分別為1,200元、1,200元、1,320元。")
+        got = {(e["broker"], e["target"]): e["rating"] for e in P5("台光電目標價 喊1,695", b)}
+        self.assertEqual(got, {("麥格理", 1200): "中立", ("摩根大通", 1200): "優於大盤", ("大和", 1320): "優於大盤"})
 
 
 if __name__ == "__main__":

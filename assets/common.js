@@ -498,6 +498,9 @@
           n.appendChild(sp);
         });
       });
+      // 「全市場合算」句移到第一個有達標率的紀錄行正下方;沒有就留在原處
+      var sn = root.querySelector(".bk-scope"), hr = Array.prototype.filter.call(recs, function (n) { return n.textContent.indexOf("達標率") >= 0; })[0];
+      if (sn && hr && hr.nextSibling !== sn) hr.parentNode.insertBefore(sn, hr.nextSibling);
       var at = root.querySelector(".bk-at");
       if (at && sc.meta && sc.meta.fetched) at.textContent = "," + String(sc.meta.fetched).slice(0, 10) + " 更新";
     }).catch(function () {

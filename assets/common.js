@@ -515,7 +515,9 @@
     var evs = brkEvs(doc), bh = brkHtml(doc, !!t), brk = bh ? '<div class="tp-brk">' + bh + "</div>" : "";
     var yahoo = t ? "Yahoo Finance 匯總:平均 " + tpFmt(t.mean) + (t.hi ? "、最高 " + tpFmt(t.hi) : "") + (t.lo ? "、最低 " + tpFmt(t.lo) : "") +
       ((t.n_tgt != null ? t.n_tgt : fv.n_tgt) != null ? "(" + Math.round(t.n_tgt != null ? t.n_tgt : fv.n_tgt) + " 家)" : "") : "";
-    if (evs.length && px > 0) {
+    // Yahoo 匯總含舊報告、日期不明:不畫圖、不算上漲空間,只收進預設收起的「更多」
+    var more = yahoo ? '<details class="bk-more tp-more"><summary>更多:Yahoo Finance 匯總</summary><p class="fvhow">含舊報告、日期不明,只當參考。</p><p class="fvhow">' + yahoo + "。</p></details>" : "";
+    if (evs.length && !evs[0].stale && px > 0) {
       var tg = [], seen = {};
       evs.forEach(function (b) { if (b.broker === BRK_ANON || !seen[b.broker]) { seen[b.broker] = 1; tg.push(b.target); } });
       var bhi = Math.max.apply(null, tg), blo = Math.min.apply(null, tg), bn = tg.length;
@@ -525,48 +527,24 @@
         "<p>圖的右半是未來 12 個月:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。</p>" +
         "<details class=\"help-more\"><summary>更多說明</summary><p>上面是經濟日報報導的券商目標價:<b>區間</b>是每家券商 90 天內最新一筆目標價的最低到最高,「相對現價」= 目標價 ÷ 面板資料日收盤價 − 1,<b>平均</b>是這些目標價的算術平均。</p>" +
         "<p>圖的左半是近 120 個交易日的收盤價,右半是「未來 12 個月」,畫的是券商目標價區間:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。粗虛線是平均,上下兩條細虛線是最高和最低。</p>" +
-        "<p>只收得到有被報導的券商,偏空的報告常沒被報導,樣本偏樂觀;僅供參考。圖下方一行 Yahoo Finance 匯總是另一個資料來源,家數與時間不同,只當對照。</p></details>");
+        "<p>只收得到有被報導的券商,偏空的報告常沒被報導,樣本偏樂觀;僅供參考。「更多」裡的 Yahoo Finance 匯總是另一個資料來源,含舊報告、日期不明,只當參考。</p></details>");
       var big = bn > 1 ? [["目標價區間", tpFmt(blo) + "～" + tpFmt(bhi)], ["相對現價", MR.sign(pc(blo), 1) + "%～" + MR.sign(pc(bhi), 1) + "%"]]
         : [["目標價(1 家)", tpFmt(bhi)], ["相對現價", MR.sign(pc(bhi), 1) + "%"]];
       return '<div class="fvbox tp"><h4>券商目標價<span class="evb">僅供參考</span>' + bhelp + "</h4>" +
         '<div class="tp-big tp-rng"><div><span>' + big[0][0] + '</span><b class="tp-mean">' + big[0][1] + "</b></div>" +
         '<div><span>' + big[1][0] + '</span><b class="' + MR.dir(pc(bhi)) + '">' + big[1][1] + "</b></div></div>" +
         (bn > 1 ? '<p class="tp-avg">平均 <b class="num">' + tpFmt(bmean) + "</b>、共 " + bn + " 家" : '<p class="tp-avg">共 1 家') +
-        (evs[0].stale ? "(最新報告 " + esc(evs[0].date) + ")" : "") + "</p>" +
+        "</p>" +
         tpChart(doc.rows, bn > 1 ? { hi: bhi, mean: bmean, lo: blo } : { hi: null, mean: bmean, lo: null }) +
-        (yahoo ? '<p class="fvhow tp-src">' + yahoo + "</p>" : "") + brk + "</div>";
+        brk + more + "</div>";
     }
-    var help = MR.help("tp", "分析師目標價怎麼看",
-      "<p>Yahoo Finance 彙整的分析師目標價:<b>平均</b>、<b>最高</b>、<b>最低</b>;上漲空間 = 目標價 ÷ 資料日收盤價 − 1。</p>" +
-      "<p>圖的右半是未來 12 個月:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。</p>" +
-      "<details class=\"help-more\"><summary>更多說明</summary><p>上面是 Yahoo Finance 彙整的分析師目標價:<b>平均</b>、<b>最高</b>、<b>最低</b>,上漲空間 = 目標價 ÷ 面板資料日收盤價 − 1。</p>" +
-      "<p>圖的左半是近 120 個交易日的收盤價,右半是「未來 12 個月」:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。粗虛線是平均目標價,上下兩條細虛線是最高和最低,中間淡色是範圍。</p>" +
-      "<p>最高除以最低超過 1.8 倍時,表示分析師之間看法差很多,平均值的參考性較低。</p>" +
-      "<p>資料來源:Yahoo Finance 匯總(一天更新一次);目標價共識從 2026-10 才開始存快照,準確度還沒辦法回測,僅供參考。</p></details>");
-    var head = '<h4>分析師目標價<span class="evb">僅供參考</span>' + help + "</h4>";
-    if (!t) {
-      return '<div class="fvbox tp">' + head + (brk || '<p class="flat tp-none">這檔沒有分析師目標價資料</p>') + "</div>";
-    }
-    var hi = t.hi || null, lo = t.lo || null;
-    var up = function (v) { return (v / px - 1) * 100; };
-    var mu = t.up != null ? t.up : up(t.mean);
-    var ntgt = t.n_tgt != null ? t.n_tgt : fv.n_tgt;
-    var n1 = t.n1 != null ? t.n1 : fv.fwd && fv.fwd.n;
-    var cnt = ntgt != null ? "目標價家數:" + Math.round(ntgt) + " 家" : n1 != null ? "EPS 預估家數:" + Math.round(n1) + " 家" : "";
-    var div = t.hi && t.lo && t.hi / t.lo > 1.8 ? '<span class="tag2 warn">分析師看法分歧大</span>' : "";
-    function row(label, v) {
-      if (v == null) return "<tr><th>" + label + '</th><td class="num">—</td><td class="num">—</td></tr>';
-      var u = up(v);
-      return "<tr><th>" + label + '</th><td class="num">' + tpFmt(v) + '</td><td class="num ' + MR.dir(u) + '">' + MR.sign(u, 1) + "%</td></tr>";
-    }
-    return '<div class="fvbox tp">' + head +
-      '<div class="tp-big"><div><span>平均目標價</span><b class="tp-mean">' + tpFmt(t.mean) + "</b></div>" +
-      '<div><span>上漲空間</span><b class="' + MR.dir(mu) + '">' + MR.sign(mu, 1) + "%</b></div></div>" +
-      tpChart(doc.rows, { hi: hi, mean: t.mean, lo: lo }) + (div ? '<div class="tp-div">' + div + "</div>" : "") +
-      '<table class="tp-tbl srt-ok"><thead><tr><th>項目</th><th>目標價</th><th>上漲空間</th></tr></thead><tbody>' +
-      row("最高", hi) + row("平均", t.mean) + row("最低", lo) + "</tbody></table>" +
-      '<p class="fvhow tp-src">' + (cnt ? cnt + "<br>" : "") + "資料:Yahoo Finance 匯總" + (t.at ? "," + esc(String(t.at).slice(0, 10)) + " 更新" : "") + "。</p>" +
-      brk + "</div>";
+    var help = MR.help("tp", "券商目標價怎麼看",
+      "<p>這裡只放本站收到的券商目標價(經濟日報報導)。近 90 天內沒有新的,就不畫圖、不算上漲空間,避免拿過期的價格當依據。</p>" +
+      "<details class=\"help-more\"><summary>更多說明</summary><p>有 1 年內的舊報告時,下面逐家券商照列並標出日期,只當參考。</p>" +
+      "<p>「更多」裡的 Yahoo Finance 匯總是另一個資料來源,含舊報告、日期不明,所以不當主圖,也不算上漲空間。最高除以最低超過 1.8 倍時,表示分析師之間看法差很多,平均值的參考性較低。Yahoo 的目標價共識從 2026-10 才開始存快照,準確度還沒辦法回測,僅供參考。</p>" +
+      "<p>只收得到有被報導的券商,偏空的報告常沒被報導,樣本偏樂觀;僅供參考。</p></details>");
+    return '<div class="fvbox tp"><h4>券商目標價<span class="evb">僅供參考</span>' + help + "</h4>" +
+      '<p class="flat tp-none">近 90 天沒有券商目標價</p>' + brk + more + "</div>";
   }
   // (a) 高峰風險:fv.peak 為真時,基本估值的狀態標籤換成這個(status 本身不變,前瞻估值與排序篩選不受影響)
   MR.peakHelp = function () {

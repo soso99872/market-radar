@@ -439,6 +439,7 @@ html.nosplash #splash, #splash.done { opacity: 0; visibility: hidden; pointer-ev
 .tp-tbl tbody tr:last-child th, .tp-tbl tbody tr:last-child td { border-bottom: 0; }
 .tp-src { margin-top: 8px; }
 .tp-none { font-size: 13px; margin: 0; }
+.tp-more { margin-top: 10px; }
 .tp-brk:empty { display: none; }
 /* 逐家券商目標價:每家兩到三行,窄螢幕不用橫向捲動 */
 .tp-brk { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }

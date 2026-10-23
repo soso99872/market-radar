@@ -751,13 +751,22 @@ STARS_BASE = {"A": 5, "B": 4, "C": 3, "D": 3}   # 陷阱(營收減速、外資 2
 FO_DUMP = -10            # 外資 20 日買賣超佔成交金額 ≤ −10% 視為大賣
 BRK_MAX = 30   # 每檔最多帶幾筆券商目標價事件進個股檔
 BRK_DAYS = 90  # 面板只列這麼多天內的報告(券商紀錄 broker_stats 照舊用全部歷史)
+BRK_STALE_MAX = 365   # 90 天內沒有時最多退回這麼多天內的舊報告,更舊的不用(PRD 8.3)
+TGT_LO_MIN, TGT_HI_MAX = 0.5, 3.5   # Yahoo 匯總最低 < 現價×0.5 或最高 > 現價×3.5 視為舊報告,整個 e["tgt"] 不寫(PRD 8.3)
+
+
+def tgt_stale(price, lo, hi):
+    """Yahoo 目標價匯總明顯過期:最低低於現價一半或最高超過現價 3.5 倍(剛好等於門檻不算)。"""
+    return bool((lo is not None and lo < price * TGT_LO_MIN) or (hi is not None and hi > price * TGT_HI_MAX))
 
 
 def load_brk(path, limit=BRK_MAX, today=None, days=BRK_DAYS):
     """讀 brokers.py 產生的 events.json,回傳 {代號: 事件 list(新到舊,最多 limit 筆)}。
     只留 today 往前 days 天內(含第 days 天)的報告、同券商只留最新一筆;該股 days 天內一筆都沒有時,
-    退回只留最新那一天的事件並標 "stale": True。檔案不存在、壞掉或格式不對都回空 dict,不報錯(extra.brk 就不會產生)。"""
-    cut = ((today or datetime.now().date()) - timedelta(days=days)).isoformat()
+    退回只留最新那一天的事件並標 "stale": True,但最新一天超過 BRK_STALE_MAX 天就不退回(該股沒有 brk)。檔案不存在、壞掉或格式不對都回空 dict,不報錯(extra.brk 就不會產生)。"""
+    today = today or datetime.now().date()
+    cut = (today - timedelta(days=days)).isoformat()
+    old = (today - timedelta(days=BRK_STALE_MAX)).isoformat()
     try:
         with open(path, encoding="utf-8") as f:
             ev = json.load(f)
@@ -773,6 +782,8 @@ def load_brk(path, limit=BRK_MAX, today=None, days=BRK_DAYS):
             fresh = list({x.get("broker"): x for x in reversed(v) if str(x.get("date") or "")[:10] >= cut}.values())   # 同券商留最新(同日留排序在前的)
             if not fresh:
                 top = str(v[0].get("date") or "")[:10]
+                if top < old:   # 最新一筆也超過 365 天:不退回
+                    continue
                 fresh = [dict(x, stale=True) for x in v if str(x.get("date") or "")[:10] == top]
             out[c] = sorted(fresh, key=lambda x: str(x.get("date") or ""), reverse=True)[:limit]
         return out
@@ -938,7 +949,7 @@ def fair_all(rp, close, last):
                     else:
                         pj.pop("g_eps", None)
                     e["proj"] = pj
-            if k.get("tgt"):
+            if k.get("tgt") and not tgt_stale(float(price), k.get("tgt_lo"), k.get("tgt_hi")):
                 e["tgt"] = {"mean": k["tgt"], "lo": k.get("tgt_lo"), "hi": k.get("tgt_hi"),
                             "up": _f((k["tgt"] / price - 1) * 100, 1)}
                 if k.get("n1"):

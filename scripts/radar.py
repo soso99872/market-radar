@@ -766,7 +766,7 @@ def load_brk(path, limit=BRK_MAX, today=None, days=BRK_DAYS):
         by = {}
         for x in ev:
             if isinstance(x, dict) and x.get("code"):
-                by.setdefault(str(x["code"]), []).append({k: v for k, v in x.items() if k != "title"})   # 前端不顯示標題,省檔案大小
+                by.setdefault(str(x["code"]), []).append({k: v for k, v in x.items() if k not in ("title", "rating", "prev_target", "dir")})   # 前端不顯示標題,省檔案大小;前次價、方向、評等不輸出(PRD 8.2)
         out = {}
         for c, v in by.items():
             v.sort(key=lambda x: str(x.get("date") or ""), reverse=True)

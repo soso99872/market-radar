@@ -123,6 +123,8 @@ _RANKING = re.compile(r"最高目標價(?:則)?(?:是|為)|目標價最高的是
 _ACTION = re.compile(r"[由從]\s*\d|調升|上調|調高|升至|升到|上修|大升|下調|調降|降至|降到|下修|調低")
 _PRICE_RE = re.compile(r"盤中|(?<!合理)(?<!目標)股價|收盤|衝達|一度|壓至|新高|漲停")
 _CLAUSE_END = re.compile(r"[，,](?!\d{3})")
+_TP_WORD = re.compile(r"目標|喊|上看")   # 金額所在子句要有這些字,或金額前面緊接調整動作才算目標價
+_ADJ_TO = re.compile(r"(?:調升|上調|調高|上修|大升|大調|微升|升|下調|調降|調低|下修|降|提高)(?:至|到)")
 _YEAR_RE = re.compile(r"(?:19|20)\d\d")
 _FX_RE = re.compile(r"人民幣|美元|美金|日圓|港幣|ADR")
 
@@ -440,6 +442,21 @@ def _summary_amt(clause, pos):
     return not _ACTION.search(clause[a:m.start() if m else len(clause)])
 
 
+def _with_tp(clause, pos):
+    """pos 那個金額所在的逗號子句有目標價字樣,或金額前面緊接調整動作(「由A元升至B元」「調升至B元」)才算。
+    在配對之後才濾:先濾會讓金額數對不上股票數,同句其他檔跟著配不起來。"""
+    if any(r.match(clause, pos) and re.search("[升降調修]|提高", r.match(clause, pos).group(2)) for r in (_FROM_TO, _FROM_TO_B)):
+        return True
+    if any(m.start() <= pos < m.end() for m in _ADJ_TO.finditer(clause)):
+        return True
+    cuts = [m.end() for m in _CLAUSE_END.finditer(clause, 0, pos)]
+    a = cuts[-1] if cuts else 0
+    if len(cuts) > 1 and re.match("[至到]", clause[a:]):    # 「上調…目標價各52%、22%，至198元、88元」:逗號後的「至」接著前一子句
+        a = cuts[-2]
+    m = _CLAUSE_END.search(clause, pos)
+    return bool(_TP_WORD.search(clause[a:m.start() if m else len(clause)]))
+
+
 def _amounts(clause, carry_tp, sentence=""):
     """抽出子句裡的目標價 [(位置, 目標價, 前次目標價)]。子句沒有「目標價」且前面也沒有時不抽。"""
     if not (_TP_RE.search(clause) or carry_tp):
@@ -494,7 +511,8 @@ def _amounts(clause, carry_tp, sentence=""):
             continue
         used.append((m.start(), m.end()))
         found.append((m.start(), _num(m.group(1)), None))
-    found = sorted((f for f in found if f[1] > 0 and not _summary_amt(clause, f[0])), key=lambda x: x[0])
+    found = sorted((f for f in found if f[1] > 0 and not _summary_amt(clause, f[0])),
+                   key=lambda x: x[0])
     pm = _PREV_LIST.search(clause) if "分別" in clause else None    # 「分別由X元、Y元調高至A元、B元」:前次依序對應
     if pm:
         prevs = re.findall(_NUM, pm.group(0))
@@ -574,7 +592,9 @@ def _analyze(text, idx, title="", fallback_stocks=()):
             ctx = (clause, sentence, title)
             quoted = re.findall(r"[「『](" + _RATINGS + r")[」』]", clause)
             by_order = "分別" in clause and not _RATING_MOVE.search(clause) and len(pairs) > 1 and len(quoted) == len(pairs)    # 「分別給予「中立」、「優於大盤」…」評等也依序配對
-            for i, (code, broker, (_, target, prev)) in enumerate(pairs):
+            for i, (code, broker, (apos, target, prev)) in enumerate(pairs):
+                if not _with_tp(clause, apos):
+                    continue
                 events.append({
                     "code": code, "broker": broker, "target": target,
                     "rating": quoted[i] if by_order else _rating(clause, sentence, ents, code, broker, n_st, n_bk),
@@ -841,7 +861,6 @@ def collect(fetch_fn, names, seen, pages, existing, log=print, base_fn=None):
                     log("合理性過濾丟棄:%s %s %s %s(目標價/收盤 %.2f)" % (it["url"], f["code"], f["broker"], f["target"], r))
                     continue
                 events.append({"date": it["date"], "code": f["code"], "broker": f["broker"], "target": f["target"],
-                               "rating": f["rating"], "prev_target": f["prev_target"], "dir": f["dir"],
                                "urls": [it["url"]], "title": re.sub(r"<[^>]+>", "", it["title"])})
         if page % 5 == 0:
             log("  已處理 %d 頁,事件 %d" % (page, len(events)))
@@ -878,9 +897,12 @@ def build_scores(events):
 
 
 def save(events, seen, now=None, base_fn=None):
-    """合併 → 補 dir → 加 base → 寫 events.json、seen.json、scores.json;回傳存檔的事件。"""
+    """合併 → 加 base → 寫 events.json、seen.json、scores.json;回傳存檔的事件。"""
     import broker_stats
-    events = apply_dir(broker_stats.merge(events))
+    events = broker_stats.merge(events)
+    for e in events:    # 前次價、方向、評等不輸出(PRD 8.2);舊檔裡的也拿掉
+        for k in ("rating", "prev_target", "dir"):
+            e.pop(k, None)
     events.sort(key=lambda e: (e["date"], e["broker"], e["code"]))
     for e in events:    # base = 發布日前一交易日收盤(同 broker_stats 的基準價);查不到就不放
         b = base_fn(e["code"], e["date"]) if base_fn else None

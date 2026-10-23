@@ -3,6 +3,7 @@
 標題來自搜尋頁 https://money.udn.com/search/result/1001/目標價(含 /2 /3 … 翻頁),
 2026-10-21 擷取;內文只留與目標價有關的句子。用法:python -m unittest tests.test_brokers -v
 """
+import datetime
 import os
 import sys
 import unittest
@@ -240,7 +241,8 @@ class PrevTargetBodyTest(unittest.TestCase):
                  u: _article_html("高盛把台積電目標價從2,088元調升至2,288元。")}
         ev, _, fail, _ = brokers.collect(pages.__getitem__, NAMES, set(), 3, [], log=lambda *_: None)
         self.assertEqual(fail, 0)
-        self.assertEqual([(e["target"], e["prev_target"], e["dir"]) for e in ev], [(2288, 2088, "up")])
+        self.assertEqual([e["target"] for e in ev], [2288])    # 前次價、方向不輸出(PRD 8.2)
+        self.assertFalse({"rating", "prev_target", "dir"} & set(ev[0]))
 
 
     def test_from_without_yuan_and_long_gap(self):
@@ -997,6 +999,55 @@ class TestRound6(unittest.TestCase):
     def test_ranking_after_real_move_is_kept(self):
         b = "高盛（3017）將奇鋐目標價調升至4,600元，居外資圈最高。"
         self.assertIn(4600, [e["target"] for e in P6("奇鋐目標價調升至4,600元", b)])
+
+    # ---- 第 7 次修正:金額要跟目標價字樣或調整動作放在一起才收 ----
+
+    IDX7 = brokers.build_index(dict(NAMES5, **{"7769": "鴻勁", "8046": "南電"}))
+
+    def _targets(self, title, body):
+        return sorted((e["code"], e["broker"], e["target"]) for e in brokers.parse(title, body, self.IDX7))
+
+    def test_9455744_stock_price_high_not_target(self):
+        b = "智邦股價受到外資調升目標價激勵，昨（21）日開高走高，最高來到2,205元，終場上漲185元，收2,190元，再創新高。"
+        self.assertEqual(self._targets("外資調升目標價 智邦衝3,000元", b), [])
+
+    def test_9638646_intraday_price_not_target(self):
+        b = "外資報告利多加持下，緯穎（6669）20日早盤一度強勢上揚近5%、至4845元，盤中漲幅收斂至近3%。"
+        self.assertNotIn(4845, [e["target"] for e in P5("目標價衝7,000元！外資看好緯穎 ASIC 爆發 緯創同步逆勢抗震", b)])
+
+    def test_9448812_from_to_without_target_word_kept(self):
+        b = "台積電（2330）目標價方面，瑞穗由2,300元升至2,450元；小摩維持2,400元不變。"
+        self.assertIn(("2330", "瑞穗", 2450), self._targets("台積電好威！多家外資陸續調升目標價", b))
+
+    def test_9500978_big_up_kept(self):
+        b = "鴻勁（7769）目標價喊到12,000元。此外，還有瑞銀由5,200元大升至8,000元，調幅53.8%，評等皆為「買進」。"
+        self.assertIn(("7769", "瑞銀", 8000), self._targets("鴻勁目標價 喊到12,000", b))
+
+    def test_9829431_raise_to_kept(self):
+        b = "高盛首選南電（8046），目標價從2,500元上調到2,700元，景碩（3189）從1,125元上調到1,515元，臻鼎-KY（4958）從925元上調到1,025元。"
+        self.assertIn(("3189", "高盛", 1515), self._targets("高盛調高四檔台股目標價", b))
+
+    def test_save_and_load_brk_have_no_rating_prev_dir(self):
+        import json
+        import tempfile
+        import radar
+        old = (brokers.OUT_DIR, brokers.EVENTS, brokers.SCORES, brokers.SEEN)
+        d = tempfile.mkdtemp()
+        brokers.OUT_DIR = d
+        brokers.EVENTS, brokers.SCORES, brokers.SEEN = (os.path.join(d, n) for n in ("e.json", "s.json", "seen.json"))
+        orig = brokers.build_scores
+        brokers.build_scores = lambda ev: {}
+        try:
+            brokers.save([_ev("2026-10-20", "高盛", 1500, code="2330", rating="買進", prev_target=1400, dir="up")], set())
+            saved = json.load(open(brokers.EVENTS, encoding="utf-8"))
+            brk = radar.load_brk(brokers.EVENTS, today=datetime.date(2026, 10, 23))
+        finally:
+            brokers.build_scores = orig
+            brokers.OUT_DIR, brokers.EVENTS, brokers.SCORES, brokers.SEEN = old
+        banned = {"rating", "prev_target", "dir"}
+        self.assertFalse(banned & set(saved[0]))
+        self.assertEqual(brk["2330"][0]["target"], 1500)
+        self.assertFalse(banned & set(brk["2330"][0]))
 
 
 if __name__ == "__main__":

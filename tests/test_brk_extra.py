@@ -64,6 +64,10 @@ class LoadBrkTest(unittest.TestCase):
         r = radar.load_brk(self.p, today=TODAY)["2454"]
         self.assertEqual([(x["broker"], x["date"], x["target"]) for x in r], [("高盛", "2026-10-02", 100), ("大摩", "2026-10-01", 2)])
 
+    def test_no_rating_prev_dir_in_output(self):
+        self.write(json.dumps([ev("2454", "2026-10-01")]))
+        self.assertFalse({"rating", "prev_target", "dir", "title"} & set(radar.load_brk(self.p, today=TODAY)["2454"][0]))
+
     def test_stale_fallback_keeps_latest_day_only(self):
         self.write(json.dumps([ev("2454", "2026-03-01", broker="甲"), ev("2454", "2026-05-01", broker="乙"), ev("2454", "2026-05-01", broker="丙"),
                                ev("2330", "2026-10-01")]))

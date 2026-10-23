@@ -207,6 +207,19 @@
     dlg.addEventListener("click", function (e) {
       if (e.target === dlg || e.target.closest("[data-close]")) dlg.close();
     });
+    dlg.addEventListener("click", function (e) {
+      var t = e.target.closest('.stk-tabs [role="tab"]');
+      if (t) pickTab(dlg, +t.id.slice(8));
+    });
+    dlg.addEventListener("scroll", function (e) { if (e.target.classList && e.target.classList.contains("stk-tabs")) tabsFade(dlg); }, true);
+    dlg.addEventListener("keydown", function (e) {
+      var t = e.target.closest && e.target.closest('.stk-tabs [role="tab"]');
+      if (!t) return;
+      var i = +t.id.slice(8), k = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: 4 }[e.key];
+      if (k == null) return;
+      e.preventDefault();
+      pickTab(dlg, k, true);
+    });
     return dlg;
   }
 
@@ -219,6 +232,7 @@
   MR.openHelp = function (key) {
     var h = HELP[key], d = ensureDialog();
     if (!h) return;
+    d.classList.remove("stk-sheet");
     d.innerHTML = '<div class="sh-head"><div><h3 id="stk-title">' + esc(h.title) + '</h3></div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
       '<div class="sh-body help-body">' + h.html + "</div>";
     if (!d.open) d.showModal();
@@ -309,6 +323,225 @@
       (price <= mos ? ",<b>已在安全邊際內</b>" : ",要再跌 " + Math.round((1 - mos / price) * 100) + "% 才到") + ")。<span class=\"evb\">僅供參考</span></p>";
   }
 
+  // ---- 分析師目標價區塊(Yahoo 匯總):兩格大數字、扇形圖、匯總表。扇形圖只是把今天的價格連到目標價範圍,不是走勢預測 ----
+  function tpFmt(v) {
+    if (v == null || isNaN(v)) return "—";
+    return v >= 1000 ? Math.round(v).toLocaleString("en-US") : v >= 100 ? v.toFixed(1) : v.toFixed(2);
+  }
+  // 窄版與寬版各畫一張(CSS 依視窗寬度顯示其中一張):寬版 viewBox 較寬,桌面不用把窄圖放大
+  var TP_NARROW = { W: 420, H: 232, X0: 58, XT: 188, XR: 300, YT: 24, YB: 200, gap: 21, mid: 0 };
+  var TP_WIDE = { W: 800, H: 290, X0: 64, XT: 350, XR: 700, YT: 24, YB: 256, gap: 18, mid: 1 };
+  function tpSvg(rows, t, c, cls) {
+    var n = rows.length, W = c.W, H = c.H, X0 = c.X0, XT = c.XT, XR = c.XR, YT = c.YT, YB = c.YB;
+    var cl = rows.map(function (r) { return r[4]; });
+    var vs = cl.concat([t.hi, t.lo, t.mean].filter(function (v) { return v != null; }));
+    var hi = Math.max.apply(null, vs), lo = Math.min.apply(null, vs);
+    var pad = (hi - lo) * 0.06 || 1;
+    hi += pad; lo = Math.max(0, lo - pad);
+    function y(v) { return (YT + (hi - v) / (hi - lo) * (YB - YT)).toFixed(1); }
+    function x(i) { return (X0 + i / (n - 1) * (XT - X0)).toFixed(1); }
+    var o = [];
+    // y 軸 5 個刻度,數字放在繪圖區左側外面,不壓線
+    for (var gi = 0; gi < 5; gi++) {
+      var g = lo + (hi - lo) * gi / 4;
+      o.push('<line x1="' + X0 + '" x2="' + XR + '" y1="' + y(g) + '" y2="' + y(g) + '" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+        '<text x="' + (X0 - 5) + '" y="' + (+y(g) + 4).toFixed(1) + '" text-anchor="end" class="tp-ax">' + tpFmt(g) + "</text>");
+    }
+    var last = cl[n - 1], ys = +y(last), dx = XR - XT;
+    // 從今天收盤到目標價的 S 形曲線:前段爬升、後段持平
+    function curve(v, rev) {
+      var ye = +y(v), a = [XT + dx * 0.4, ys + (ye - ys) * 0.03], b = [XT + dx * 0.55, ye];
+      return rev ? "C" + b + " " + a + " " + XT + "," + ys : "C" + a + " " + b + " " + XR + "," + ye;
+    }
+    if (t.hi != null && t.lo != null) o.push('<path d="M' + XT + "," + ys + curve(t.hi) + "L" + XR + "," + y(t.lo) + curve(t.lo, 1) + 'Z" fill="color-mix(in srgb, var(--accent) 16%, transparent)"/>');
+    o.push('<polyline points="' + cl.map(function (v, i) { return x(i) + "," + y(v); }).join(" ") + '" fill="none" stroke="var(--text)" stroke-width="1.4" vector-effect="non-scaling-stroke"/>');
+    [[t.hi, 1.3, "4 4", ".65"], [t.lo, 1.3, "4 4", ".65"], [t.mean, 2.2, "6 4", "1"]].forEach(function (a) {
+      if (a[0] == null) return;
+      o.push('<path d="M' + XT + "," + ys + curve(a[0]) + '" fill="none" stroke="var(--accent)" stroke-opacity="' + a[3] + '" stroke-width="' + a[1] + '" stroke-dasharray="' + a[2] + '" vector-effect="non-scaling-stroke"/>');
+    });
+    o.push('<line x1="' + XT + '" x2="' + XT + '" y1="' + (YT - 6) + '" y2="' + YB + '" stroke="var(--faint)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>');
+    o.push('<circle cx="' + XT + '" cy="' + ys + '" r="3" fill="var(--text)"/>');
+    // 頂端同一列:「今天」在虛線左,「未來 12 個月」在未來那半邊正中央
+    o.push('<text x="' + (XT - 4) + '" y="12" text-anchor="end" class="tp-ax">今天</text>' +
+      '<text x="' + (XT + XR) / 2 + '" y="12" text-anchor="middle" class="tp-ax">未來 12 個月</text>');
+    // x 軸日期畫在圖裡:起始日、資料日(對齊「今天」虛線);寬版多一個中間日
+    o.push('<text x="' + X0 + '" y="' + (YB + 18) + '" class="tp-ax">' + MR.md(rows[0][0]) + '</text>' +
+      '<text x="' + XT + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[n - 1][0]) + "</text>");
+    if (c.mid) {
+      var mid = Math.round((n - 1) * 0.55);
+      o.push('<text x="' + x(mid) + '" y="' + (YB + 18) + '" text-anchor="middle" class="tp-ax">' + MR.md(rows[mid][0]) + "</text>");
+    }
+    // 右端文字:三個價位靠得近時往下推開(間距 ≥ 字級×1.4(文字框高約字級×1.35)),避免疊字;缺的價位不畫
+    var L = [[t.hi, "最高 ", "var(--muted)"], [t.mean, "平均 ", "var(--accent)"], [t.lo, "最低 ", "var(--muted)"]].filter(function (a) { return a[0] != null; }).map(function (a) {
+      return { yy: +y(a[0]), txt: a[1] + tpFmt(a[0]), col: a[2] };
+    });
+    var m = L.length, i, G = c.gap;
+    for (i = 1; i < m; i++) if (L[i].yy < L[i - 1].yy + G) L[i].yy = L[i - 1].yy + G;
+    if (m && L[m - 1].yy > YB + 8) { L[m - 1].yy = YB + 8; for (i = m - 2; i >= 0; i--) if (L[i].yy > L[i + 1].yy - G) L[i].yy = L[i + 1].yy - G; }
+    L.forEach(function (a) {
+      o.push('<text x="' + (XR + 4) + '" y="' + (a.yy + 4).toFixed(1) + '" class="tp-end" fill="' + a.col + '">' + esc(a.txt) + "</text>");
+    });
+    return '<svg class="' + cls + '" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="近 ' + n + " 日收盤價與分析師目標價範圍:最高 " + tpFmt(t.hi) + "、平均 " + tpFmt(t.mean) + "、最低 " + tpFmt(t.lo) + '">' +
+      o.join("") + "</svg>";
+  }
+  function tpChart(rows, t) {
+    var n = rows.length;
+    if (n < 2) return "";
+    return '<div class="kchart tp-chart"><div class="klegend"><span><i style="background:var(--text)"></i>股價(近 ' + n + ' 個交易日)</span>' +
+      '<span><i style="background:var(--accent)"></i>目標價</span></div>' +
+      tpSvg(rows, t, TP_NARROW, "tp-s-n") + tpSvg(rows, t, TP_WIDE, "tp-s-w") + "</div>";
+  }
+  // ---- 逐家券商目標價(經濟日報新聞整理,extra.brk)與券商紀錄(data/brokers/scores.json,每頁只載一次) ----
+  var BRK_MAX = 8, BRK_ANON = "未具名", SCORES_P = null;
+  function brkScores() {
+    if (!SCORES_P) SCORES_P = MR.json("data/brokers/scores.json").then(function (j) {
+      if (!j || typeof j.scores !== "object" || !j.scores) throw new Error("scores");
+      return j;
+    });
+    return SCORES_P;
+  }
+  // 回傳 [有百分比的項目…] 與一句「紀錄不足」;由 fillBrk 用 createElement 組成,不用 innerHTML
+  function brkRecord(sc, broker) {
+    var s = sc.scores[broker], ok = [], lack = [];
+    if (!s) return "這家券商的紀錄不足(0 筆)";
+    if ([s.hit6, s.hit12, s.up3, s.down3].every(function (o) { return !o || o.rate == null; })) return "這家券商的紀錄不足(" + (s.n || 0) + " 筆)";
+    [["6 月達標", "6 月達標率", s.hit6, "6 月達標"], ["12 月達標", "12 月達標率", s.hit12, "12 月"], ["調升後贏大盤", "調升後 3 個月贏大盤 ", s.up3, "調升後"], ["調降後落後", "調降後 3 個月落後大盤 ", s.down3, "調降後"]].forEach(function (a) {
+      var o = a[2];
+      if (!o) return;
+      if (o.rate == null) lack.push(a[3] + " " + (o.n || 0) + " 筆"); else ok.push([a[1].replace(/ +$/, "") + " ", Math.round(o.rate * 100) + "%", "(" + o.n + " 筆)"]);
+    });
+    if (lack.length) ok.push(["紀錄不足:" + lack.join("、"), null, ""]);
+    if (s.premium != null) ok.push(["平均喊價 ", MR.sign(s.premium * 100, 0) + "%", ""]);
+    return ok;
+  }
+  // 日期:跟面板資料日同年顯示 M/D,不同年顯示 YYYY/M/D
+  function brkDate(iso, doc) {
+    var md = iso.slice(5).replace(/(^|-)0/g, "$1").replace("-", "/");
+    return iso.slice(0, 4) === String(doc.date).slice(0, 4) ? md : iso.slice(0, 4) + "/" + md;
+  }
+  function brkRow(b, doc, withRec, extra) {
+    var rows = doc.rows, px = doc.summary.close, base = null, hit = null, i;
+    // 基準價優先用事件的 base(發布日前一交易日收盤),沒有才用面板 120 日收盤找,都沒有就不算
+    if (b.base > 0) base = b.base;
+    else for (i = 0; i < rows.length; i++) if (rows[i][0] < b.date) base = rows[i][4];
+    var prem = base > 0 ? b.target / base - 1 : null;
+    var status;
+    if (prem != null && prem <= 0) status = "目標價不高於當時股價";
+    else {
+      if (prem != null) for (i = 0; i < rows.length; i++) if (rows[i][0] >= b.date && rows[i][4] >= b.target) { hit = rows[i][0]; break; }
+      status = hit ? "已達標" + (b.date < rows[0][0] ? "" : "(" + brkDate(hit, doc) + ")") : b.target > px ? "距目標 " + MR.sign((b.target / px - 1) * 100, 1) + "%" : "現價已高於目標價";
+    }
+    var dt = brkDate(b.date, doc);
+    var dirTxt = b.dir === "up" ? "調升" : b.dir === "down" ? "調降" : b.dir === "keep" ? "維持" : "";
+    if (dirTxt && b.prev_target > 0 && b.dir !== "keep") dirTxt += "(前次 " + tpFmt(b.prev_target) + ")";
+    var urls = (b.urls || []).filter(function (u) { return /^https:\/\/money\.udn\.com\//.test(u); });
+    var links = urls.map(function (u, k) {
+      return '<a href="' + esc(u) + '" target="_blank" rel="noopener">新聞' + (urls.length > 1 ? " " + (k + 1) : "") + "</a>";
+    }).join(" · ");
+    return '<li class="bk"><div class="bk-main"><span class="bk-d num">' + esc(dt) + '</span><b class="bk-n">' + esc(b.broker) + "</b>" +
+      (b.rating ? '<span class="tag2">' + esc(b.rating) + "</span>" : "") + '<b class="bk-t num">' + tpFmt(b.target) + "</b></div>" +
+      '<div class="bk-sub"><span>喊價幅度 ' + (prem == null ? "—" : MR.sign(prem * 100, 0) + "%") + "</span><span>" + status + "</span>" +
+      '<span class="bk-end">' + (dirTxt ? "<span>" + esc(dirTxt) + "</span>" : "") + (links ? "<span>" + links + "</span>" : "") + "</span></div>" +
+      (withRec ? '<p class="bk-rec" data-bk="' + esc(b.broker) + '">券商紀錄載入中…</p>' : "") + (extra || "") + "</li>";
+  }
+  function brkGroup(g, doc) {
+    var old = g.slice(1);
+    return brkRow(g[0], doc, g[0].broker !== BRK_ANON, old.length ? '<details class="bk-more"><summary>看全部 ' + g.length + " 筆</summary><ul class=\"bk-list\">" +
+      old.map(function (o) { return brkRow(o, doc, false); }).join("") + "</ul></details>" : "");
+  }
+  function brkHtml(doc, hasTgt) {
+    var evs = (doc.extra || {}).brk;
+    evs = Array.isArray(evs) ? evs.filter(function (b) { return b && b.date && b.broker && b.target > 0; }) : [];
+    if (!evs.length) return hasTgt ? '<p class="fvhow tp-nobrk">近一年沒有收到這檔的券商目標價新聞(只收錄經濟日報有報導的)</p>' : "";
+    var help = MR.help("brk", "逐家券商目標價與券商紀錄怎麼看",
+      "<p>列表是經濟日報報導的券商目標價,用規則式程式從新聞標題與內文解析,<b>可能漏抓或誤抓</b>(例如一篇提到多家券商、金額對不到該檔);只列近 90 天內的報告,每家券商只列最新一筆;90 天內都沒有時改列最新一筆舊報告並標出日期。有被報導的才收,調降常沒被報導,樣本偏樂觀。畫面只放事實與「新聞」連結,請點進新聞核對。</p>" +
+      "<p><b>喊價幅度</b> = 目標價 ÷ 發布日前一個交易日收盤價 − 1。「已達標」= 發布後收盤價曾經 ≥ 目標價;喊價幅度 ≤ 0(目標價不高於當時股價)不判斷達標。優先用資料裡記錄的基準價;沒有時改用面板近 120 個交易日的收盤價,發布日早於這個範圍又沒有基準價的,喊價幅度顯示「—」,「已達標」也只看面板這段期間內是否收盤達標(發布日早於這段期間的不標達標日期)。</p>" +
+      "<p>每列下方的<b>券商紀錄</b>是這家券商在全市場所有個股的歷史合算,不限這一檔:</p>" +
+      "<ul><li><b>6／12 個月內達標率</b>:發布後 126／252 個交易日內,任一日收盤 ≥ 目標價的比例;只算喊價幅度 &gt; 0 且已滿期的紀錄,未滿期的不論是否已達標都不算。</li>" +
+      "<li><b>調升後 3 個月贏大盤／調降後 3 個月落後大盤</b>:發布後 63 個交易日,個股報酬與同期加權指數比較。</li>" +
+      "<li><b>平均喊價幅度</b>:該券商所有紀錄(含目標價低於當時股價的)的平均。</li>" +
+      "<li><b>無效紀錄</b>:股價用未還原價格,計算期間內個股單日漲跌超過 ±11%(多半是除權、減資、面額變更)的紀錄不算進達標率與方向。</li>" +
+      "<li>任一項算進去的筆數不到 10 筆,該項寫「紀錄不足」,不給百分比。「未具名」(只寫外資、法人)的列不算紀錄。</li></ul>" +
+      "<p>只陳述歷史比例,不是預測,也不構成投資建議。</p>");
+    var groups = [], seen = {};
+    evs.forEach(function (b) {
+      if (b.broker === BRK_ANON) { groups.push([b]); return; }
+      if (seen[b.broker]) seen[b.broker].push(b); else { seen[b.broker] = [b]; groups.push(seen[b.broker]); }
+    });
+    var rest = groups.slice(BRK_MAX);
+    return '<h5 class="bk-h">逐家券商目標價' + help + "</h5>" + (evs[0].stale ? '<p class="fvhow bk-stale">近 90 天沒有新的券商報告,以下是最新一筆(' + esc(evs[0].date) + ")</p>" : "") + '<ul class="bk-list">' + groups.slice(0, BRK_MAX).map(function (g) { return brkGroup(g, doc); }).join("") + "</ul>" +
+      (rest.length ? '<details class="bk-more bk-rest"><summary>其餘 ' + rest.length + ' 家</summary><ul class="bk-list">' + rest.map(function (g) { return brkGroup(g, doc); }).join("") + "</ul></details>" : "") +
+      '<p class="fvhow tp-src">逐家券商:經濟日報新聞整理<span class="bk-at"></span>;只收得到有報導的,調降常沒被報導,樣本偏樂觀。</p>';
+  }
+  // 面板插入後呼叫:讀 scores.json 填各家券商紀錄;讀失敗只影響紀錄行
+  function fillBrk(root) {
+    var recs = root.querySelectorAll(".bk-rec");
+    root.querySelectorAll("details.bk-more").forEach(function (d) {
+      var sm = d.firstElementChild, t0 = sm.textContent;
+      d.addEventListener("toggle", function () { sm.textContent = d.open ? "收合" : t0; });
+    });
+    if (!root.querySelector(".bk-at")) return;
+    brkScores().then(function (sc) {
+      recs.forEach(function (n) {
+        var r = brkRecord(sc, n.getAttribute("data-bk"));
+        n.textContent = "";
+        if (typeof r === "string") { n.textContent = r; return; }
+        r.forEach(function (it) {
+          var sp = document.createElement("span");
+          sp.className = it[1] || it[0].indexOf("紀錄不足") < 0 ? "bk-it" : "bk-it bk-lack";
+          sp.appendChild(document.createTextNode(it[0]));
+          if (it[1]) { var b = document.createElement("b"); b.textContent = it[1]; sp.appendChild(b); }
+          if (it[2]) sp.appendChild(document.createTextNode(it[2]));
+          n.appendChild(sp);
+        });
+      });
+      var at = root.querySelector(".bk-at");
+      if (at && sc.meta && sc.meta.fetched) at.textContent = "," + String(sc.meta.fetched).slice(0, 10) + " 更新";
+    }).catch(function () {
+      recs.forEach(function (n) { n.textContent = "券商紀錄暫時無法載入"; });
+    });
+  }
+  function tpHtml(doc) {
+    var ex = doc.extra || {}, fv = ex.fv, t = fv && fv.tgt, px = doc.summary.close;
+    if (t && !(t.mean > 0 && px > 0)) t = null;
+    var bh = brkHtml(doc, !!t), brk = bh ? '<div class="tp-brk">' + bh + "</div>" : "";
+    var help = MR.help("tp", "分析師目標價怎麼看",
+      "<p>上面是 Yahoo Finance 彙整的分析師目標價:<b>平均</b>、<b>最高</b>、<b>最低</b>,上漲空間 = 目標價 ÷ 面板資料日收盤價 − 1。</p>" +
+      "<p>圖的左半是近 120 個交易日的收盤價,右半是「未來 12 個月」:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。粗虛線是平均目標價,上下兩條細虛線是最高和最低,中間淡色是範圍。</p>" +
+      "<p>最高除以最低超過 1.8 倍時,表示分析師之間看法差很多,平均值的參考性較低。</p>" +
+      "<p>資料來源:Yahoo Finance 匯總(一天更新一次);目標價共識從 2026-10 才開始存快照,準確度還沒辦法回測,僅供參考。</p>");
+    var head = '<h4>分析師目標價<span class="evb">僅供參考</span>' + help + "</h4>";
+    if (!t) {
+      return '<div class="fvbox tp">' + head + (brk || '<p class="flat tp-none">這檔沒有分析師目標價資料</p>') + "</div>";
+    }
+    var hi = t.hi || null, lo = t.lo || null;
+    var up = function (v) { return (v / px - 1) * 100; };
+    var mu = t.up != null ? t.up : up(t.mean);
+    var ntgt = t.n_tgt != null ? t.n_tgt : fv.n_tgt;
+    var n1 = t.n1 != null ? t.n1 : fv.fwd && fv.fwd.n;
+    var cnt = ntgt != null ? "目標價家數:" + Math.round(ntgt) + " 家" : n1 != null ? "EPS 預估家數:" + Math.round(n1) + " 家" : "";
+    var div = t.hi && t.lo && t.hi / t.lo > 1.8 ? '<span class="tag2 warn">分析師看法分歧大</span>' : "";
+    function row(label, v) {
+      if (v == null) return "<tr><th>" + label + '</th><td class="num">—</td><td class="num">—</td></tr>';
+      var u = up(v);
+      return "<tr><th>" + label + '</th><td class="num">' + tpFmt(v) + '</td><td class="num ' + MR.dir(u) + '">' + MR.sign(u, 1) + "%</td></tr>";
+    }
+    return '<div class="fvbox tp">' + head +
+      '<div class="tp-big"><div><span>平均目標價</span><b class="tp-mean">' + tpFmt(t.mean) + "</b></div>" +
+      '<div><span>上漲空間</span><b class="' + MR.dir(mu) + '">' + MR.sign(mu, 1) + "%</b></div></div>" +
+      tpChart(doc.rows, { hi: hi, mean: t.mean, lo: lo }) + (div ? '<div class="tp-div">' + div + "</div>" : "") +
+      '<table class="tp-tbl srt-ok"><thead><tr><th>項目</th><th>目標價</th><th>上漲空間</th></tr></thead><tbody>' +
+      row("最高", hi) + row("平均", t.mean) + row("最低", lo) + "</tbody></table>" +
+      '<p class="fvhow tp-src">' + (cnt ? cnt + "<br>" : "") + "資料:Yahoo Finance 匯總" + (t.at ? "," + esc(String(t.at).slice(0, 10)) + " 更新" : "") + "。</p>" +
+      brk + "</div>";
+  }
+  // (a) 高峰風險:fv.peak 為真時,基本估值的狀態標籤換成這個(status 本身不變,前瞻估值與排序篩選不受影響)
+  MR.peakHelp = function () {
+    return MR.help("peak", "高峰風險是什麼",
+      "<p>也就是常說的「高峰陷阱」。三個條件同時成立才標:月營收年增率最近 3 個月(且最近一個月是最新營收月份)都 ≥ 30%;本益比法合理價 ≥ 股價 × 1.2(看起來被低估或合理);但用自己過去 5 年淨值比中位數算出的合理價 ≤ 股價 × 0.8(淨值比已在歷史高檔)。</p>" +
+      "<p>只判斷「依過去四季 EPS」的基本估值,前瞻估值不變。回測 12 個月內跌 30% 以上的機率約 1/3;只降低大跌機率,沒有證據能提升報酬。</p>");
+  };
+  function peakTag() { return '<span class="tag2 warn">高峰風險</span>' + MR.peakHelp(); }
   // 模型合理價:公式固定,把每一步算式攤開讓人可以自己驗算
   function fvHtml(doc) {
     var ex = doc.extra || {}, e = ex.fv, px = doc.summary.close;
@@ -361,9 +594,10 @@
       "<div><span>模型合理價</span><b>" + e.fair + "</b></div>" +
       "<div><span>合理區間</span><b>" + e.low + " ~ " + e.high + "</b></div>" +
       '<div><span>潛在空間</span><b class="' + MR.dir(e.up) + '">' + MR.sign(e.up, 1) + "%</b></div>" +
-      '<div><span>評價</span><b class="' + cls + '">' + e.status + "</b></div></div>" +
+      "<div><span>評價</span>" + (e.peak ? "<b>" + peakTag() + "</b>" : '<b class="' + cls + '">' + e.status + "</b>") + "</div></div>" +
       '<div class="fvbar" aria-hidden="true"><i style="left:' + at(e.low) + ";width:calc(" + at(e.high) + " - " + at(e.low) + ')"></i>' +
       '<u style="left:' + at(e.fair) + '"></u><s style="left:' + at(px) + '"></s></div>' +
+      (e.peak ? '<p class="fvhow">本益比法看起來便宜,但營收年增連 3 個月 ≥ 30%、淨值比已在自己的歷史高檔,所以不標「' + esc(e.status) + "」,改標高峰風險。</p>" : "") +
       '<p class="fvhow">' + how + "</p>" +
       (e.extreme ? '<p class="fvhow" style="color:var(--down)">⚠ 合理價與股價差距超過常理範圍,多半是景氣轉折(獲利剛開始暴增或衰退)、一次性損益或市場重新評價,這個固定公式不適用於這檔。</p>' : "") +
       '<p class="fvhow">公式固定、沒有人為調整;假設淨利率不變、評價回到自己的歷史中位數,實際上兩者都會變。回測顯示:2023–2026 被判「低估」的股票之後反而表現較差,這個合理價目前沒有預測力,只供了解估值位置。</p></div>';
@@ -598,28 +832,66 @@
         return '<a class="th-chip" href="sectors.html#' + esc(t.id) + '">' + esc(t.name) + "</a>";
       }).join("") + "</div>" : "") +
       '</div><button type="button" class="x" data-close aria-label="關閉">×</button></div>' +
-      '<div class="sh-body">' + '<div id="health">' + healthHtml(doc.health, doc.rating, null) + "</div>" +
-      profileHtml(prof && prof[doc.code]) + fvHtml(doc) +
-      '<div class="kgrid">' +
-      "<div><span>5 日漲跌</span><b>" + MR.pct(s.ret5) + "</b></div>" +
-      "<div><span>20 日漲跌</span><b>" + MR.pct(s.ret20) + "</b></div>" +
-      "<div><span>距 52 週高點</span><b>" + MR.pct(off) + "</b></div>" +
-      "<div><span>5 日法人</span><b>" + MR.yi(s.net5) + "</b></div>" +
-      "<div><span>20 日法人</span><b>" + MR.yi(s.net20) + "</b></div>" +
-      "<div><span>20 日均成交</span><b>" + (s.avg_value20 == null ? "—" : s.avg_value20.toFixed(1) + " 億") + "</b></div>" +
-      "<div><span>外資連買</span><b>" + s.foreign_streak + " 天</b></div>" +
-      "<div><span>投信連買</span><b>" + s.trust_streak + " 天</b></div>" +
-      "<div><span>今日法人</span><b>" + MR.yi(lastNet(doc)) + "</b></div>" +
-      "</div>" + kchart(doc, names, grades) + revHtml(doc) + gmHtml(doc) + peHtml(doc) +
-      '<div class="mem-tools"><h4>近期訊號 · 歷史 10 日表現</h4></div>' +
-      (recent.length ? '<ul class="siglist">' + recent.map(function (m) {
-        var st = sigs[m[1]], h = st && st.horizons["10"];
-        var stat = h && h.all.n ? "勝過一般股 " + h.all.win + "% · 平均相對 " + MR.sign(h.all.avg_rel, 2) + "%" : "";
-        return '<li><span class="d">' + MR.md(m[0]) + "</span><span>" + esc(st ? st.name : m[1]) + (h ? MR.gradeTag(h.grade) : "") +
-          '</span><span class="w">' + stat + "</span></li>";
-      }).join("") + "</ul>" : '<p class="flat" style="font-size:14px">近 ' + doc.rows.length + " 個交易日沒有觸發訊號。</p>") +
-      '<p class="foot">歷史表現是同一訊號在所有個股上的統計,不是這檔股票的預測;' +
-      '<a href="signals.html">看回測方法與完整數據</a>。只呈現事實,不構成投資建議。</p></div>';
+      '<div class="sh-body">' + tabsHtml([
+        ["概況", '<div id="health">' + healthHtml(doc.health, doc.rating, null) + "</div>" + profileHtml(prof && prof[doc.code]) +
+          '<div class="kgrid">' +
+          "<div><span>5 日漲跌</span><b>" + MR.pct(s.ret5) + "</b></div>" +
+          "<div><span>20 日漲跌</span><b>" + MR.pct(s.ret20) + "</b></div>" +
+          "<div><span>距 52 週高點</span><b>" + MR.pct(off) + "</b></div>" +
+          "<div><span>5 日法人</span><b>" + MR.yi(s.net5) + "</b></div>" +
+          "<div><span>20 日法人</span><b>" + MR.yi(s.net20) + "</b></div>" +
+          "<div><span>20 日均成交</span><b>" + (s.avg_value20 == null ? "—" : s.avg_value20.toFixed(1) + " 億") + "</b></div>" +
+          "<div><span>外資連買</span><b>" + s.foreign_streak + " 天</b></div>" +
+          "<div><span>投信連買</span><b>" + s.trust_streak + " 天</b></div>" +
+          "<div><span>今日法人</span><b>" + MR.yi(lastNet(doc)) + "</b></div></div>"],
+        ["走勢與籌碼", kchart(doc, names, grades) +
+          '<div class="mem-tools"><h4>近期訊號 · 歷史 10 日表現</h4></div>' +
+          (recent.length ? '<ul class="siglist">' + recent.map(function (m) {
+            var st = sigs[m[1]], h = st && st.horizons["10"];
+            var stat = h && h.all.n ? "勝過一般股 " + h.all.win + "% · 平均相對 " + MR.sign(h.all.avg_rel, 2) + "%" : "";
+            return '<li><span class="d">' + MR.md(m[0]) + "</span><span>" + esc(st ? st.name : m[1]) + (h ? MR.gradeTag(h.grade) : "") +
+              '</span><span class="w">' + stat + "</span></li>";
+          }).join("") + "</ul>" : '<p class="flat" style="font-size:14px">近 ' + doc.rows.length + " 個交易日沒有觸發訊號。</p>") +
+          '<p class="foot">歷史表現是同一訊號在所有個股上的統計,不是這檔股票的預測;' +
+          '<a href="signals.html">看回測方法與完整數據</a>。只呈現事實,不構成投資建議。</p>'],
+        ["估值", fvHtml(doc) + peHtml(doc)],
+        ["目標價", tpHtml(doc)],
+        ["營收獲利", revHtml(doc) + gmHtml(doc)]
+      ]) + "</div>";
+  }
+
+  // 個股面板橫排分頁:記住上次看的分頁(同一次瀏覽,重新整理就回概況)
+  var stkTab = 0;
+  function tabsHtml(tabs) {
+    return '<div class="stk-tabs" role="tablist" aria-label="個股資料分頁">' + tabs.map(function (t, i) {
+      return '<button type="button" role="tab" id="stk-tab-' + i + '" aria-controls="stk-pan-' + i + '" aria-selected="' + (i === stkTab) +
+        '" tabindex="' + (i === stkTab ? 0 : -1) + '">' + t[0] + "</button>";
+    }).join("") + "</div>" + tabs.map(function (t, i) {
+      return '<div role="tabpanel" class="stk-pan" id="stk-pan-' + i + '" aria-labelledby="stk-tab-' + i + '" tabindex="0"' + (i === stkTab ? "" : " hidden") + ">" +
+        (t[1] || '<p class="flat">這個分頁目前沒有資料。</p>') + "</div>";
+    }).join("");
+  }
+  // 右緣淡出提示:分頁列還能往右滑時加 .more
+  function tabsFade(d) {
+    var el = d.querySelector(".stk-tabs");
+    if (el) el.classList.toggle("more", el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }
+  function pickTab(d, i, focus) {
+    var tabs = d.querySelectorAll('.stk-tabs [role="tab"]');
+    if (!tabs.length) return;
+    var body = d.querySelector(".sh-body"), bar = d.querySelector(".stk-tabs");
+    stkTab = (i + tabs.length) % tabs.length;
+    Array.prototype.forEach.call(tabs, function (b, k) {
+      var on = k === stkTab;
+      b.setAttribute("aria-selected", on);
+      b.tabIndex = on ? 0 : -1;
+      d.querySelector("#stk-pan-" + k).hidden = !on;
+    });
+    var top = d.querySelector("#stk-pan-" + stkTab).offsetTop - bar.offsetHeight;
+    if (body.scrollTop > top) body.scrollTop = top; // 已捲過分頁列:新分頁第一行貼著分頁列
+    if (focus) tabs[stkTab].focus();
+    tabs[stkTab].scrollIntoView({ block: "nearest", inline: "nearest" });
+    tabsFade(d);
   }
 
   function lastNet(doc) {
@@ -629,11 +901,14 @@
 
   MR.openStock = function (code) {
     var d = ensureDialog();
+    d.classList.add("stk-sheet");
     d.innerHTML = '<div class="sh-head"><div><h3 id="stk-title">' + esc(code) + '</h3></div><button type="button" class="x" data-close aria-label="關閉">×</button></div><div class="sh-body"><p class="flat">載入中…</p></div>';
     if (!d.open) d.showModal();
     Promise.all([MR.json("data/stocks/" + encodeURIComponent(code) + ".json"), MR.stats(), MR.profile(code)])
       .then(function (res) {
         d.innerHTML = stockHtml(res[0], res[1], res[2]);
+        tabsFade(d);
+        fillBrk(d);
         starStats().then(function (S) { var n = d.querySelector("#health"); if (n) n.innerHTML = healthHtml(res[0].health, res[0].rating, S); });
         // 盤中或今日收盤後:用即時報價取代排程資料的收盤價(live.js 有載入且已設定 Worker 才會有)
         if (MR.intradayOne) MR.intradayOne(code, res[0].date).then(function (lv) {
@@ -648,6 +923,7 @@
 
   // 沒有詳細面板的股票:用查詢索引顯示精簡資料
   function brief(d, code) {
+    d.classList.remove("stk-sheet"); // 精簡面板內容少,不放寬也不分頁
     Promise.all([MR.index(), MR.profile(code), starStats()]).then(function (res) {
       var I = res[0], x = I && I.s[code], body = d.querySelector(".sh-body");
       if (!x) { body.innerHTML = '<p class="flat">查無這檔股票(只收錄上市櫃普通股)。</p>'; return; }

@@ -10,7 +10,7 @@
 月營收視為次月 11 日起才知道(法定公告期限是 10 日)。
 """
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import os
 import re
@@ -749,6 +749,37 @@ RATING = {}   # 代號 → 星等評級(signals.py 寫進個股檔與查詢索�
 SNAP = {}     # 代號 → 查詢索引用的最新營收、產業、60 日漲幅(全部股票)
 STARS_BASE = {"A": 5, "B": 4, "C": 3, "D": 3}   # 陷阱(營收減速、外資 20 日大賣)A/B/C 各扣 1 顆;回測見 explosion_study.py
 FO_DUMP = -10            # 外資 20 日買賣超佔成交金額 ≤ −10% 視為大賣
+BRK_MAX = 30   # 每檔最多帶幾筆券商目標價事件進個股檔
+BRK_DAYS = 90  # 面板只列這麼多天內的報告(券商紀錄 broker_stats 照舊用全部歷史)
+
+
+def load_brk(path, limit=BRK_MAX, today=None, days=BRK_DAYS):
+    """讀 brokers.py 產生的 events.json,回傳 {代號: 事件 list(新到舊,最多 limit 筆)}。
+    只留 today 往前 days 天內(含第 days 天)的報告、同券商只留最新一筆;該股 days 天內一筆都沒有時,
+    退回只留最新那一天的事件並標 "stale": True。檔案不存在、壞掉或格式不對都回空 dict,不報錯(extra.brk 就不會產生)。"""
+    cut = ((today or datetime.now().date()) - timedelta(days=days)).isoformat()
+    try:
+        with open(path, encoding="utf-8") as f:
+            ev = json.load(f)
+        if not isinstance(ev, list):
+            return {}
+        by = {}
+        for x in ev:
+            if isinstance(x, dict) and x.get("code"):
+                by.setdefault(str(x["code"]), []).append({k: v for k, v in x.items() if k != "title"})   # 前端不顯示標題,省檔案大小
+        out = {}
+        for c, v in by.items():
+            v.sort(key=lambda x: str(x.get("date") or ""), reverse=True)
+            fresh = list({x.get("broker"): x for x in reversed(v) if str(x.get("date") or "")[:10] >= cut}.values())   # 同券商留最新(同日留排序在前的)
+            if not fresh:
+                top = str(v[0].get("date") or "")[:10]
+                fresh = [dict(x, stale=True) for x in v if str(x.get("date") or "")[:10] == top]
+            out[c] = sorted(fresh, key=lambda x: str(x.get("date") or ""), reverse=True)[:limit]
+        return out
+    except (OSError, ValueError):
+        return {}
+
+
 EXTRAS = {}   # 代號 → 個股面板用的估值、營收、本益比歷史(signals.py 寫個股檔時帶入)
 
 
@@ -807,6 +838,33 @@ def run_rate_eps(c, r3, cur_m, ttm=None, yoy3=None):
     return out
 
 
+def peak_risk(method, fair, price, pb, bh, yoy_pts, months3):
+    """高峰風險判定(只用在基本估值 method=pe):營收連 3 月年增 ≥ 30%、本益比法 fair ≥ 股價 × 1.2、
+    但自身過去 60 個月 P/B 中位數法的合理價 ≤ 股價 × 0.8,代表本益比看便宜、淨值比已在歷史高檔。
+    yoy_pts:該股有資料的 (月份, 年增率%) 由舊到新;months3:全市場最新 3 個營收月份。回傳 True / False。"""
+    import fairvalue as FV
+    eps_ = 1e-9
+    if method != "pe" or not fair or not price or price <= 0 or not pb or pb <= 0:
+        return False
+    pts = [(m, v) for m, v in yoy_pts if v is not None and not pd.isna(v)][-3:]
+    if len(pts) < 3 or [m for m, _ in pts] != list(months3) or min(v for _, v in pts) < 30 - eps_:
+        return False
+    if fair < price * 1.2 - eps_:
+        return False
+    b = FV.band(bh, 0, 50)
+    if not b:
+        return False
+    return price / pb * b[1] <= price * 0.8 + eps_
+
+
+def _day(s):
+    """資料日字串轉 date;不是日期格式回 None(load_brk 就用今天)。"""
+    try:
+        return datetime.strptime(str(s)[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
 def fair_all(rp, close, last):
     """每檔股票的模型合理價(公式見 fairvalue.py)。同時把個股面板要用的歷史資料放進 EXTRAS。"""
     import fairvalue as FV
@@ -821,6 +879,7 @@ def fair_all(rp, close, last):
         cons = json.load(open(os.path.join(history.ROOT, "data", "estimates", "latest.json"), encoding="utf-8")).get("s", {})
     except FileNotFoundError:
         cons = {}
+    brk = load_brk(os.path.join(history.ROOT, "data", "brokers", "events.json"), today=_day(last))
     cur_m = (int(last[:4]), int(last[5:7]))
     w1 = (cur_m[1] - 1) / 12   # 未來 12 個月 EPS = 今年預估 × 剩餘比例 + 明年預估 × 已過比例
     vm = [m for m in sorted(VAL) if m < cur_m][-FV.MAX_HIST:]
@@ -882,12 +941,24 @@ def fair_all(rp, close, last):
             if k.get("tgt"):
                 e["tgt"] = {"mean": k["tgt"], "lo": k.get("tgt_lo"), "hi": k.get("tgt_hi"),
                             "up": _f((k["tgt"] / price - 1) * 100, 1)}
+                if k.get("n1"):
+                    e["tgt"]["n1"] = k["n1"]   # EPS 預估家數(沒有 fwd 的股票也要顯示)
+                if k.get("n_tgt"):
+                    e["tgt"]["n_tgt"] = k["n_tgt"]
+                if k.get("at"):
+                    e["tgt"]["at"] = str(k["at"])[:10]   # 只留日期 YYYY-MM-DD,前端不必再讀 latest.json
+            # 高峰風險:只看基本估值 e,status 保持原值,只加 peak 旗標(fwd、proj 不變)
+            if peak_risk(est["method"], est["fair"], float(price), pb,
+                         bh, [(m, yoy.at[m, c]) for m in rp["months"][-3:]], rp["months"][-3:]):
+                e["peak"] = True
             if est["method"] == "pe":
                 e.update(eps=_f(est["eps"]), growth=_f(est["growth"]), feps=_f(est["feps"]))
             else:
                 e.update(bvps=_f(est["bvps"]))
             out[c] = e
             ex["fv"] = e
+        if c in brk:
+            ex["brk"] = brk[c]
         EXTRAS[c] = ex
     return out
 

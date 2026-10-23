@@ -66,6 +66,11 @@ jobs:
         run: python scripts/profile.py || echo "::warning::profile 失敗"
       - name: 本益比每月快照
         run: python scripts/valuation.py || echo "::warning::valuation 失敗"
+      - name: 券商目標價新聞(只在每天 20:35 那次)
+        if: github.event.schedule == '35 12 * * *' || github.event_name == 'workflow_dispatch'
+        timeout-minutes: 8
+        continue-on-error: true
+        run: python scripts/brokers.py || echo "::warning::brokers 失敗"
       - name: 訊號回測、觀察名單、起漲雷達與個股資料
         run: python scripts/signals.py || echo "::warning::signals 失敗"
       - name: Telegram 推播(收盤後那次或手動執行;未設定 Secrets 時自動略過)
@@ -87,7 +92,7 @@ jobs:
             git reset -q --mixed origin/main
             # --ignore-removal:執行期間若有人推了新檔案,reset 到最新 main 後工作目錄裡沒有它,不能當成刪除提交
             # (曾因此刪掉 data/track/basket_backtest_star.csv)。只有個股檔會真的被移除,另外處理
-            git add --ignore-removal data/status.json data/quotes.json data/flows data/sectors/latest.json data/screens data/history data/signals data/watch data/fundamentals data/revenue data/valuation data/estimates data/profile data/margin data/quality data/radar data/track
+            git add --ignore-removal data/status.json data/quotes.json data/flows data/sectors/latest.json data/screens data/history data/signals data/watch data/fundamentals data/revenue data/valuation data/estimates data/profile data/margin data/quality data/radar data/track data/brokers
             git add -A data/stocks
             if git diff --cached --quiet; then echo "沒有變更"; exit 0; fi
             git commit -q -m "資料更新 $(TZ=Asia/Taipei date '+%F %H:%M')"

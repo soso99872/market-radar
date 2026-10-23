@@ -454,7 +454,7 @@ html.nosplash #splash, #splash.done { opacity: 0; visibility: hidden; pointer-ev
 .bk-sub a { color: var(--accent); }
 .bk-end { white-space: nowrap; display: inline-flex; gap: 0 12px; }
 .bk-rec { display: flex; flex-wrap: wrap; gap: 0 9px; margin: 3px 0 0; font-size: 11.5px; line-height: 1.6; color: var(--faint); overflow-wrap: anywhere; }
-.bk-scope { margin: 1px 0 0; }
+.bk-scope { margin: 1px 0 0; font-size: 11.5px; color: var(--faint); }
 .bk-rec b { color: var(--muted); font-family: var(--mono); }
 .bk-more { margin-top: 4px; }
 .bk-more > summary { cursor: pointer; font-size: 12.5px; color: var(--accent); padding: 4px 0; min-height: 28px; }

@@ -419,7 +419,7 @@
     var md = iso.slice(5).replace(/(^|-)0/g, "$1").replace("-", "/");
     return iso.slice(0, 4) === String(doc.date).slice(0, 4) ? md : iso.slice(0, 4) + "/" + md;
   }
-  function brkRow(b, doc, withRec, extra) {
+  function brkRow(b, doc, withRec, extra, scope) {
     var rows = doc.rows, px = doc.summary.close, base = null, hit = null, i;
     // 基準價優先用事件的 base(發布日前一交易日收盤),沒有才用面板 120 日收盤找,都沒有就不算
     if (b.base > 0) base = b.base;
@@ -440,12 +440,12 @@
       '<b class="bk-t num">' + tpFmt(b.target) + "</b></div>" +
       '<div class="bk-sub"><span>喊價幅度 ' + (prem == null ? "—" : MR.sign(prem * 100, 0) + "%") + "</span><span>" + status + "</span>" +
       '<span class="bk-end">' + (links ? "<span>" + links + "</span>" : "") + "</span></div>" +
-      (withRec ? '<p class="bk-rec" data-bk="' + esc(b.broker) + '">券商紀錄載入中…</p>' : "") + (extra || "") + "</li>";
+      (withRec ? '<p class="bk-rec" data-bk="' + esc(b.broker) + '">券商紀錄載入中…</p>' : "") + (scope ? '<p class="fvhow bk-scope">券商紀錄是全市場合算、不限這一檔</p>' : "") + (extra || "") + "</li>";
   }
-  function brkGroup(g, doc) {
+  function brkGroup(g, doc, scope) {
     var old = g.slice(1);
     return brkRow(g[0], doc, g[0].broker !== BRK_ANON, old.length ? '<details class="bk-more"><summary>看全部 ' + g.length + " 筆</summary><ul class=\"bk-list\">" +
-      old.map(function (o) { return brkRow(o, doc, false); }).join("") + "</ul></details>" : "");
+      old.map(function (o) { return brkRow(o, doc, false); }).join("") + "</ul></details>" : "", scope && g[0].broker !== BRK_ANON);
   }
   function brkEvs(doc) {
     var evs = (doc.extra || {}).brk;
@@ -455,24 +455,24 @@
     var evs = brkEvs(doc);
     if (!evs.length) return hasTgt ? '<p class="fvhow tp-nobrk">近一年沒有收到這檔的券商目標價新聞(只收錄經濟日報有報導的)</p>' : "";
     var help = MR.help("brk", "逐家券商目標價與券商紀錄怎麼看",
-      "<p>列表是經濟日報報導的券商目標價,由程式解析新聞,可能漏抓或誤抓,請點「新聞」核對。</p>" +
+      "<p>列表是經濟日報報導的券商目標價,由程式解析新聞,<b>可能漏抓或誤抓</b>(例如一篇提到多家券商、金額對不到該檔),請點「新聞」核對。</p>" +
       "<p>每家券商只列 90 天內最新一筆,區間也用這些計算;90 天內都沒有時改列最新一筆舊報告並標出日期。</p>" +
       "<p><b>喊價幅度</b> = 目標價 ÷ 發布日前一個交易日收盤價 − 1;「已達標」= 發布後收盤價曾 ≥ 目標價。</p>" +
       "<details class=\"help-more\"><summary>更多說明</summary>" +
-      "<p>喊價幅度 ≤ 0(目標價不高於當時股價)不判斷達標。優先用資料裡記錄的基準價;沒有時改用面板近 120 個交易日收盤價,發布日早於這個範圍又沒有基準價的,喊價幅度顯示「—」,也不標達標日期。</p>" +
+      "<p>喊價幅度 ≤ 0(目標價不高於當時股價)不判斷達標。優先用資料裡記錄的基準價;沒有時改用面板近 120 個交易日收盤價,發布日早於這個範圍又沒有基準價的,喊價幅度顯示「—」,「已達標」也只看面板這段期間內是否收盤達標(發布日早於這段期間的不標達標日期)。</p>" +
       "<p>每列下方的<b>券商紀錄</b>是這家券商在全市場所有個股的歷史合算,不限這一檔:</p>" +
-      "<ul><li><b>6／12 個月內達標率</b>:發布後 126／252 個交易日內,任一日收盤 ≥ 目標價的比例;只算喊價幅度 &gt; 0 且已滿期的紀錄。</li>" +
+      "<ul><li><b>6／12 個月內達標率</b>:發布後 126／252 個交易日內,任一日收盤 ≥ 目標價的比例;只算喊價幅度 &gt; 0 且已滿期的紀錄,未滿期的不論是否已達標都不算。</li>" +
       "<li><b>平均喊價幅度</b>:該券商所有紀錄(含目標價低於當時股價的)的平均。</li>" +
       "<li><b>無效紀錄</b>:股價用未還原價格,計算期間內個股單日漲跌超過 ±11%(多半是除權、減資、面額變更)的紀錄不算進達標率。</li>" +
       "<li>任一項算進去的筆數不到 10 筆,該項寫「紀錄不足」,不給百分比。「未具名」(只寫外資、法人)的列不算紀錄。</li></ul>" +
-      "<p>只陳述歷史比例,不是預測,也不構成投資建議。</p></details>");
+      "<p>有被報導的才收,偏空的報告常沒被報導,樣本偏樂觀。只陳述歷史比例,不是預測,也不構成投資建議。</p></details>");
     var groups = [], seen = {};
     evs.forEach(function (b) {
       if (b.broker === BRK_ANON) { groups.push([b]); return; }
       if (seen[b.broker]) seen[b.broker].push(b); else { seen[b.broker] = [b]; groups.push(seen[b.broker]); }
     });
-    var rest = groups.slice(BRK_MAX);
-    return '<h5 class="bk-h">逐家券商' + help + "</h5>" + (evs[0].stale ? '<p class="fvhow bk-stale">近 90 天沒有新的券商報告,以下是最新一筆(' + esc(evs[0].date) + ")</p>" : "") + '<ul class="bk-list">' + groups.slice(0, BRK_MAX).map(function (g) { return brkGroup(g, doc); }).join("") + "</ul>" +
+    var rest = groups.slice(BRK_MAX), first = groups.findIndex(function (g) { return g[0].broker !== BRK_ANON; });
+    return '<h5 class="bk-h">逐家券商' + help + "</h5>" + (evs[0].stale ? '<p class="fvhow bk-stale">近 90 天沒有新的券商報告,以下是最新一筆(' + esc(evs[0].date) + ")</p>" : "") + '<ul class="bk-list">' + groups.slice(0, BRK_MAX).map(function (g, i) { return brkGroup(g, doc, i === first); }).join("") + "</ul>" +
       (rest.length ? '<details class="bk-more bk-rest"><summary>其餘 ' + rest.length + ' 家</summary><ul class="bk-list">' + rest.map(function (g) { return brkGroup(g, doc); }).join("") + "</ul></details>" : "") +
       '<p class="fvhow tp-src">逐家券商:經濟日報新聞整理<span class="bk-at"></span>;偏空的報告常沒被報導,樣本偏樂觀。</p>';
   }
@@ -517,9 +517,9 @@
       var bmean = tg.reduce(function (a, v) { return a + v; }, 0) / bn, pc = function (v) { return (v / px - 1) * 100; };
       var bhelp = MR.help("tp", "券商目標價怎麼看",
         "<p><b>區間</b>是每家券商 90 天內最新一筆目標價的最低到最高;「相對現價」= 目標價 ÷ 資料日收盤價 − 1;<b>平均</b>是算術平均。</p>" +
-        "<p>圖的右半是未來 12 個月:<b>右半只是把今天的價格連到券商目標價區間,不代表會照這條路走</b>。</p>" +
-        "<details class=\"help-more\"><summary>更多說明</summary><p>圖的左半是近 120 個交易日的收盤價。粗虛線是平均,上下兩條細虛線是最高和最低。</p>" +
-        "<p>圖下方的 Yahoo Finance 匯總是另一個資料來源,家數與時間不同,只當對照。僅供參考。</p></details>");
+        "<p>圖的右半是未來 12 個月:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。</p>" +
+        "<details class=\"help-more\"><summary>更多說明</summary><p>圖的左半是近 120 個交易日的收盤價,右半畫的是券商目標價區間。粗虛線是平均,上下兩條細虛線是最高和最低。</p>" +
+        "<p>只收得到有被報導的券商,偏空的報告常沒被報導,樣本偏樂觀;僅供參考。圖下方一行 Yahoo Finance 匯總是另一個資料來源,家數與時間不同,只當對照。</p></details>");
       var big = bn > 1 ? [["目標價區間", tpFmt(blo) + "～" + tpFmt(bhi)], ["相對現價", MR.sign(pc(blo), 1) + "%～" + MR.sign(pc(bhi), 1) + "%"]]
         : [["目標價(1 家)", tpFmt(bhi)], ["相對現價", MR.sign(pc(bhi), 1) + "%"]];
       return '<div class="fvbox tp"><h4>券商目標價<span class="evb">僅供參考</span>' + bhelp + "</h4>" +

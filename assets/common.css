@@ -408,7 +408,7 @@ html.nosplash #splash, #splash.done { opacity: 0; visibility: hidden; pointer-ev
 .tp-big b { font-family: var(--mono); font-size: 28px; font-weight: 600; line-height: 1.3; white-space: nowrap; }
 .tp-big .tp-mean { color: var(--accent); }
 .tp-rng div { padding: 8px clamp(6px, 2.4vw, 12px); }
-.tp-rng b { font-size: clamp(13px, 4.1vw, 24px); }
+.tp-rng b { font-size: clamp(13px, 4.4vw, 24px); }
 .help-more { margin-top: 10px; }
 .help-more > summary { cursor: pointer; color: var(--accent); font-size: 13px; padding: 4px 0; min-height: 28px; }
 .help-more > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -454,6 +454,7 @@ html.nosplash #splash, #splash.done { opacity: 0; visibility: hidden; pointer-ev
 .bk-sub a { color: var(--accent); }
 .bk-end { white-space: nowrap; display: inline-flex; gap: 0 12px; }
 .bk-rec { display: flex; flex-wrap: wrap; gap: 0 9px; margin: 3px 0 0; font-size: 11.5px; line-height: 1.6; color: var(--faint); overflow-wrap: anywhere; }
+.bk-scope { margin: 1px 0 0; }
 .bk-rec b { color: var(--muted); font-family: var(--mono); }
 .bk-more { margin-top: 4px; }
 .bk-more > summary { cursor: pointer; font-size: 12.5px; color: var(--accent); padding: 4px 0; min-height: 28px; }

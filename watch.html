@@ -175,7 +175,7 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
       sign(a.all.avg_rel, 2) + "%</b>,近一年 <b>" + sign(a.oos.avg_rel, 2) + "%</b>(證據:" + esc(a.grade) + ")。");
     if (q && m) li.push("<span class=\"k\">資金流入的板塊裡,法人重押的股票" + (m.all.avg_rel > q.all.avg_rel ? "「已發動」的反而比「未發動」好" : "「未發動」的比「已發動」好") +
       "</span>:已發動 <b>" + sign(m.all.avg_rel, 2) + "%</b>、未發動 <b>" + sign(q.all.avg_rel, 2) + "%</b>(20 日平均比同類)。");
-    if (b && d) li.push("<span class=\"k\">反向訊號比正向訊號明顯。</span>資金排名墊底的板塊,成分股 20 日平均" + lag(b.all.avg_rel) +
+    if (b && d) li.push("<span class=\"k\">資金流出的一方:</span>資金排名墊底的板塊,成分股 20 日平均" + lag(b.all.avg_rel) +
       ";法人持續調節的個股" + lag(d.all.avg_rel) + (b.oos.avg_rel < 0 && d.oos.avg_rel < 0 ? ",而且近一年同樣成立。" : "。近一年方向不一致,要保守看待。"));
     if (s) li.push("<span class=\"k\">漲多不等於會跌。</span>高於季線 50% 以上的股票平均仍 <b>" + sign(s.all.avg_rel, 2) + "%</b>,但中位數 <b>" +
       sign(s.all.med_rel, 2) + "%</b>:多數會回檔、少數繼續噴,風險在波動,不在方向。");

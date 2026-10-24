@@ -29,10 +29,12 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 #judge .zone-tag { color: var(--muted); border: 1px dashed var(--muted); }
 #signals { border: 1px solid var(--line); border-left: 3px solid var(--accent); background: var(--panel); }
 #signals .zone-tag { color: var(--text); background: color-mix(in srgb, var(--accent) 16%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
-.j-list, .s-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 12px; }
+.j-list, .s-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.s-row.wide { grid-column: 1 / -1; }
 .j-item { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; min-width: 0; }
 .j-item h3 { margin: 0; font-size: 12px; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
-.j-label { font-size: 28px; font-weight: 900; line-height: 1.2; }
+.j-hd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; }
+.j-label { font-size: 18px; font-weight: 900; line-height: 1.3; }
 .j-text { margin: 0; font-size: 14.5px; overflow-wrap: anywhere; }
 .j-tally, .j-basis { margin: 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
 .j-src { margin: 4px 0 0; font-size: 12px; font-family: var(--mono); color: var(--muted); }
@@ -49,7 +51,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 .s-stats small { font-size: 12px; color: var(--faint); }
 .s-none { margin: 0; font-size: 13px; color: var(--muted); }
 .s-span { margin: 0; font-size: 12px; color: var(--faint); font-family: var(--mono); }
-.s-advice { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; font-size: 13.5px; }
+.s-advice { margin: 0; padding-left: 1.2em; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 4px 24px; font-size: 13.5px; }
 .s-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); font-size: 13.5px; text-decoration: none; justify-self: start; }
 .s-link:hover { text-decoration: underline; }
 .s-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
@@ -65,8 +67,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
 #app > :not(.skel) { animation: adv-in .18s ease-out; }
 @keyframes adv-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { #app > :not(.skel) { animation: none; } .retry, .s-row, .j-item, #app[aria-busy="true"] { transition: none; } .retry:active { transform: none; } }
-@media (max-width: 640px) { .j-label { font-size: 26px; } }
-</style>
+@media (max-width: 640px) { .zone { padding: 10px 12px 12px; gap: 8px; } .j-item { padding: 8px 12px; } }
 </style>
 </head>
 <body>
@@ -170,7 +171,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
     var list = el("div", "j-list");
     if (j.dir) {
       var d = el("div", "j-item"); d.dataset.k = "dir";
-      add(d, el("h3", "", "方向"), el("div", "j-label", j.dir.label), el("p", "j-text", j.dir.text),
+      add(d, add(el("div", "j-hd"), el("h3", "", "方向"), el("div", "j-label", j.dir.label)), el("p", "j-text", j.dir.text),
         el("p", "j-tally", j.dir.tally), el("p", "j-src", "出處 " + j.dir.src));
       list.appendChild(d);
     }
@@ -205,11 +206,12 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
       x.appendChild(el("p", "s-span", "回測期間 " + s.span[0] + "～" + s.span[1]));
     } else {
       x.appendChild(el("p", "s-none", "回測期間晚於資料日，不顯示成績"));
-      if (r.mdd != null) { var l2 = el("div", "s-stats"); pair(l2, "最大回撤", (r.mdd < 0 ? "-" : "") + dd + "%"); x.appendChild(l2); }
     }
-    if (r.advice && r.advice.length) {
+    var adv = (r.advice || []).filter(function (t) { return s || t.indexOf("最大回撤") < 0; });
+    if (adv.length) {
+      x.classList.add("wide");
       var ul = el("ul", "s-advice");
-      r.advice.forEach(function (t) { ul.appendChild(el("li", "", t)); });
+      adv.forEach(function (t) { ul.appendChild(el("li", "", t)); });
       x.appendChild(ul);
     }
     var a = el("a", "s-link", strat ? "看策略績效的回測 →" : "看訊號回測的證據 →");

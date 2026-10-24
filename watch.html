@@ -120,6 +120,7 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
       <a href="watch.html" aria-current="page">觀察名單</a>
       <a href="signals.html">訊號回測</a>
       <a href="strategy.html">策略績效</a>
+      <a href="advice.html">建議</a>
       <a href="my.html">我的自選</a>
     </nav>
     <div class="seg" role="group" aria-label="漲跌顏色">
@@ -173,12 +174,12 @@ table.th { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 8
     if (a) li.push("<span class=\"k\">「大戶默默布局、股價還沒發動」用籌碼找不太出來。</span>近 20 日法人持續買、股價卻還沒動的股票,之後 20 天平均只比同類多 <b>" +
       sign(a.all.avg_rel, 2) + "%</b>,近一年 <b>" + sign(a.oos.avg_rel, 2) + "%</b>(證據:" + esc(a.grade) + ")。");
     if (q && m) li.push("<span class=\"k\">資金流入的板塊裡,法人重押的股票" + (m.all.avg_rel > q.all.avg_rel ? "「已發動」的反而比「未發動」好" : "「未發動」的比「已發動」好") +
-      "</span>:已發動 <b>" + sign(m.all.avg_rel, 2) + "%</b>、未發動 <b>" + sign(q.all.avg_rel, 2) + "%</b>(20 日平均比同類)。趨勢延續比提前埋伏更有根據。");
-    if (b && d) li.push("<span class=\"k\">籌碼最有用的是告訴你避開什麼。</span>資金排名墊底的板塊,成分股 20 日平均" + lag(b.all.avg_rel) +
+      "</span>:已發動 <b>" + sign(m.all.avg_rel, 2) + "%</b>、未發動 <b>" + sign(q.all.avg_rel, 2) + "%</b>(20 日平均比同類)。");
+    if (b && d) li.push("<span class=\"k\">資金流出的一方:</span>資金排名墊底的板塊,成分股 20 日平均" + lag(b.all.avg_rel) +
       ";法人持續調節的個股" + lag(d.all.avg_rel) + (b.oos.avg_rel < 0 && d.oos.avg_rel < 0 ? ",而且近一年同樣成立。" : "。近一年方向不一致,要保守看待。"));
     if (s) li.push("<span class=\"k\">漲多不等於會跌。</span>高於季線 50% 以上的股票平均仍 <b>" + sign(s.all.avg_rel, 2) + "%</b>,但中位數 <b>" +
       sign(s.all.med_rel, 2) + "%</b>:多數會回檔、少數繼續噴,風險在波動,不在方向。");
-    li.push("<span class=\"k\">幾乎所有條件的中位數都是負的</span>:就算是有根據的名單,單一個股多數時候仍會輸,平均報酬靠少數大漲股撐起來。分散持有與停損比挑對一檔更重要。");
+    li.push("<span class=\"k\">幾乎所有條件的中位數都是負的</span>:就算是有根據的名單,單一個股多數時候仍會輸,平均報酬靠少數大漲股撐起來。");
     return '<p class="vline">用 2019 年以來的資料驗證過的結論' + MR.help("watch-verdict", "用 2019 年以來的資料驗證過的結論", "<ul><li>" + li.join("</li><li>") + "</li></ul>" +
       "<h4>名單怎麼來、哪些沒驗證過</h4><ul>" +
       "<li>板塊資金:板塊內所有成分股三大法人買賣超加總,看 20 日與 5 日方向;排名用「20 日買賣超 ÷ 成交金額」,避免大型板塊天生數字大。</li>" +

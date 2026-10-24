@@ -172,12 +172,12 @@
     var help = MR.help("picks", "今天先看這 " + P.top.length + " 檔:怎麼選、有多準",
       "<p>起漲雷達 4★ 以上共 " + P.n + " 檔,依 星等 → 本月新公告 → 好進出(20 日均成交 ≥ " + P.liq + " 億)→ 近 3 月營收年增 排序" + (P.ind_cap ? ",同一產業最多 " + P.ind_cap + " 檔" : "") + ";處置中的不列、有財務地雷的排後面,點個股看健檢。</p>" +
       (k ? "<p>回測:每月買全部 4★ 以上、持有一個月,年化 " + MR.sign(k.cagr, 0) + "%、最大回撤 " + k.mdd + "%(同期全部股票 " + MR.sign(all && all.cagr, 0) + "%)。</p>" : "") +
-      "<p>建議分散買、單檔不超過可投入金額的 1/10;評級是統計機率,不是保證。詳細驗證見「策略績效」頁。</p>");
+      "<p>評級是統計機率,不是保證。詳細驗證見「策略績效」頁;怎麼分配資金見<a href=\"advice.html\">建議</a>。</p>");
     return '<section class="picks"><div class="pk-top"><h2>今天先看這 ' + P.top.length + " 檔" + help + "</h2>" +
       "<span>起漲雷達 4★ 以上共 " + P.n + " 檔</span></div>" +
       '<div class="pk-list">' + P.top.map(card).join("") + "</div>" +
       (rest.length ? '<details class="pk-rest"><summary>其餘 ' + rest.length + " 檔 4★ 以上</summary>" + '<div class="pk-list">' + rest.map(card).join("") + "</div></details>" : "") +
-      '<p class="pk-foot">分散買、單檔不超過可投入金額的 1/10。' + (more ? ' <a href="radar.html">看起漲雷達 →</a>' : "") + "</p></section>";
+      '<p class="pk-foot"><a href="advice.html">資金怎麼分配:見建議 →</a>' + (more ? ' <a href="radar.html">看起漲雷達 →</a>' : "") + "</p></section>";
   };
 
   // 查詢索引(全部股票,scripts/signals.py write_index),只載一次;搜尋只需要名稱與星等,用輕量的 search.json
@@ -300,7 +300,7 @@
       out.join("") + '</svg><div class="cap"><span>' + MR.md(rows[0][0]) + "</span><span>" + n + " 個交易日</span><span>" + MR.md(rows[n - 1][0]) + "</span></div></div>";
   }
 
-  // 合理價的不確定性(Morningstar 式):越不確定,越需要更大的安全邊際才值得考慮。依據:分析師人數、目標價分歧、
+  // 合理價的不確定性(Morningstar 式):越不確定,合理價本身的誤差越大。依據:分析師人數、目標價分歧、
   // 自身本益比歷史區間寬度、股價波動;自行推估再加一級。沒有回測,只是讓「合理價」不要被當成一個精準的數字
   var UNC = ["低", "中", "高", "極高"], MARGIN = [10, 20, 30, 40];
   function uncertainty(e, h, self, bt) {
@@ -319,8 +319,7 @@
     if (!fair) return "";
     var mos = Math.round(fair * (1 - u.margin / 100) * 100) / 100;
     return '<p class="fvhow"><b>不確定性:' + u.label + "</b>" + (u.why.length ? "(" + esc(u.why.join("、")) + ")" : "") +
-      "。不確定性越高,價格要比合理價低越多才算有安全邊際:這檔要低 " + u.margin + "%,也就是 <b>" + mos + "</b> 元以下(現價 " + price + " 元" +
-      (price <= mos ? ",<b>已在安全邊際內</b>" : ",要再跌 " + Math.round((1 - mos / price) * 100) + "% 才到") + ")。<span class=\"evb\">僅供參考</span></p>";
+      "。不確定性越高,合理價本身的誤差越大:依這個等級打 " + (100 - u.margin) / 10 + " 折是 <b>" + mos + "</b> 元(現價 " + price + " 元)。<span class=\"evb\">僅供參考</span></p>";
   }
 
   // ---- 分析師目標價區塊(Yahoo 匯總):兩格大數字、扇形圖、匯總表。扇形圖只是把今天的價格連到目標價範圍,不是走勢預測 ----
@@ -710,7 +709,7 @@
     if (!s || !s.oos || s.oos.hit == null || !s.is || s.is.hit == null) return "";
     return '<p class="fvhow">歷史上同樣 ' + n + " 顆星的股票:之後 120 日內翻倍的比例 " + s.is.hit.toFixed(1) + "%(2019–22)/ " + s.oos.hit.toFixed(1) +
       "%(2023 後),60 日平均比一般股 " + MR.sign(s.is.x60, 1) + "% / " + MR.sign(s.oos.x60, 1) + "%,60 日內曾跌 25% 的有 " + s.is.crash.toFixed(0) + "% / " + s.oos.crash.toFixed(0) +
-      "%。評級是統計上的機率,不是保證會漲,也不是個人化的投資建議;請分散、控制投入金額。</p>";
+      "%。評級是統計上的機率,不是保證會漲,也不是個人化的投資建議。</p>";
   }
 
   // ---- 個股健檢:逐項列出條件、是否符合、這一項在回測裡有沒有預測力,最後依規則給結論 ----
@@ -783,12 +782,12 @@
 
   function verdict(h, r) {
     var n = (r && r.stars) || 1;
-    if (h && h.value20 != null && h.value20 < 0.3) return { cls: "no", t: "不適合:成交量太小", d: "20 日平均成交不到 0.3 億,回測也排除這類股票,進出成本與風險都高。" };
-    if (h && h.punish && n >= 3) return { cls: "mid", t: "暫緩:交易所處置中", d: "評級 " + n + "★,但處置期間(" + (h.punish.period || "") + ")改人工撮合、可能要預收款券,進出受限;處置結束後再看。" };
-    if (n >= 5) return { cls: "yes", t: "符合條件最多:可列入分散組合的候選", d: "營收、動能、題材都有,沒有營收減速或外資大賣的陷阱。這是統計上機率較高,不代表這一檔一定會漲。" };
-    if (n === 4) return { cls: "yes", t: "可列入分散組合的候選", d: r.traps && r.traps.length ? "條件齊全但有陷阱(" + r.traps.join("、") + "),已扣一顆星。" : "營收成立,動能與題材其中一項還沒到。" };
-    if (n === 3) return { cls: "mid", t: "觀察:條件還沒到齊", d: r.tier === "C" ? "營收已經轉強,但股價和同產業都還沒動;最早期、空間最大,但多數不會飆。" : r.tier === "D" ? "股價與同產業都在漲,但營收還沒跟上;同類股很多,多數只是跟漲。" : "有陷阱,已扣一顆星。" };
-    if (n === 2) return { cls: "no", t: "暫不符合:有陷阱", d: "營收雖然轉強,但有陷阱(" + ((r.traps || []).join("、") || "—") + "),歷史上之後表現接近一般股。" };
+    if (h && h.value20 != null && h.value20 < 0.3) return { cls: "no", t: "成交量太小(回測排除)", d: "20 日平均成交不到 0.3 億,回測也排除這類股票,進出成本與風險都高。" };
+    if (h && h.punish && n >= 3) return { cls: "mid", t: "交易所處置中", d: "評級 " + n + "★,但處置期間(" + (h.punish.period || "") + ")改人工撮合、可能要預收款券,進出受限。" };
+    if (n >= 5) return { cls: "yes", t: "符合條件最多", d: "營收、動能、題材都有,沒有營收減速或外資大賣的陷阱。這是統計上機率較高,不代表這一檔一定會漲。" };
+    if (n === 4) return { cls: "yes", t: "條件大致齊全", d: r.traps && r.traps.length ? "條件齊全但有陷阱(" + r.traps.join("、") + "),已扣一顆星。" : "營收成立,動能與題材其中一項還沒到。" };
+    if (n === 3) return { cls: "mid", t: "條件還沒到齊", d: r.tier === "C" ? "營收已經轉強,但股價和同產業都還沒動;最早期、空間最大,但多數不會飆。" : r.tier === "D" ? "股價與同產業都在漲,但營收還沒跟上;同類股很多,多數只是跟漲。" : "有陷阱,已扣一顆星。" };
+    if (n === 2) return { cls: "no", t: "有陷阱", d: "營收雖然轉強,但有陷阱(" + ((r.traps || []).join("、") || "—") + "),歷史上之後表現接近一般股。" };
     return { cls: "no", t: "目前不符合起漲條件", d: "不在起漲雷達任何名單。歷史上這類股票之後平均比一般股略差;不代表公司不好,只是現在沒有起漲的訊號。" };
   }
 
@@ -798,7 +797,7 @@
     var g = S && S.regime && S.regime["5★ · 大盤空頭"], s = g && g.is;
     return '<div class="vd warn"><b>⚠ 目前大盤在 60 日均線下(空頭)</b><span>' +
       (s && s.hit != null ? "歷史上空頭時的 5★,60 日中位數 " + MR.sign(s.med60, 1) + "%、60 日內曾跌 25% 的有 " + s.crash.toFixed(0) + "%(多頭時約 14–23%)," : "") +
-      "評級效果明顯變弱,宜降低投入或分批。</span></div>";
+      "評級效果明顯變弱。</span></div>";
   }
 
   MR.verdict = function (h, r) { return verdict(h, r); };
@@ -821,7 +820,7 @@
     if (!m || !r || (r.stars || 1) < 3) return "";
     var strong = Object.keys(m).filter(function (k) { return MINE_STRONG.indexOf(k) >= 0; });
     if (!strong.length) return "";
-    return '<div class="vd warn"><b>⚠ 財務地雷:' + esc(strong.join("、")) + "</b><span>回測顯示這類股票中途大跌的機率約高 1.5–2.5 倍;評級看的是報酬,沒有扣分,但投入金額宜更少。</span></div>";
+    return '<div class="vd warn"><b>⚠ 財務地雷:' + esc(strong.join("、")) + "</b><span>回測顯示這類股票中途大跌的機率約高 1.5–2.5 倍;評級看的是報酬,沒有扣分。</span></div>";
   }
 
   function healthHtml(h, r, S) {
@@ -835,7 +834,7 @@
           '<span class="evb ' + (x.ev === "回測" ? "bt" : "") + '">' + (x.ev === "回測" ? "有回測依據" : "僅供參考") + "</span></td></tr>";
       }).join("") + "</tbody></table>" : "") +
       peerHtml(h) + starNote((r && r.stars) || 1, S) +
-      '<p class="fvhow">要投入的話:依回測,從名單只買 1 檔,約 18% 的機率 60 日內虧超過 15%;分散買 10 檔降到約 5%。單檔建議不超過可投入金額的 1/10,並且只用虧得起的錢。這是依固定規則整理的統計結果,不是針對你個人的投資建議。</p></div>';
+      '<p class="fvhow">怎麼分配資金(依回測)見<a href="advice.html">建議</a>。這是依固定規則整理的統計結果,不是針對你個人的投資建議。</p></div>';
   }
 
   function stockHtml(doc, stats, prof) {

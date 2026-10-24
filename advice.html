@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>建議</title>
+<meta name="description" content="判斷（未回測）與訊號（已回測）集中一頁，每句附依據與日期">
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>try { if (sessionStorage.getItem("mr.splash")) document.documentElement.classList.add("nosplash"); } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="assets/common.css">
+<style>
+main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid; gap: 16px; }
+.pg-h h1 { margin: 0; font-size: 22px; font-weight: 900; }
+#asof { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+.zone { border-radius: var(--radius); padding: 14px 16px 16px; min-width: 0; display: grid; gap: 12px; align-content: start; }
+.zone > header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.zone h2 { margin: 0; font-size: 18px; font-weight: 900; }
+.zone .lead { margin: 0; font-size: 13px; color: var(--muted); flex-basis: 100%; }
+.zone-tag { font-size: 12px; font-weight: 700; border-radius: 4px; padding: 0 6px; }
+#judge { border: 1px dashed var(--line); background: transparent; }
+#judge .zone-tag { color: var(--muted); border: 1px dashed var(--muted); }
+#signals { border: 1px solid var(--line); border-left: 3px solid var(--accent); background: var(--panel); }
+#signals .zone-tag { color: var(--text); background: color-mix(in srgb, var(--accent) 16%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
+.j-list, .s-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.s-row.wide { grid-column: 1 / -1; }
+.j-item { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.j-item h3 { margin: 0; font-size: 12px; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
+.j-hd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; }
+.j-label { font-size: 18px; font-weight: 900; line-height: 1.3; }
+.j-text { margin: 0; font-size: 14.5px; overflow-wrap: anywhere; }
+.j-tally, .j-basis { margin: 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.j-src { margin: 4px 0 0; font-size: 12px; font-family: var(--mono); color: var(--muted); }
+.s-row { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.s-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.s-top h3 { margin: 0; font-size: 15px; font-weight: 900; overflow-wrap: anywhere; }
+.s-top .grade { margin-left: 0; }
+.s-state { font-size: 12.5px; font-weight: 700; border-radius: 999px; padding: 1px 10px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); }
+.s-state[data-s="觸發"], .s-state[data-s="持有"] { color: var(--text); background: color-mix(in srgb, var(--accent) 16%, transparent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.s-state[data-s="—"] { color: var(--faint); border-style: dashed; }
+.s-text { margin: 0; font-size: 13.5px; color: var(--muted); }
+.s-stats { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13.5px; color: var(--muted); }
+.s-stats b { font-family: var(--mono); font-weight: 600; color: var(--text); }
+.s-stats small { font-size: 12px; color: var(--faint); }
+.s-none { margin: 0; font-size: 13px; color: var(--muted); }
+.s-span { margin: 0; font-size: 12px; color: var(--faint); font-family: var(--mono); }
+.s-advice { margin: 0; padding-left: 1.2em; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 4px 24px; font-size: 13.5px; }
+.s-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); font-size: 13.5px; text-decoration: none; justify-self: start; }
+.s-link:hover { text-decoration: underline; }
+.s-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.retry { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 16px; margin-top: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--accent); font: inherit; font-size: 13.5px; cursor: pointer; transition: background .16s, border-color .16s, transform .16s; }
+.retry:hover { background: var(--panel-2); border-color: var(--accent); }
+.retry:active { transform: scale(.97); }
+.retry:focus-visible, .s-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.s-link:active { opacity: .7; }
+.s-row, .j-item { transition: border-color .16s; }
+.s-row:hover, .j-item:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+#app[aria-busy="true"] { opacity: .5; transition: opacity .16s; }
+.err { text-align: center; color: var(--muted); font-size: 14px; padding: 12px 0; margin: 0; }
+#app > :not(.skel) { animation: adv-in .18s ease-out; }
+@keyframes adv-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { #app > :not(.skel) { animation: none; } .retry, .s-row, .j-item, #app[aria-busy="true"] { transition: none; } .retry:active { transform: none; } }
+@media (max-width: 640px) { .zone { padding: 10px 12px 12px; gap: 8px; } .j-item { padding: 8px 12px; } }
+</style>
+</head>
+<body>
+<div id="splash" aria-hidden="true">
+  <div class="sp-in">
+    <svg class="sp-logo" viewBox="0 0 64 64" width="96" height="96">
+      <defs><linearGradient id="spsw" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#e7b04a" stop-opacity="0"/><stop offset="1" stop-color="#f3c96b" stop-opacity=".95"/></linearGradient></defs>
+      <circle cx="32" cy="32" r="21" fill="none" stroke="#2c3647" stroke-width="1.6"/>
+      <circle cx="32" cy="32" r="12" fill="none" stroke="#2c3647" stroke-width="1.6"/>
+      <g class="sp-sweep"><path d="M32 32 L32 11 A21 21 0 0 1 51.2 23.4 Z" fill="url(#spsw)"/><line x1="32" y1="32" x2="51.2" y2="23.4" stroke="#f3c96b" stroke-width="1.6" stroke-linecap="round"/></g>
+      <circle class="sp-blip" cx="44" cy="20.5" r="2.6" fill="#fff"/>
+      <circle cx="32" cy="32" r="2.2" fill="#f3c96b"/>
+    </svg>
+    <div class="sp-name">盤前雷達</div>
+    <div class="sp-tag">營收 · 動能 · 題材 ── 每個交易日 06:00 更新</div>
+    <div class="sp-bar"><i></i></div>
+  </div>
+</div>
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="./">
+      <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true" class="logo">
+        <defs><linearGradient id="lgsw" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#e7b04a" stop-opacity="0"/><stop offset="1" stop-color="#f3c96b" stop-opacity=".95"/></linearGradient></defs>
+        <rect width="64" height="64" rx="15" fill="#121926"/>
+        <circle cx="32" cy="32" r="21" fill="none" stroke="#2c3647" stroke-width="3"/>
+        <circle cx="32" cy="32" r="12" fill="none" stroke="#2c3647" stroke-width="3"/>
+        <path d="M32 32 L32 11 A21 21 0 0 1 51.2 23.4 Z" fill="url(#lgsw)"/>
+        <circle cx="44" cy="20.5" r="3.4" fill="#fff"/>
+        <circle cx="32" cy="32" r="3" fill="#f3c96b"/>
+      </svg>
+      <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 06:00</span></div>
+    </a>
+    <nav class="nav" aria-label="頁面">
+      <a href="./">晨報</a>
+      <a href="sectors.html">板塊資金</a>
+      <a href="radar.html">起漲雷達</a>
+      <a href="watch.html">觀察名單</a>
+      <a href="signals.html">訊號回測</a>
+      <a href="strategy.html">策略績效</a>
+      <a href="advice.html" aria-current="page">建議</a>
+      <a href="my.html">我的自選</a>
+    </nav>
+    <div class="seg" role="group" aria-label="漲跌顏色">
+      <button type="button" id="conv-tw" aria-pressed="true">紅漲綠跌</button>
+      <button type="button" id="conv-us" aria-pressed="false">綠漲紅跌</button>
+    </div>
+  </div>
+</header>
+
+<main id="app"><div class="skel" aria-busy="true" aria-label="載入中"><i></i><i></i><i></i><i></i></div></main>
+
+<footer>
+  非投資建議；判斷區未經回測，只是依固定規則整理的方向。回測使用證交所與櫃買中心公開的個股日資料。歷史表現不代表未來結果。
+</footer>
+
+<script src="assets/common.js"></script>
+<script src="assets/advice.js"></script>
+<script>
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  MR.setupConv();
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function add(parent) { for (var i = 1; i < arguments.length; i++) parent.appendChild(arguments[i]); return parent; }
+  function sgn(v, dec) { return (v < 0 ? "-" : "+") + Math.abs(v).toFixed(dec); }
+  function md(d) { var a = d.split("-"); return +a[1] + "/" + +a[2]; }
+  function pair(parent, label, value, unit, note) {
+    var s = el("span");
+    if (label) s.appendChild(document.createTextNode(label + " "));
+    s.appendChild(el("b", "", value));
+    if (unit) s.appendChild(document.createTextNode(unit));
+    if (note) s.appendChild(el("small", "", " " + note));
+    parent.appendChild(s);
+  }
+  function zone(id, title, tag, lead) {
+    var z = el("section"), h = el("header");
+    z.id = id; z.className = "zone";
+    add(h, el("h2", "", title), el("span", "zone-tag", tag), el("p", "lead", lead));
+    z.appendChild(h);
+    return z;
+  }
+  function fail(msg) {
+    var p = el("p", "err", msg), b = el("button", "retry", "重新載入");
+    b.type = "button"; b.addEventListener("click", load);
+    p.appendChild(document.createElement("br")); p.appendChild(b);
+    return p;
+  }
+  function get(url) { return MR.json(url).catch(function () { return null; }); }
+
+  function judgeZone(rep) {
+    var z = zone("judge", "今天的判斷", "未回測", "只給方向與要盯的點，是依固定規則整理，沒有回測過。");
+    if (!rep) { z.appendChild(fail("晨報資料讀不到，判斷區暫時無法顯示。")); return z; }
+    var j;
+    try { j = MRAdvice.judge(rep); } catch (e) { z.appendChild(fail("判斷區計算失敗，請稍後再試。")); return z; }
+    var list = el("div", "j-list");
+    if (j.dir) {
+      var d = el("div", "j-item"); d.dataset.k = "dir";
+      add(d, add(el("div", "j-hd"), el("h3", "", "方向"), el("div", "j-label", j.dir.label)), el("p", "j-text", j.dir.text),
+        el("p", "j-tally", j.dir.tally), el("p", "j-src", "出處 " + j.dir.src));
+      list.appendChild(d);
+    }
+    if (j.watch) {
+      var w = el("div", "j-item"); w.dataset.k = "watch";
+      add(w, el("h3", "", "要盯的點"), el("p", "j-text", j.watch.text), el("p", "j-basis", "依據：" + j.watch.basis),
+        el("p", "j-src", "出處 " + j.watch.src));
+      list.appendChild(w);
+    }
+    if (list.children.length) z.appendChild(list);
+    if (!j.dir) z.appendChild(el("p", "s-none", "依據不足，今天不顯示方向。"));
+    if (!j.watch) z.appendChild(el("p", "s-none", "今天沒有可盯的點。"));
+    return z;
+  }
+
+  function signalRow(r) {
+    var x = el("article", "s-row"); x.dataset.key = r.key;
+    var top = el("div", "s-top"), st = el("span", "s-state", r.state || "—");
+    st.dataset.s = r.state || "—";
+    add(top, el("h3", "", r.name), st);
+    if (r.grade) top.appendChild(el("span", "grade " + ({ "強": "g3", "中": "g2", "反向": "gneg" }[r.grade] || "g1"), "證據" + r.grade));
+    x.appendChild(top);
+    x.appendChild(el("p", "s-text", r.state_text));
+    var s = r.stats, strat = r.kind === "strategy", dd = r.mdd != null ? Math.abs(r.mdd).toFixed(1) : "";
+    if (s) {
+      var line = el("div", "s-stats");
+      pair(line, "勝率", s.win.toFixed(1) + "%", "", strat ? "" : "（勝過同日一般股的比例）");
+      pair(line, strat ? "平均每月" : "10 日平均比一般股", sgn(s.avg, 2) + "%");
+      pair(line, "", s.n.toLocaleString("en-US"), strat ? " 期" : " 次");
+      if (r.mdd != null) pair(line, "最大回撤", (r.mdd < 0 ? "-" : "") + dd + "%");
+      x.appendChild(line);
+      x.appendChild(el("p", "s-span", "回測期間 " + s.span[0] + "～" + s.span[1]));
+    } else {
+      x.appendChild(el("p", "s-none", "回測期間晚於資料日，不顯示成績"));
+    }
+    var adv = (r.advice || []).filter(function (t) { return s || t.indexOf("最大回撤") < 0; });
+    if (adv.length) {
+      x.classList.add("wide");
+      var ul = el("ul", "s-advice");
+      adv.forEach(function (t) { ul.appendChild(el("li", "", t)); });
+      x.appendChild(ul);
+    }
+    var a = el("a", "s-link", strat ? "看策略績效的回測 →" : "看訊號回測的證據 →");
+    a.href = r.link;
+    x.appendChild(a);
+    return x;
+  }
+
+  function signalsZone(set) {
+    var z = zone("signals", "今天的訊號", "已回測", "每條都有歷史回測成績；部位建議只放在 4★ 這一條，對應策略績效頁回測過的規則。");
+    if (!set) { z.appendChild(fail("訊號資料有幾份讀不到，訊號區暫時無法顯示。")); return z; }
+    var res;
+    try { res = MRAdvice.signals(set); } catch (e) { z.appendChild(fail("訊號區計算失敗，請稍後再試。")); return z; }
+    var list = el("div", "s-list");
+    res.rows.forEach(function (r) { list.appendChild(signalRow(r)); });
+    z.appendChild(list);
+    return z;
+  }
+
+  function load() {
+  if (!app.querySelector(".skel")) app.setAttribute("aria-busy", "true");
+  Promise.all([
+    get("data/index.json").then(function (ix) {
+      return ix && ix.dates && ix.dates.length ? get("data/" + ix.dates[0] + ".json") : null;
+    }),
+    get("data/signals/today.json"), get("data/signals/stats.json"), get("data/watch/latest.json"),
+    get("data/radar/accuracy.json"), get("data/radar/picks.json")
+  ]).then(function (v) {
+    var rep = v[0], T = v[1], ST = v[2], W = v[3], acc = v[4], pk = v[5];
+    var set = T && ST && W && acc && pk ? { today: T, stats: ST, watch: W, curve: acc.curve, regime: pk.regime } : null;
+    var head = el("div", "pg-h"), asof = el("p"), g = rep && /^\d{4}-(\d\d)-(\d\d)T(\d\d:\d\d)/.exec(rep.generated_at || "");
+    asof.id = "asof";
+    asof.textContent = (g ? "資料截至 " + +g[1] + "/" + +g[2] + " " + g[3] + "（晨報）" : "晨報資料讀不到") +
+      "・" + (T ? "訊號以 " + md(T.date) + " 收盤計算" : "訊號資料讀不到");
+    add(head, el("h1", "", "盤前建議"), asof);
+    app.replaceChildren(head, judgeZone(rep), signalsZone(set));
+    app.removeAttribute("aria-busy");
+  });
+  }
+  load();
+})();
+</script>
+</body>
+</html>

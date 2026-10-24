@@ -85,6 +85,13 @@
     return { label: "外資買賣超", value: sgn(v, 2), chg: md(f0.date) + " 外資" + bs(v), ctx: ctx, asof: md(f0.date) };
   }
 
+  // 標題用:事件名只取第一個逗號或括號之前
+  function cut(t) {
+    var m = t.length, k, x;
+    for (k = 0; k < 4; k++) { x = t.indexOf(",，(（".charAt(k)); if (x > 0 && x < m) m = x; }
+    return t.slice(0, m);
+  }
+
   function events(rep) {
     var out = [], i;
     var cal = (rep.calendar || []).map(function (c, k) { return { c: c, k: k }; });
@@ -94,7 +101,7 @@
     });
     for (i = 0; i < cal.length; i++) {
       var c = cal[i].c;
-      if (c.date && c.event) out.push({ date: c.date, text: c.event + (c.time ? " " + c.time : ""), high: c.importance === "高", tw: false });
+      if (c.date && c.event) out.push({ date: c.date, text: c.event + (c.time ? " " + c.time : ""), short: cut(c.event) + (c.time ? " " + c.time : ""), high: c.importance === "高", tw: false });
     }
     var er = rep.earnings || [];
     for (i = 0; i < er.length; i++) {
@@ -128,7 +135,7 @@
     var tw = ev.filter(function (e) { return e.date === D && e.tw; });
     var hi = ev.filter(function (e) { return e.date === D && e.high; });
     if (tw.length) watch = tw[0].text;
-    else if (hi.length) watch = hi[0].text;
+    else if (hi.length) watch = hi[0].short;
     else {
       var twIt = item(r, "^TWII"), adr = item(r, "TSM");
       var sp = ((twIt || {}).spark || []).filter(has);

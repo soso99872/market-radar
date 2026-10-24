@@ -405,6 +405,7 @@ def build(L):
     mg = margin_now()
     for x in rev_list + bo_list:
         x["fv"] = fv.get(x["code"])
+        x["btgt"] = brk_tgt((EXTRAS.get(x["code"]) or {}).get("brk"), close.at[last, x["code"]])
         m = mg.get(x["code"])
         x["gm"] = {"p": m["p"], "gm": m["gm"], "d": m["d"]} if m else None
     for x in rev_list:   # 「今天先看這 10 檔」排序要用流動性
@@ -414,10 +415,13 @@ def build(L):
             EXTRAS[c]["gm"] = m["hist"]
         if c in SNAP:
             SNAP[c]["gm"], SNAP[c]["dgm"], SNAP[c]["gm_p"] = m["gm"], m["d"], m["p"]
+    for c, ex in EXTRAS.items():   # 目標價空間用本站 90 天內券商目標價,不管有沒有估值
+        if c in SNAP:
+            SNAP[c]["tgt_up"] = (brk_tgt(ex.get("brk"), close.at[last, c]) or {}).get("up")
     for c, e in fv.items():   # 估值只供參考(前瞻估值尚未回測、歷史估值回測沒有預測力)
         if c in SNAP:
-            w, tg = e.get("fwd") or e.get("proj") or {}, e.get("tgt") or {}
-            SNAP[c].update(fpe=w.get("pe"), fpe_med=(w.get("band") or [None, None])[1], fwd_status=w.get("status"), tgt_up=tg.get("up"),
+            w = e.get("fwd") or e.get("proj") or {}
+            SNAP[c].update(fpe=w.get("pe"), fpe_med=(w.get("band") or [None, None])[1], fwd_status=w.get("status"),
                            fpe_src="分析師" if e.get("fwd") else "自行推估" if e.get("proj") else None)
     peer_rank(ind)
     estimate_revisions()
@@ -791,6 +795,20 @@ def load_brk(path, limit=BRK_MAX, today=None, days=BRK_DAYS):
         return {}
 
 
+def brk_tgt(evs, price):
+    """本站券商目標價的平均與上漲空間,算法同前端 common.js tpHtml:第一筆是 stale 或沒有有效筆回 None;同券商只取第一筆、「未具名」每筆都算。"""
+    evs = [b for b in evs or [] if b.get("date") and b.get("broker") and (b.get("target") or 0) > 0]
+    if not evs or evs[0].get("stale") or not price or price <= 0:
+        return None
+    seen, tg = set(), []
+    for b in evs:
+        if b["broker"] == "未具名" or b["broker"] not in seen:
+            seen.add(b["broker"])
+            tg.append(b["target"])
+    m = sum(tg) / len(tg)
+    return {"mean": _f(m), "n": len(tg), "up": _f((m / price - 1) * 100, 1)}
+
+
 EXTRAS = {}   # 代號 → 個股面板用的估值、營收、本益比歷史(signals.py 寫個股檔時帶入)
 
 
@@ -1060,7 +1078,7 @@ def ranking(rev_list, bo_list, mom):
             seen[x["code"]]["src"].append("爆量突破")
         else:
             seen[x["code"]] = dict(x, src=["爆量突破"])
-    keys = ("code", "name", "close", "chg", "fv", "src", "yoy", "yoy3", "rev_streak", "above_ma60", "dumped",
+    keys = ("code", "name", "close", "chg", "fv", "btgt", "src", "yoy", "yoy3", "rev_streak", "above_ma60", "dumped",
             "low_vol", "themes", "ret20", "hi250", "tags")
     for x in seen.values():
         r = {k: x.get(k) for k in keys}

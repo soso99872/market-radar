@@ -564,7 +564,7 @@ table.tk.lg.st { min-width: 0; }
     ["前瞻本益比", function (x) { return x.fv && x.fv.fwd ? x.fv.fwd.pe : null; }], ["前瞻合理價", function (x) { return x.fv && x.fv.fwd ? x.fv.fwd.fair : null; }],
     ["前瞻空間", function (x) { return x.fv && x.fv.fwd ? x.fv.fwd.up : null; }],
     ["前瞻評價", function (x) { var w = x.fv && x.fv.fwd; return w ? { "低估": 3, "合理": 2, "高估": 1 }[w.status] : null; }],
-    ["目標價空間", function (x) { return x.fv && x.fv.tgt ? x.fv.tgt.up : null; }], ["營收年增", function (x) { return x.yoy; }], null];
+    ["目標價空間", function (x) { return x.btgt ? x.btgt.up : null; }], ["營收年增", function (x) { return x.yoy; }], null];
 
   // 條件標籤(data/radar/latest.json 的 tags、tag_defs;舊資料沒有就不顯示)
   function condTags(x) {
@@ -726,7 +726,7 @@ table.tk.lg.st { min-width: 0; }
     var base = items;
     items = items.filter(function (x) { return fPass(x, fl); });
     var rows = items.slice(0, showAll.rank ? 999 : 40).map(function (x, i) {
-      var e = x.fv || {}, m = x.mom, pj = m && m.proj, w = e.fwd, t = e.tgt;
+      var e = x.fv || {}, m = x.mom, pj = m && m.proj, w = e.fwd, t = x.btgt;
       return '<tr><td class="rk">' + (i + 1) + '</td><td class="l"><button type="button" class="stock-link" data-stock="' + esc(x.code) + '"><b>' + esc(x.code) + "</b> " + esc(x.name) + "</button>" + condTags(x) + "</td>" +
         "<td>" + MR.stars(starOf(x.code)) + "</td>" +
         '<td data-px="' + esc(x.code) + '">' + x.close + "</td>" +
@@ -748,7 +748,7 @@ table.tk.lg.st { min-width: 0; }
       "<span>只看</span>" + seg("rf", rankFilter, [["all", "全部"], ["sane", "有分析師預估"], ["ok", "前瞻不高估"], ["lo", "前瞻低估"]]) +
       '<label><input type="checkbox" data-opt="hideLow"' + (hideLow ? " checked" : "") + "> 隱藏低波動股</label></div>" + filterBox(base, items.length) +
       (rows ? "" : '<p class="empty">沒有符合條件的個股,可放寬條件或按「清除」。</p>') +
-      '<div class="tkwrap"' + (rows ? "" : " hidden") + '><table class="tk rank"><thead><tr>' + ["#", "個股", "評級", "股價", "動能分數", "統計 60 日區間(25%~中位~75%)", "前瞻本益比 / 歷史中位", "前瞻合理價", "前瞻空間", "前瞻評價", "分析師目標價", "營收年增", "入選原因"].map(function (h, k) {
+      '<div class="tkwrap"' + (rows ? "" : " hidden") + '><table class="tk rank"><thead><tr>' + ["#", "個股", "評級", "股價", "動能分數", "統計 60 日區間(25%~中位~75%)", "前瞻本益比 / 歷史中位", "前瞻合理價", "前瞻空間", "前瞻評價", "券商目標價", "營收年增", "入選原因"].map(function (h, k) {
         var cls = k === 1 || k === 12 ? ' class="l' : ' class="';
         if (!RANK_COLS[k]) return "<th" + (k === 1 || k === 12 ? ' class="l"' : "") + ">" + h + "</th>";
         var on = colSort && colSort.col === k;

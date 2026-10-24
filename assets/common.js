@@ -303,13 +303,13 @@
   // 合理價的不確定性(Morningstar 式):越不確定,越需要更大的安全邊際才值得考慮。依據:分析師人數、目標價分歧、
   // 自身本益比歷史區間寬度、股價波動;自行推估再加一級。沒有回測,只是讓「合理價」不要被當成一個精準的數字
   var UNC = ["低", "中", "高", "極高"], MARGIN = [10, 20, 30, 40];
-  function uncertainty(e, h, self) {
+  function uncertainty(e, h, self, bt) {
     var s = 0, why = [];
-    var w = e.fwd || e.proj || e, n = e.fwd ? e.fwd.n : null, t = e.tgt, b = w.band;
+    var w = e.fwd || e.proj || e, n = e.fwd ? e.fwd.n : null, b = w.band;
     if (self) { s += 1; why.push("沒有分析師預估,自行推估"); }
     else if (n != null && n <= 2) { s += 1; why.push("只有 " + n + " 位分析師"); }
     else if (n != null && n >= 10) { s -= 0.5; }
-    if (t && t.hi && t.lo && t.lo > 0 && t.hi / t.lo > 1.8) { s += 0.5; why.push("分析師目標價分歧大(" + t.lo + " ~ " + t.hi + ")"); }
+    if (bt && bt.n >= 2 && bt.lo > 0 && bt.hi / bt.lo > 1.8) { s += 0.5; why.push("券商目標價分歧大(" + tpFmt(bt.lo) + " ~ " + tpFmt(bt.hi) + ")"); }
     if (b && b[0] > 0 && b[2] / b[0] > 1.8) { s += 1; why.push("過去本益比區間很寬(" + b[0] + " ~ " + b[2] + " 倍)"); }
     if (h && h.vol60 != null && h.vol60 > 3.5) { s += 1; why.push("股價波動大(日波動 " + h.vol60.toFixed(1) + "%)"); }
     var k = Math.max(0, Math.min(3, Math.round(s)));
@@ -451,6 +451,14 @@
     var evs = (doc.extra || {}).brk;
     return Array.isArray(evs) ? evs.filter(function (b) { return b && b.date && b.broker && b.target > 0; }) : [];
   }
+  // 本站 90 天內券商目標價:同券商取最新一筆、「未具名」每筆都算;最新一筆是舊報告(stale)或沒有就回 null。算法同 scripts/radar.py brk_tgt
+  function brkTgt(doc) {
+    var evs = brkEvs(doc), px = doc.summary && doc.summary.close, tg = [], seen = {};
+    if (!evs.length || evs[0].stale || !(px > 0)) return null;
+    evs.forEach(function (b) { if (b.broker === BRK_ANON || !seen[b.broker]) { seen[b.broker] = 1; tg.push(b.target); } });
+    var mean = tg.reduce(function (a, v) { return a + v; }, 0) / tg.length;
+    return { mean: mean, lo: Math.min.apply(null, tg), hi: Math.max.apply(null, tg), n: tg.length, up: (mean / px - 1) * 100 };
+  }
   function brkHtml(doc, hasTgt) {
     var evs = brkEvs(doc);
     if (!evs.length) return hasTgt ? '<p class="fvhow tp-nobrk">近一年沒有收到這檔的券商目標價新聞(只收錄經濟日報有報導的)</p>' : "";
@@ -512,16 +520,14 @@
   function tpHtml(doc) {
     var ex = doc.extra || {}, fv = ex.fv, t = fv && fv.tgt, px = doc.summary.close;
     if (t && !(t.mean > 0 && px > 0)) t = null;
-    var evs = brkEvs(doc), bh = brkHtml(doc, !!t), brk = bh ? '<div class="tp-brk">' + bh + "</div>" : "";
+    var bh = brkHtml(doc, !!t), brk = bh ? '<div class="tp-brk">' + bh + "</div>" : "";
     var yahoo = t ? "Yahoo Finance 匯總:平均 " + tpFmt(t.mean) + (t.hi ? "、最高 " + tpFmt(t.hi) : "") + (t.lo ? "、最低 " + tpFmt(t.lo) : "") +
       ((t.n_tgt != null ? t.n_tgt : fv.n_tgt) != null ? "(" + Math.round(t.n_tgt != null ? t.n_tgt : fv.n_tgt) + " 家)" : "") : "";
     // Yahoo 匯總含舊報告、日期不明:不畫圖、不算上漲空間,只收進預設收起的「更多」
     var more = yahoo ? '<details class="bk-more tp-more"><summary>更多:Yahoo Finance 匯總</summary><p class="fvhow">含舊報告、日期不明,只當參考。</p><p class="fvhow">' + yahoo + "。</p></details>" : "";
-    if (evs.length && !evs[0].stale && px > 0) {
-      var tg = [], seen = {};
-      evs.forEach(function (b) { if (b.broker === BRK_ANON || !seen[b.broker]) { seen[b.broker] = 1; tg.push(b.target); } });
-      var bhi = Math.max.apply(null, tg), blo = Math.min.apply(null, tg), bn = tg.length;
-      var bmean = tg.reduce(function (a, v) { return a + v; }, 0) / bn, pc = function (v) { return (v / px - 1) * 100; };
+    var bt = brkTgt(doc);
+    if (bt) {
+      var bhi = bt.hi, blo = bt.lo, bn = bt.n, bmean = bt.mean, pc = function (v) { return (v / px - 1) * 100; };
       var bhelp = MR.help("tp", "券商目標價怎麼看",
         "<p><b>區間</b>是每家券商 90 天內最新一筆目標價的最低到最高;「相對現價」= 目標價 ÷ 資料日收盤價 − 1;<b>平均</b>是算術平均。</p>" +
         "<p>圖的右半是未來 12 個月:<b>右半只是把今天的價格連到目標價,不代表會照這條路走</b>。</p>" +
@@ -533,7 +539,7 @@
       return '<div class="fvbox tp"><h4>券商目標價<span class="evb">僅供參考</span>' + bhelp + "</h4>" +
         '<div class="tp-big tp-rng"><div><span>' + big[0][0] + '</span><b class="tp-mean">' + big[0][1] + "</b></div>" +
         '<div><span>' + big[1][0] + '</span><b class="' + MR.dir(pc(bhi)) + '">' + big[1][1] + "</b></div></div>" +
-        (bn > 1 ? '<p class="tp-avg">平均 <b class="num">' + tpFmt(bmean) + "</b>、共 " + bn + " 家" : '<p class="tp-avg">共 1 家') +
+        (bn > 1 ? '<p class="tp-avg">平均 <b class="num">' + tpFmt(bmean) + "</b>(相對現價 " + MR.sign(bt.up, 1) + "%)、共 " + bn + " 家" : '<p class="tp-avg">共 1 家') +
         "</p>" +
         tpChart(doc.rows, bn > 1 ? { hi: bhi, mean: bmean, lo: blo } : { hi: null, mean: bmean, lo: null }) +
         brk + more + "</div>";
@@ -564,7 +570,8 @@
       ? "近四季 EPS " + e.eps + " 元(股價 ÷ 本益比 " + e.pe + ")× 營收動能 " + e.growth + " 倍 = 預估 EPS <b>" + e.feps + "</b> 元;" +
         "× 過去 " + e.n + " 個月本益比中位數 " + e.band[1] + " 倍 = <b>" + e.fair + "</b> 元。合理區間用第 25~75 百分位(" + e.band[0] + "~" + e.band[2] + " 倍)。"
       : "公司虧損或本益比過高,改用淨值比:每股淨值 " + e.bvps + " 元 × 過去 " + e.n + " 個月淨值比中位數 " + e.band[1] + " 倍 = <b>" + e.fair + "</b> 元。";
-    var w = e.fwd, t = e.tgt, fwdHtml = "", pj = e.proj;
+    var w = e.fwd, t = brkTgt(doc), fwdHtml = "", pj = e.proj, bt = t;
+    var tline = t ? '<p class="fvhow">' + (t.n > 1 ? "券商平均目標價 <b>" + tpFmt(t.mean) + "</b>(近 90 天 " + t.n + " 家)" : "券商目標價 <b>" + tpFmt(t.mean) + "</b>(近 90 天 1 家)") + ",相對現價 " + MR.sign(t.up, 1) + "%。</p>" : "";
     // 沒有分析師預估:用最新營收與最新一季淨利率自行推估未來 12 個月 EPS(scripts/radar.py run_rate_eps)
     if (!w && pj) {
       var pc = pj.status === "低估" ? "up" : pj.status === "高估" ? "down" : "flat";
@@ -577,8 +584,8 @@
         (pj.g_eps ? '<p class="fvhow"><b>成長情境</b>:如果近 3 月營收年增 ' + MR.sign(pj.g_yoy, 0) + "% 再延續 12 個月,營收 " + pj.g_rev12 + " 億 × 同樣淨利率 = EPS <b>" + pj.g_eps +
           "</b> 元,× " + pj.band[1] + " 倍 = <b>" + pj.g_fair + "</b> 元(空間 " + MR.sign(pj.g_up, 1) + "%)。</p>" : "") +
         '<p class="fvhow">上面是「維持現狀」:假設接下來 12 個月維持目前的營收與獲利率。成長情境假設成長率延續,實際常會放緩。只用本業獲利,業外的一次性損益不算進去。這個算法是 2026-10 新增,尚未回測。</p>' +
-        uncHtml(pj.fair, px, uncertainty(e, doc.health, true)) +
-        (t ? '<p class="fvhow">分析師平均目標價 <b>' + t.mean + "</b>,相對現價 " + MR.sign(t.up, 1) + "%。</p>" : "") + "</div>";
+        uncHtml(pj.fair, px, uncertainty(e, doc.health, true, bt)) +
+        tline + "</div>";
     }
     if (w || (t && !pj)) {
       var wcls = w ? (w.status === "低估" ? "up" : w.status === "高估" ? "down" : "flat") : "flat";
@@ -591,13 +598,13 @@
           '<p class="fvhow">今年 EPS 預估 ' + (w.eps0 == null ? "—" : w.eps0) + "、明年 " + w.eps1 + "(" + (w.n || "?") + " 位分析師),依月份加權成未來 12 個月 " + w.eps +
           " 元;× 自身過去本益比中位數 " + w.band[1] + " 倍 = <b>" + w.fair + "</b> 元,合理區間 " + w.low + " ~ " + w.high + "(" + w.band[0] + "~" + w.band[2] + " 倍)。</p>"
           : '<p class="fvhow">沒有足夠的分析師 EPS 預估。</p>') +
-        (t ? '<p class="fvhow">分析師平均目標價 <b>' + t.mean + "</b>(最低 " + (t.lo == null ? "—" : t.lo) + "、最高 " + (t.hi == null ? "—" : t.hi) + "),相對現價 " + MR.sign(t.up, 1) + "%。</p>" : "") +
-        (t && w && w.eps > 0 && Math.abs(t.mean / w.fair - 1) > 0.3 ? '<p class="fvhow">為什麼差這麼多:兩邊用的是同一組 EPS 預估,差在本益比。目標價等於給未來 12 個月 EPS <b>' +
+        tline +
+        (t && w && w.eps > 0 && Math.abs(t.mean / w.fair - 1) > 0.3 ? '<p class="fvhow">為什麼差這麼多:差在本益比。券商平均目標價等於給未來 12 個月 EPS <b>' +
           (t.mean / w.eps).toFixed(1) + " 倍</b>,這裡用的是這檔自己過去的本益比中位數 <b>" + w.band[1] + " 倍</b>。" +
           (t.mean > w.fair ? "分析師認為公司已經「變了」(例如打進 AI 供應鏈),值得比過去更高的評價;這個模型假設評價會回到過去水準。景氣循環股過去高獲利時本益比偏低,也會讓中位數偏低。"
             : "分析師給的評價低於這檔過去的水準,常見於獲利高峰的景氣循環股(預期之後會下滑)。") +
           "目標價的共識從 2026-10 才開始記錄,哪一邊比較準還無法回測。</p>" : "") +
-        (w ? uncHtml(w.fair, px, uncertainty(e, doc.health, false)) : "") +
+        (w ? uncHtml(w.fair, px, uncertainty(e, doc.health, false, bt)) : "") +
         '<p class="fvhow">資料來源 Yahoo Finance 匯總的分析師共識,通常偏樂觀;這個前瞻估值從 2026-10 才開始記錄,尚未經過回測。</p></div>';
     }
     return fwdHtml + '<div class="fvbox"><h4>保守價位 · 依過去四季 EPS</h4>' +
@@ -739,7 +746,7 @@
     add("毛利率", 0, h.gm == null ? "—" : (h.gm_p || "") + " " + h.gm + "%" + (h.dgm == null ? "" : ",比去年同季 " + MR.sign(h.dgm, 1) + " 個百分點"),
       "了解獲利品質用;回測顯示毛利率升降對之後股價沒有預測力", "參考");
     add("估值", 0, h.fpe == null ? "無前瞻估值" : "前瞻本益比 " + h.fpe + " 倍" + (h.fpe_src === "自行推估" ? "(自行推估)" : "") + "(自身歷史中位 " + h.fpe_med + " 倍)" + (h.fwd_status ? "," + h.fwd_status : "") +
-      (h.tgt_up == null ? "" : ",目標價空間 " + MR.sign(h.tgt_up, 0) + "%"),
+      (h.tgt_up == null ? ",近 90 天無券商目標價" : ",目標價空間 " + MR.sign(h.tgt_up, 0) + "%"),
       (h.fpe_src === "自行推估" ? "沒有分析師預估,用最新營收與本業獲利率自行推估(2026-10 新增)" : "分析師共識 2026-10 才開始記錄") + ",尚未回測;歷史本益比估值回測沒有預測力", "參考");
     // 技術面(scripts/technical.py):順勢訊號歷史上偏好,抄底訊號(超賣、低檔黃金交叉)反而偏差
     var ta = h.ta;

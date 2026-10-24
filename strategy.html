@@ -93,6 +93,7 @@ details.tv summary { cursor: pointer; font-size: 13px; color: var(--muted); marg
       <a href="watch.html">觀察名單</a>
       <a href="signals.html">訊號回測</a>
       <a href="strategy.html" aria-current="page">策略績效</a>
+      <a href="advice.html">建議</a>
       <a href="my.html">我的自選</a>
     </nav>
     <div class="seg" role="group" aria-label="漲跌顏色">
@@ -274,7 +275,7 @@ details.tv summary { cursor: pointer; font-size: 13px; color: var(--muted); marg
       "</tr></thead><tbody>" + k.eq.map(function (p, i) {
         return "<tr><td>" + esc(p[0]) + "</td>" + SERIES.map(function (s) { return "<td>" + A.curve[s[0]].eq[i][1].toFixed(2) + "x</td>"; }).join("") + "</tr>";
       }).join("") + "</tbody></table></div></details></section>" +
-      '<section class="card viz"><h2>回撤(離前高跌了多少)</h2><p>4★ 以上最大回撤 ' + k.mdd + "%,加權指數 " + c["加權指數"].mdd + "%。要能接受帳面上虧掉四分之一,才適合照這個方法操作。</p>" + legend() +
+      '<section class="card viz"><h2>回撤(離前高跌了多少)</h2><p>4★ 以上最大回撤 ' + k.mdd + "%,加權指數 " + c["加權指數"].mdd + "%。</p>" + legend() +
       '<div class="chart" id="c-dd"></div></section>' +
       '<section class="card"><h2>逐年報酬</h2><p>每一年都有比較嗎?還是只靠一兩年大賺?</p>' + yearly() + "</section>" +
       live();

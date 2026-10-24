@@ -42,7 +42,29 @@ main { max-width: 1280px; margin: 0 auto; padding: 20px 16px 48px; display: grid
 .gauge .meter i { height: 22px; border-radius: 2px; background: var(--line); }
 .gauge .lbl { font-weight: 900; font-size: 18px; white-space: nowrap; }
 .gauge p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.gauge .sb { margin-top: 4px; font-size: 12px; color: var(--muted); line-height: 1.5; }
 @media (max-width: 760px) { .head { grid-template-columns: 1fr; } .gauge { max-width: none; } }
+
+/* 今天起的事件(時間軸):手機直排、寬螢幕橫排;重要程度用文字加色,不用紅綠 */
+#ev h2 { margin: 0 0 10px; }
+#ev-tl { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+@media (min-width: 760px) { #ev-tl { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); } }
+#ev-tl > li { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; grid-template-columns: 6em 1fr; gap: 2px 10px; align-content: start; }
+@media (min-width: 760px) { #ev-tl > li { grid-template-columns: 1fr; } }
+#ev-tl > li.today { border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+#ev-tl .dt { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+#ev-tl .dt small { display: block; white-space: nowrap; font-family: var(--sans); font-size: 12px; font-weight: 400; color: var(--muted); }
+#ev-tl .today .dt small { color: var(--accent); }
+#ev-tl ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; min-width: 0; }
+#ev-tl .ev-it { display: flex; gap: 6px; align-items: baseline; color: var(--text); }
+#ev-tl .ev-it[data-imp="低"] { color: var(--muted); }
+.ev-imp { flex: none; font-size: 11px; font-weight: 700; line-height: 1.5; border-radius: 3px; padding: 0 5px; }
+.ev-imp[data-imp="高"] { background: var(--accent); color: var(--accent-ink); }
+.ev-imp[data-imp="中"] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); line-height: 1.3; }
+.ev-imp[data-imp="低"] { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); line-height: 1.3; }
+#ev-tl .more, #ev-tl .none { font-size: 12.5px; color: var(--faint); }
+#app[aria-busy="true"] { opacity: .5; }
+@media (prefers-reduced-motion: no-preference) { #app { transition: opacity .15s; } }
 
 /* tickers */
 .groups { display: grid; gap: 14px; }
@@ -109,6 +131,7 @@ th.n { text-align: right; }
 /* sectors */
 .sectors { display: grid; gap: 0; }
 .sectors div { display: grid; grid-template-columns: 7em auto 1fr; gap: 10px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.sectors div.np { grid-template-columns: 7em 1fr; }
 .sectors div:first-child { border-top: 0; padding-top: 0; }
 .sectors b { font-weight: 700; }
 .sectors span:last-child { color: var(--muted); }
@@ -183,6 +206,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
 </footer>
 
 <script src="assets/common.js"></script>
+<script src="assets/brief.js"></script>
 <script src="assets/live.js"></script>
 <script>
 (function () {
@@ -249,16 +273,31 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
       '<span class="chg num ' + d + '">' + chg + "</span>" + spark(it.spark, d) + "</div>";
   }
 
-  function impactPill(v) {
+  function impactPill(v, detail) {
+    if (!MRBrief.backed(detail)) return "";
     var cls = { "利多": "bull", "利空": "bear", "中性": "neutral", "視數據而定": "cond" }[v] || "neutral";
     return '<span class="pill ' + cls + '">' + esc(v) + "</span>";
   }
-  function stripeColor(v) {
+  function stripeColor(v, detail) {
+    if (!MRBrief.backed(detail)) return "var(--line)";
     return { "利多": "var(--up)", "利空": "var(--down)", "視數據而定": "var(--amber)" }[v] || "var(--line)";
   }
   function impBar(v) {
     var c = { "高": "h", "中": "m", "低": "l" }[v] || "l";
     return '<span class="imp ' + c + '" title="重要性:' + esc(v) + '"><i></i><i></i><i></i></span>';
+  }
+  function evSection(r) {
+    var days = MRBrief.events(r);
+    return '<section class="sec" id="ev"><h2>今天起的事件</h2><ol id="ev-tl" aria-label="今天起的事件時間軸">' + days.map(function (t) {
+      return '<li data-date="' + esc(t.date) + '"' + (t.today ? ' class="today"' : "") + '><div class="dt">' + esc(t.date) +
+        "<small>週" + esc(t.wd) + (t.today ? " · 今天" : "") + "</small></div><ul>" +
+        t.items.map(function (it) {
+          return '<li class="ev-it" data-imp="' + esc(it.imp) + '"><span class="ev-imp" data-imp="' + esc(it.imp) + '">' + esc(it.imp) + "</span><span>" + esc(it.text) + "</span></li>";
+        }).join("") +
+        (t.more ? '<li class="more">另 ' + t.more + " 項</li>" : "") +
+        (!t.items.length ? '<li class="none">' + (t.today ? "今天沒有排定的事件" : "沒有登錄事件") + "</li>" : "") +
+        "</ul></li>";
+    }).join("") + "</ol></section>";
   }
   function yi(v) {
     if (v == null) return '<b class="flat">—</b>';
@@ -270,6 +309,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
     if (r.sample) h.push('<div class="banner">目前顯示的是<b>範例資料</b>,用來預覽版面。第一份真實報告產生後會自動取代。</div>');
 
     var s = r.sentiment || {}, score = s.score || 0;
+    var bs = MRBrief.basis(r);
     var meter = [-2, -1, 0, 1, 2].map(function (v) {
       var on = score === 0 ? v === 0 : (score > 0 ? v > 0 && v <= score : v < 0 && v >= score);
       var c = v > 0 ? "var(--up)" : v < 0 ? "var(--down)" : "var(--muted)";
@@ -277,8 +317,12 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
     }).join("");
     h.push('<section class="head"><div><div class="date">' + esc(longDate(r.date)) +
       ' · 更新 ' + esc((r.generated_at || "").slice(11, 16)) + '</div><h1>' + esc(r.headline) + "</h1></div>" +
-      '<div class="gauge"><div class="meter" aria-hidden="true">' + meter + "</div>" +
-      '<div><div class="lbl ' + dir(score) + '">開盤情緒 ' + esc(s.label || "—") + "</div><p>" + esc(s.summary) + "</p></div></div></section>");
+      '<div class="gauge">' + (bs.show ? '<div class="meter" aria-hidden="true">' + meter + "</div>" : "") +
+      "<div>" + (bs.show
+        ? '<div class="lbl ' + dir(score) + '">開盤情緒 ' + esc(s.label) + "</div><p>" + esc(s.summary) + "</p>"
+        : '<div class="lbl flat" style="font-size:15px;white-space:normal">開盤情緒：依據不足，不顯示方向</div>') +
+      (bs.text ? '<div class="sb" id="sent-basis">' + esc(bs.text) + "</div>" : "") + "</div></div></section>");
+    h.push(evSection(r));
 
     h.push('<section class="groups">' + (r.markets || []).map(function (g) {
       if (!g.items || !g.items.length) return "";
@@ -294,8 +338,8 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
 
     left.push('<section class="sec"><h2>今日重點與影響</h2>' + ((r.key_points || []).length ? '<ul class="kp">' +
       r.key_points.map(function (p) {
-        return '<li><span class="stripe" style="background:' + stripeColor(p.impact) + '"></span><div>' +
-          "<h3>" + esc(p.title) + " " + impactPill(p.impact) + "</h3><p>" + esc(p.detail) + '</p><div class="chips">' +
+        return '<li><span class="stripe" style="background:' + stripeColor(p.impact, p.detail) + '"></span><div>' +
+          "<h3>" + esc(p.title) + " " + impactPill(p.impact, p.detail) + "</h3><p>" + esc(p.detail) + '</p><div class="chips">' +
           (p.market ? '<span class="chip">' + esc(p.market) + "</span>" : "") +
           (p.sectors || []).map(function (x) { return '<span class="chip">' + esc(x) + "</span>"; }).join("") +
           "</div></div></li>";
@@ -327,7 +371,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
     if ((r.sector_watch || []).length) {
       right.push('<section class="sec"><h2>產業觀察</h2><div class="sectors">' + r.sector_watch.map(function (x) {
         var cls = { "偏多": "bull", "偏空": "bear" }[x.view] || "neutral";
-        return "<div><b>" + esc(x.sector) + '</b><span class="pill ' + cls + '">' + esc(x.view) + "</span><span>" + esc(x.reason) + "</span></div>";
+        return (MRBrief.backed(x.reason) ? "<div>" : '<div class="np">') + "<b>" + esc(x.sector) + "</b>" + (MRBrief.backed(x.reason) ? '<span class="pill ' + cls + '">' + esc(x.view) + "</span>" : "") + "<span>" + esc(x.reason) + "</span></div>";
       }).join("") + "</div></section>");
     }
 
@@ -354,17 +398,23 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
     document.title = "盤前雷達 · " + r.date;
   }
 
+  var seq = 0;
   function load(d) {
+    var my = ++seq;
     var i = dates.indexOf(d);
     sel.value = d;
     document.getElementById("prev").disabled = i >= dates.length - 1;
     document.getElementById("next").disabled = i <= 0;
     if (d !== dates[0]) history.replaceState(null, "", "#" + d);
     else history.replaceState(null, "", location.pathname);
+    app.setAttribute("aria-busy", "true");
     fetch("data/" + d + ".json", { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(render)
-      .catch(function () { app.innerHTML = '<p class="err">找不到 ' + esc(d) + " 的報告。</p>"; });
+      .then(function (rep) { if (my !== seq) return; render(rep); app.removeAttribute("aria-busy"); })
+      .catch(function () { if (my !== seq) return; app.removeAttribute("aria-busy");
+        var p = document.createElement("p"); p.className = "err"; p.textContent = "找不到 " + d + " 的報告。";
+        app.replaceChildren(p);
+      });
   }
 
   sel.onchange = function () { load(sel.value); };

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>盤前雷達 · 晨報新版面</title>
+<meta name="description" content="盤前晨報新版面：4 個數字、一句標題、本週時間軸，全部由晨報資料機械算出">
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="assets/common.css">
+<style>
+.ctrl { display: flex; align-items: center; gap: 6px; }
+.ctrl button, .ctrl select {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  height: 32px; padding: 0 10px; cursor: pointer; touch-action: manipulation;
+}
+.ctrl button:hover, .ctrl select:hover { border-color: var(--faint); }
+.ctrl button:disabled { opacity: .35; cursor: default; }
+.ctrl select { font-family: var(--mono); }
+
+main { max-width: 1280px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 18px; }
+footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--faint); font-size: 12px; line-height: 1.7; }
+.err { padding: 40px 0; text-align: center; color: var(--muted); }
+
+/* 日期列、標題、一句法人 */
+.bf-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 13px; color: var(--muted); }
+.bf-meta .num { letter-spacing: .04em; }
+.bf-meta a { color: var(--accent); text-underline-offset: 2px; }
+#bf-title { margin: 6px 0 0; font-size: clamp(19px, 5.4vw, 34px); line-height: 1.3; font-weight: 900; text-wrap: balance; max-width: 30em; }
+#bf-lede { margin: 8px 0 0; color: var(--muted); font-size: 14px; max-width: 46em; }
+
+/* 4 個數字 */
+.bf-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 900px) { .bf-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; } }
+.bf-kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 12px 10px; min-width: 0; display: grid; gap: 2px; align-content: start; }
+.bf-kpi h2 { margin: 0; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .06em; }
+.bf-kpi .v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: clamp(22px, 6.4vw, 30px); font-weight: 600; line-height: 1.2; }
+.bf-kpi .v small { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+.bf-kpi .c { font-family: var(--mono); font-size: 12.5px; font-weight: 500; }
+.bf-kpi .x { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+.bf-kpi .d { font-size: 11px; color: var(--faint); }
+
+/* 時間軸 */
+.bf-sec h2 { margin: 0 0 8px; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .14em; }
+#bf-tl { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+@media (min-width: 760px) { #bf-tl { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); } }
+#bf-tl li { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; display: grid; grid-template-columns: 6em 1fr; gap: 2px 10px; align-content: start; }
+@media (min-width: 760px) { #bf-tl li { grid-template-columns: 1fr; } }
+#bf-tl li.today { border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+#bf-tl .dt { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+#bf-tl .dt small { display: block; white-space: nowrap; font-family: var(--sans); font-size: 12px; font-weight: 400; color: var(--muted); }
+#bf-tl .today .dt small { color: var(--accent); }
+#bf-tl ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13.5px; min-width: 0; }
+#bf-tl ul li { background: none; border: 0; border-radius: 0; padding: 0; display: block; color: var(--muted); }
+#bf-tl ul li.hi { color: var(--accent); font-weight: 700; }
+#bf-tl .more, #bf-tl .none { font-size: 12.5px; color: var(--faint); }
+
+/* 其餘行情 */
+.bf-more { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.bf-more > summary { cursor: pointer; padding: 12px 14px; min-height: 44px; display: flex; align-items: center; font-weight: 700; color: var(--accent); }
+.bf-more[open] > summary { border-bottom: 1px solid var(--line); }
+.bf-body { padding: 4px 14px 14px; display: grid; gap: 14px; }
+.bf-body h3 { margin: 10px 0 4px; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .14em; }
+.bf-body table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.bf-body th { text-align: left; font-size: 12px; color: var(--faint); font-weight: 500; padding: 4px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.bf-body td { padding: 7px 4px; border-bottom: 1px solid var(--line); }
+.bf-body tr:last-child td { border-bottom: 0; }
+.bf-body th.n, .bf-body td.n { text-align: right; font-family: var(--mono); white-space: nowrap; }
+.bf-body td.f { color: var(--faint); font-family: var(--mono); font-size: 12px; text-align: right; white-space: nowrap; }
+@media (min-width: 900px) { .bf-grp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true" class="logo">
+        <defs><linearGradient id="lgsw" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#e7b04a" stop-opacity="0"/><stop offset="1" stop-color="#f3c96b" stop-opacity=".95"/></linearGradient></defs>
+        <rect width="64" height="64" rx="15" fill="#121926"/>
+        <circle cx="32" cy="32" r="21" fill="none" stroke="#2c3647" stroke-width="3"/>
+        <circle cx="32" cy="32" r="12" fill="none" stroke="#2c3647" stroke-width="3"/>
+        <path d="M32 32 L32 11 A21 21 0 0 1 51.2 23.4 Z" fill="url(#lgsw)"/>
+        <circle cx="44" cy="20.5" r="3.4" fill="#fff"/>
+        <circle cx="32" cy="32" r="3" fill="#f3c96b"/>
+      </svg>
+      <div><b>盤前雷達</b><br><span>台美股 · 每個交易日 06:00</span></div>
+    </div>
+    <nav class="nav" aria-label="頁面">
+      <a href="./">晨報</a>
+      <a href="sectors.html">板塊資金</a>
+      <a href="radar.html">起漲雷達</a>
+      <a href="watch.html">關注名單</a>
+      <a href="signals.html">訊號回測</a>
+      <a href="strategy.html">策略績效</a>
+      <a href="my.html">我的自選</a>
+    </nav>
+    <div class="ctrl">
+      <button id="prev" type="button" aria-label="前一天">‹</button>
+      <select id="day" aria-label="選擇日期"></select>
+      <button id="next" type="button" aria-label="後一天">›</button>
+    </div>
+    <div class="seg" role="group" aria-label="漲跌顏色">
+      <button type="button" id="conv-tw" aria-pressed="true">紅漲綠跌</button>
+      <button type="button" id="conv-us" aria-pressed="false">綠漲紅跌</button>
+    </div>
+  </div>
+</header>
+
+<main id="app"><div class="skel" aria-busy="true" aria-label="載入中"><i></i><i></i><i></i><i></i></div></main>
+
+<footer>
+  本網站內容由 AI 每日自動彙整公開資訊產生，可能有延遲或錯誤，僅供參考，不構成任何投資意見或邀約。行情為前一交易日收盤資料。
+</footer>
+
+<script src="assets/common.js"></script>
+<script src="assets/brief.js"></script>
+<script>
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  var sel = document.getElementById("day");
+  var prevBtn = document.getElementById("prev");
+  var nextBtn = document.getElementById("next");
+  var dates = [];
+  var WEEK = ["日", "一", "二", "三", "四", "五", "六"];
+  var HELP = "<p>標題、數字與時間軸都是程式照晨報資料機械算出，不加當天的主觀判斷。</p>" +
+    "<p>標題前半是費半、台積電 ADR、那斯達克、S&amp;P 500、道瓊中漲跌幅絕對值最大的兩項；後半依序取今天台股的法說會、今天重要性為高的行事曆事件、加權指數近 15 日的最低點或最高點。</p>" +
+    "<p>4 個數字各標行情日期，因為晨報裡各項資料的日期不一定相同。</p>";
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function fmt(v, d) { return Number(v).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function longDate(iso) {
+    var p = iso.split("-").map(Number), w = new Date(p[0], p[1] - 1, p[2]).getDay();
+    return p[0] + " 年 " + p[1] + " 月 " + p[2] + " 日 星期" + WEEK[w];
+  }
+  function sgn(v, d) { return (v > 0 ? "+" : v < 0 ? "−" : "") + fmt(Math.abs(v), d); }
+
+  function setConv(c) {
+    document.documentElement.setAttribute("data-convention", c);
+    document.getElementById("conv-tw").setAttribute("aria-pressed", c === "tw");
+    document.getElementById("conv-us").setAttribute("aria-pressed", c === "us");
+    try { localStorage.setItem("conv", c); } catch (e) {}
+  }
+  var saved = "tw";
+  try { saved = localStorage.getItem("conv") || "tw"; } catch (e) {}
+  setConv(saved);
+  document.getElementById("conv-tw").onclick = function () { setConv("tw"); };
+  document.getElementById("conv-us").onclick = function () { setConv("us"); };
+
+  function kpiCard(k, i) {
+    var c = el("div", "bf-kpi");
+    c.appendChild(el("h2", null, k.label));
+    var v = el("div", "v num " + MR.dir(k.chg.charAt(0) === "+" ? 1 : k.chg.charAt(0) === "-" ? -1 : k.value.charAt(0) === "-" ? -1 : k.value.charAt(0) === "+" ? 1 : 0), k.value);
+    if (i === 3 && k.value !== "—") v.appendChild(el("small", null, "億"));
+    c.appendChild(v);
+    if (k.chg) c.appendChild(el("div", "c " + (i === 3 ? "flat" : v.className.split(" ").pop()), k.chg));
+    c.appendChild(el("div", "x", k.ctx));
+    if (k.asof) c.appendChild(el("div", "d", k.asof + (i === 3 ? " 盤後" : " 收盤")));
+    return c;
+  }
+
+  function timeline(tl) {
+    var ol = el("ol");
+    ol.id = "bf-tl";
+    ol.setAttribute("aria-label", "今天起的事件時間軸");
+    tl.forEach(function (t) {
+      var li = el("li", t.today ? "today" : "");
+      li.dataset.date = t.date;
+      var dt = el("div", "dt", t.date);
+      dt.appendChild(el("small", null, "週" + t.wd + (t.today ? " · 今天" : "")));
+      li.appendChild(dt);
+      var ul = el("ul");
+      t.items.forEach(function (it) { ul.appendChild(el("li", it.high ? "hi" : "", it.text)); });
+      if (t.more) ul.appendChild(el("li", "more", "另 " + t.more + " 項"));
+      if (!t.items.length) ul.appendChild(el("li", "none", "沒有登錄事件"));
+      li.appendChild(ul);
+      ol.appendChild(li);
+    });
+    return ol;
+  }
+
+  function row(cells) {
+    var tr = el("tr");
+    cells.forEach(function (c) {
+      var td = el("td", c.cls, c.text);
+      tr.appendChild(td);
+    });
+    return tr;
+  }
+  function th(cols) {
+    var tr = el("tr");
+    cols.forEach(function (c) { tr.appendChild(el("th", c[1], c[0])); });
+    var h = el("thead");
+    h.appendChild(tr);
+    return h;
+  }
+
+  function restBox(r) {
+    var d = el("details", "bf-more");
+    d.appendChild(el("summary", null, "其餘行情與三大法人明細"));
+    var body = el("div", "bf-body");
+    var grp = el("div", "bf-grp");
+    (r.markets || []).forEach(function (g) {
+      if (!g.items || !g.items.length) return;
+      var box = el("div");
+      box.appendChild(el("h3", null, g.group.split("・")[0]));
+      var t = el("table");
+      t.appendChild(th([["名稱"], ["最新", "n"], ["漲跌幅", "n"], ["資料日", "n"]]));
+      var tb = el("tbody");
+      g.items.forEach(function (it) {
+        var dec = it.decimals == null ? 2 : it.decimals;
+        var p = it.change_pct;
+        tb.appendChild(row([
+          { text: it.name },
+          { cls: "n", text: it.last == null ? "—" : fmt(it.last, dec) + (it.unit === "%" ? "%" : "") },
+          { cls: "n " + (p == null ? "flat" : MR.dir(p)), text: p == null ? "—" : sgn(p, 2) + "%" },
+          { cls: "f", text: it.as_of ? it.as_of.slice(5).replace("-", "/") : "—" }
+        ]));
+      });
+      t.appendChild(tb);
+      box.appendChild(t);
+      grp.appendChild(box);
+    });
+    body.appendChild(grp);
+    var f = r.tw_flows;
+    if (f) {
+      var box = el("div");
+      box.appendChild(el("h3", null, "三大法人" + (f.date ? "（" + f.date.slice(5).replace("-", "/") + "，億）" : "")));
+      var t = el("table");
+      t.appendChild(th([["法人"], ["買賣超", "n"]]));
+      var tb = el("tbody");
+      [["外資", f.foreign], ["投信", f.trust], ["自營商", f.dealer]].forEach(function (x) {
+        tb.appendChild(row([{ text: x[0] }, { cls: "n " + (x[1] == null ? "flat" : MR.dir(x[1])), text: x[1] == null ? "—" : sgn(x[1], 2) }]));
+      });
+      t.appendChild(tb);
+      box.appendChild(t);
+      body.appendChild(box);
+    }
+    d.appendChild(body);
+    return d;
+  }
+
+  function render(reps, d) {
+    var b = MRBrief.build(reps), r = reps[0];
+    var kids = [];
+
+    var meta = el("div", "bf-meta");
+    meta.appendChild(el("span", "num", longDate(b.date)));
+    var asof = el("span", "num", b.asof);
+    asof.id = "bf-asof";
+    meta.appendChild(asof);
+    var old = el("a", null, "對照舊版");
+    old.href = d === dates[0] ? "./" : "./#" + d;
+    meta.appendChild(old);
+    MR.help("bf", "這頁怎麼算", HELP);
+    var hb = el("button", "help-btn", "?");
+    hb.type = "button";
+    hb.setAttribute("data-help", "bf");
+    hb.setAttribute("aria-label", "說明:這頁怎麼算");
+    meta.appendChild(hb);
+    kids.push(meta);
+
+    var h1 = el("h1", null, b.title);
+    h1.id = "bf-title";
+    kids.push(h1);
+    if (b.lede) {
+      var p = el("p", null, b.lede);
+      p.id = "bf-lede";
+      kids.push(p);
+    }
+
+    var ks = el("section", "bf-kpis");
+    ks.setAttribute("aria-label", "4 個重點數字");
+    b.kpis.forEach(function (k, i) { ks.appendChild(kpiCard(k, i)); });
+    kids.push(ks);
+
+    var sec = el("section", "bf-sec");
+    sec.appendChild(el("h2", null, "今天起的事件"));
+    sec.appendChild(timeline(b.timeline));
+    kids.push(sec);
+
+    kids.push(restBox(r));
+    app.replaceChildren.apply(app, kids);
+    document.title = "盤前雷達 · 晨報新版面 · " + b.date;
+  }
+
+  function load(d) {
+    var i = dates.indexOf(d);
+    sel.value = d;
+    prevBtn.disabled = i >= dates.length - 1;
+    nextBtn.disabled = i <= 0;
+    if (d !== dates[0]) history.replaceState(null, "", "#" + d);
+    else history.replaceState(null, "", location.pathname);
+    var want = dates.slice(i, i + 10).map(function (x) {
+      return fetch("data/" + x + ".json", { cache: "no-cache" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .catch(function () { return null; });
+    });
+    Promise.all(want).then(function (all) {
+      if (!all[0]) throw new Error("missing");
+      render(all.filter(Boolean), d);
+    }).catch(function () {
+      var e = el("p", "err", "找不到 " + d + " 的報告。");
+      app.replaceChildren(e);
+    });
+  }
+
+  sel.onchange = function () { load(sel.value); };
+  prevBtn.onclick = function () { load(dates[dates.indexOf(sel.value) + 1]); };
+  nextBtn.onclick = function () { load(dates[dates.indexOf(sel.value) - 1]); };
+
+  fetch("data/index.json", { cache: "no-cache" })
+    .then(function (r) { return r.json(); })
+    .then(function (idx) {
+      dates = (idx.dates || []).filter(function (x) { return x !== "sample"; });
+      if (!dates.length) { app.replaceChildren(el("p", "err", "還沒有任何報告。")); return; }
+      dates.forEach(function (x) { var o = el("option", null, x); o.value = x; sel.appendChild(o); });
+      var want = location.hash.slice(1);
+      load(dates.indexOf(want) >= 0 ? want : dates[0]);
+    })
+    .catch(function () { app.replaceChildren(el("p", "err", "無法載入報告索引。")); });
+})();
+</script>
+</body>
+</html>

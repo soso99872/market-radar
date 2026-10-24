@@ -8,6 +8,8 @@
 <meta name="theme-color" content="#0a0e14">
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,12 +27,19 @@
 
 main { max-width: 1280px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 18px; }
 footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--faint); font-size: 12px; line-height: 1.7; }
-.err { padding: 40px 0; text-align: center; color: var(--muted); }
+.nw { white-space: nowrap; }
+.err { padding: 40px 16px; text-align: center; color: var(--muted); }
+.err:empty { display: none; }
+:root { interpolate-size: allow-keywords; }
+#app { transition: opacity .16s; }
+#app[aria-busy="true"] { opacity: .5; }
+@keyframes bf-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+#app > :not(.skel) { animation: bf-in .18s ease-out; }
 
 /* 日期列、標題、一句法人 */
 .bf-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 13px; color: var(--muted); }
 .bf-meta .num { letter-spacing: .04em; }
-.bf-meta a { color: var(--accent); text-underline-offset: 2px; }
+.bf-meta a { color: var(--accent); text-underline-offset: 2px; display: inline-flex; align-items: center; justify-content: flex-start; min-height: 44px; padding: 0 12px 0 0; }
 #bf-title { margin: 6px 0 0; font-size: clamp(19px, 5.4vw, 34px); line-height: 1.3; font-weight: 900; text-wrap: balance; max-width: 30em; }
 #bf-lede { margin: 8px 0 0; color: var(--muted); font-size: 14px; max-width: 46em; }
 
@@ -63,6 +72,12 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
 /* 其餘行情 */
 .bf-more { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
 .bf-more > summary { cursor: pointer; padding: 12px 14px; min-height: 44px; display: flex; align-items: center; font-weight: 700; color: var(--accent); }
+.bf-more::details-content { block-size: 0; overflow: clip; transition: block-size .2s ease, content-visibility .2s allow-discrete; }
+.bf-more[open]::details-content { block-size: auto; }
+@media (prefers-reduced-motion: reduce) {
+  #app, #app > :not(.skel) { transition: none; animation: none; }
+  .bf-more::details-content { transition: none; }
+}
 .bf-more[open] > summary { border-bottom: 1px solid var(--line); }
 .bf-body { padding: 4px 14px 14px; display: grid; gap: 14px; }
 .bf-body h3 { margin: 10px 0 4px; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .14em; }
@@ -111,7 +126,8 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
   </div>
 </header>
 
-<main id="app"><div class="skel" aria-busy="true" aria-label="載入中"><i></i><i></i><i></i><i></i></div></main>
+<main id="app"><div class="skel" aria-label="載入中"><i></i><i></i><i></i><i></i></div></main>
+<div id="bf-status" class="err" aria-live="polite"></div>
 
 <footer>
   本網站內容由 AI 每日自動彙整公開資訊產生，可能有延遲或錯誤，僅供參考，不構成任何投資建議。行情為前一交易日收盤資料。
@@ -127,6 +143,8 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
   var prevBtn = document.getElementById("prev");
   var nextBtn = document.getElementById("next");
   var dates = [];
+  var seq = 0;
+  var status = document.getElementById("bf-status");
   var WEEK = ["日", "一", "二", "三", "四", "五", "六"];
   var HELP = "<p>標題、數字與時間軸都是程式照晨報資料機械算出，不加當天的主觀判斷。</p>" +
     "<p>標題前半是費半、台積電 ADR、那斯達克、S&amp;P 500、道瓊中漲跌幅絕對值最大的兩項；後半依序取今天台股的法說會、今天重要性為高的行事曆事件、加權指數近 15 日的最低點或最高點。</p>" +
@@ -270,7 +288,11 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
     meta.appendChild(hb);
     kids.push(meta);
 
-    var h1 = el("h1", null, b.title);
+    var h1 = el("h1");
+    b.title.split("台積電 ADR").forEach(function (part, k) {
+      if (k) h1.appendChild(el("span", "nw", "台積電 ADR"));
+      h1.appendChild(document.createTextNode(part));
+    });
     h1.id = "bf-title";
     kids.push(h1);
     if (b.lede) {
@@ -295,6 +317,9 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
   }
 
   function load(d) {
+    var my = ++seq;
+    app.setAttribute("aria-busy", "true");
+    status.textContent = "";
     var i = dates.indexOf(d);
     sel.value = d;
     prevBtn.disabled = i >= dates.length - 1;
@@ -307,11 +332,15 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
         .catch(function () { return null; });
     });
     Promise.all(want).then(function (all) {
+      if (my !== seq) return;
       if (!all[0]) throw new Error("missing");
       render(all.filter(Boolean), d);
+      app.removeAttribute("aria-busy");
     }).catch(function () {
-      var e = el("p", "err", "找不到 " + d + " 的報告。");
-      app.replaceChildren(e);
+      if (my !== seq) return;
+      app.replaceChildren();
+      app.removeAttribute("aria-busy");
+      status.textContent = "找不到 " + d + " 的報告。";
     });
   }
 

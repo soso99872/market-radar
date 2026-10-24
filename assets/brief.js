@@ -3,6 +3,12 @@
   "use strict";
 
   var WEEK = "一二三四五六日";
+  // 財報重要程度(PRD 8.6 規則 2):台積電與美股 AI／半導體指標股為高,其他台股與美股大型科技股為中,其餘為低
+  var EARN_HIGH = ["2330", "TSM", "NVDA", "AVGO", "AMD", "ASML", "MU", "AMAT", "LRCX", "KLAC", "QCOM", "ARM", "INTC", "MRVL", "TXN", "MSFT", "GOOGL", "GOOG", "META", "AMZN"];
+  var EARN_MID = ["AAPL", "TSLA", "NFLX", "ORCL", "IBM", "CSCO", "DELL", "SMCI", "CRM", "ADBE"];
+  var RANK = { "高": 0, "中": 1, "低": 2 };
+  // 有依據 = 文字裡有帶單位的數字,或「連 N 天／日」「排名第 N」(PRD 8.6 規則 3)
+  var QTY = /\d[\d,.]*\s*(?:%|％|億|萬|元|點|bp|美元|口|張|倍|個百分點)|連(?:續)?\s*\d+\s*[天日]|排名第\s*\d+/;
   var SHORT = [["^SOX", "費半"], ["TSM", "台積電 ADR"], ["^IXIC", "那斯達克"], ["^GSPC", "S&P 500"], ["^DJI", "道瓊"]];
 
   function has(v) { return v != null; }
@@ -111,6 +117,81 @@
     return out;
   }
 
+  function earnImp(e) {
+    var t = (e.ticker || "").toUpperCase();
+    if (EARN_HIGH.indexOf(t) >= 0) return "高";
+    if (e.region === "台" || EARN_MID.indexOf(t) >= 0) return "中";
+    return "低";
+  }
+
+  // 舊首頁時間軸:同 build 的天數與去重規則,每項多帶重要程度,同級照原順序
+  function tlEvents(rep) {
+    var D = rep.date, ev = [], i, c, e;
+    var cal = (rep.calendar || []).map(function (x, k) { return { c: x, k: k }; });
+    cal.sort(function (x, y) {
+      var a = x.c.time || "99:99", b = y.c.time || "99:99";
+      return a < b ? -1 : a > b ? 1 : x.k - y.k;
+    });
+    for (i = 0; i < cal.length; i++) {
+      c = cal[i].c;
+      if (c.date && c.event) ev.push({ date: c.date, text: c.event + (c.time ? " " + c.time : ""), imp: RANK[c.importance] !== undefined ? c.importance : "低" });
+    }
+    var er = rep.earnings || [];
+    for (i = 0; i < er.length; i++) {
+      e = er[i];
+      if (e.date && e.name) ev.push({ date: e.date, text: e.name + (e.timing || "財報"), imp: earnImp(e), earn: e.name });
+    }
+    var set = {};
+    set[D] = 1;
+    for (i = 0; i < ev.length; i++) if (ev[i].date > D) set[ev[i].date] = 1;
+    var days = Object.keys(set).sort().slice(0, 6);
+    return days.map(function (d) {
+      var texts = ev.filter(function (x) { return x.date === d && !x.earn; }).map(function (x) { return x.text; });
+      var its = ev.filter(function (x) {
+        if (x.date !== d) return false;
+        if (!x.earn) return true;
+        var key = x.earn.split("(")[0];
+        return !texts.some(function (t) { return t.indexOf(key) >= 0; });
+      });
+      its = its.map(function (x, k) { return { x: x, k: k }; });
+      its.sort(function (a, b) { return (RANK[a.x.imp] - RANK[b.x.imp]) || (a.k - b.k); });
+      return {
+        date: md(d), wd: wd(d), today: d === D,
+        items: its.slice(0, 3).map(function (o) { return { text: o.x.text, imp: o.x.imp }; }),
+        more: Math.max(0, its.length - 3)
+      };
+    });
+  }
+
+  // 情緒方向的依據:費半、台積電 ADR、三大法人合計;分數方向要有同向的依據才顯示
+  function basis(rep) {
+    var s = rep.sentiment || {};
+    var score = s.score || 0;
+    var items = [], vals = [];
+    var pairs = [["^SOX", "費半"], ["TSM", "台積電 ADR"]];
+    for (var i = 0; i < pairs.length; i++) {
+      var it = item(rep, pairs[i][0]);
+      if (it && has(it.change_pct)) {
+        items.push(pairs[i][1] + " " + sgn(it.change_pct, 2) + "%");
+        vals.push(it.change_pct);
+      }
+    }
+    var f = rep.tw_flows || {};
+    if (f.date && has(f.foreign) && has(f.trust) && has(f.dealer)) {
+      var tot = Number((f.foreign + f.trust + f.dealer).toFixed(2));
+      items.push(md(f.date) + " 三大法人合計" + bs(tot) + " " + ab(tot, 2) + " 億");
+      vals.push(tot);
+    }
+    var ok;
+    if (score > 0) ok = vals.some(function (v) { return v > 0; });
+    else if (score < 0) ok = vals.some(function (v) { return v < 0; });
+    else ok = vals.length > 0;
+    ok = ok && !!s.label;
+    return { show: ok, label: ok ? s.label : null, text: items.length ? "依據：" + items.join("、") : "" };
+  }
+
+  function backed(text) { return QTY.test(text || ""); }
+
   function build(reps) {
     var r = reps[0];
     var D = r.date;
@@ -179,5 +260,5 @@
     return { date: D, title: title, lede: lede, asof: asof, kpis: kpis, timeline: tl };
   }
 
-  window.MRBrief = { build: build };
+  window.MRBrief = { build: build, events: tlEvents, basis: basis, backed: backed };
 })();

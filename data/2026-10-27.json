@@ -1,0 +1,174 @@
+{
+  "date": "2026-10-27",
+  "generated_at": "2026-10-27T07:40+08:00",
+  "headline": "台股連休4天重啟,費半勁漲、台積電ADR走強,本週Fed決議與科技財報是焦點",
+  "sentiment": {
+    "label": "偏多",
+    "score": 1,
+    "summary": "費半大漲3.57%、台積電ADR收紅且溢價擴大至16.78%,台股連休4天後重啟交易有補漲機會;但籌碼面半導體資金持續流出、加權指數仍在60日均線下的空頭格局未變,加上本週Fed利率決議與科技巨頭財報密集公布,波動風險仍大。"
+  },
+  "markets": [
+    {
+      "group": "美股指數",
+      "items": [
+        { "symbol": "^GSPC", "name": "S&P 500", "unit": "", "decimals": 2, "last": 7680.3301, "change": 56.6499, "change_pct": 0.74, "as_of": "2026-10-26" },
+        { "symbol": "^IXIC", "name": "那斯達克", "unit": "", "decimals": 2, "last": 26207.5742, "change": 252.2344, "change_pct": 0.97, "as_of": "2026-10-26" },
+        { "symbol": "^DJI", "name": "道瓊工業", "unit": "", "decimals": 2, "last": 52353.8008, "change": 138.6406, "change_pct": 0.27, "as_of": "2026-10-26" },
+        { "symbol": "^SOX", "name": "費城半導體", "unit": "", "decimals": 2, "last": 11164.4482, "change": 384.9883, "change_pct": 3.57, "as_of": "2026-10-26" }
+      ]
+    },
+    {
+      "group": "台股",
+      "items": [
+        { "symbol": "^TWII", "name": "加權指數", "unit": "", "decimals": 2, "last": 46041.4297, "change": -846.3398, "change_pct": -1.81, "as_of": "2026-10-22" },
+        { "symbol": "2330.TW", "name": "台積電", "unit": "", "decimals": 2, "last": 2385.0, "change": 0.0, "change_pct": 0.0, "as_of": "2026-10-23" },
+        { "symbol": "TSM", "name": "台積電 ADR", "unit": "", "decimals": 2, "last": 427.92, "change": 9.41, "change_pct": 2.25, "as_of": "2026-10-26" }
+      ]
+    },
+    {
+      "group": "權值股",
+      "items": [
+        { "symbol": "NVDA", "name": "輝達", "unit": "", "decimals": 2, "last": 216.3601, "change": 5.4001, "change_pct": 2.56, "as_of": "2026-10-26" },
+        { "symbol": "AAPL", "name": "蘋果", "unit": "", "decimals": 2, "last": 342.84, "change": -4.89, "change_pct": -1.41, "as_of": "2026-10-26" },
+        { "symbol": "MSFT", "name": "微軟", "unit": "", "decimals": 2, "last": 532.72, "change": 8.21, "change_pct": 1.57, "as_of": "2026-10-26" },
+        { "symbol": "2317.TW", "name": "鴻海", "unit": "", "decimals": 2, "last": 245.0, "change": 0.0, "change_pct": 0.0, "as_of": "2026-10-23" },
+        { "symbol": "2454.TW", "name": "聯發科", "unit": "", "decimals": 2, "last": 4010.0, "change": 0.0, "change_pct": 0.0, "as_of": "2026-10-23" }
+      ]
+    },
+    {
+      "group": "利率・匯率",
+      "items": [
+        { "symbol": "^TNX", "name": "美 10 年債殖利率", "unit": "", "decimals": 3, "last": 4.984, "change": -0.004, "change_pct": -0.08, "as_of": "2026-10-26" },
+        { "symbol": "DX-Y.NYB", "name": "美元指數", "unit": "", "decimals": 3, "last": 101.928, "change": 0.118, "change_pct": 0.12, "as_of": "2026-10-26" },
+        { "symbol": "TWD=X", "name": "美元/新台幣", "unit": "", "decimals": 3, "last": 32.543, "change": -0.054, "change_pct": -0.17, "as_of": "2026-10-26" },
+        { "symbol": "JPY=X", "name": "美元/日圓", "unit": "", "decimals": 3, "last": 157.386, "change": 0.892, "change_pct": 0.57, "as_of": "2026-10-26" }
+      ]
+    },
+    {
+      "group": "商品・情緒",
+      "items": [
+        { "symbol": "^VIX", "name": "VIX 恐慌指數", "unit": "", "decimals": 2, "last": 18.38, "change": -1.07, "change_pct": -5.5, "as_of": "2026-10-26" },
+        { "symbol": "CL=F", "name": "WTI 原油", "unit": "", "decimals": 2, "last": 101.8, "change": -1.47, "change_pct": -1.42, "as_of": "2026-10-26" },
+        { "symbol": "GC=F", "name": "黃金", "unit": "", "decimals": 2, "last": 4029.5, "change": 21.6001, "change_pct": 0.54, "as_of": "2026-10-26" },
+        { "symbol": "BTC-USD", "name": "比特幣", "unit": "", "decimals": 2, "last": 80033.6562, "change": 9.6484, "change_pct": 0.01, "as_of": "2026-10-26" }
+      ]
+    }
+  ],
+  "tsm_adr_premium_pct": 16.78,
+  "key_points": [
+    {
+      "title": "台股颱風連休4天後重啟交易",
+      "detail": "台股因薔琵颱風(10/23全日休市)及光復節補假(10/26休市)連續休市4天,今天(10/27)才恢復交易,為這段期間美股大幅波動、台積電ADR變化等消息面的首次反應,籌碼與價格可能出現補漲或補跌的跳空效應,開盤波動可能放大。",
+      "impact": "視數據而定",
+      "market": "台股",
+      "sectors": []
+    },
+    {
+      "title": "Anthropic申請IPO帶動科技股信心,費半勁漲",
+      "detail": "美股上週五收黑結束弱勢一週後,上週一(10/26)因AI公司Anthropic申請首次公開募股(IPO)消息帶動科技股做多信心,那斯達克、標普500分別收漲0.97%、0.74%,費城半導體指數勁漲3.57%,台積電ADR同步收紅2.25%,對台股半導體權值股開盤情緒偏多。",
+      "impact": "利多",
+      "market": "美股",
+      "sectors": ["半導體", "AI"]
+    },
+    {
+      "title": "Fed本週公布10月利率決議",
+      "detail": "聯準會10月FOMC會議將於台北時間10/29凌晨公布利率決議(美東10/28下午2點),利率期貨市場隱含約90%機率維持3.75%-4.00%區間不變。若決議或記者會意外偏鷹、暗示降息循環暫停,可能推升美債殖利率與美元,壓抑科技成長股與新台幣匯率,連動外資對台股權值股的買賣方向;若意外偏鴿,則有利資金面與風險偏好。",
+      "impact": "視數據而定",
+      "market": "美台股",
+      "sectors": ["半導體"]
+    },
+    {
+      "title": "科技巨頭財報週,雲端資本支出指引受矚目",
+      "detail": "Meta已於10/21公布Q3財報,Amazon確定於10/29公布Q3業績;Microsoft、Alphabet市場預估將於10/28公布(尚未經公司官方正式確認日期)。標普500本週合計約163家成分股公布財報,雲端四大廠的資本支出指引將牽動AI伺服器、先進封裝等台股供應鏈情緒。",
+      "impact": "視數據而定",
+      "market": "美台股",
+      "sectors": ["AI伺服器", "雲端"]
+    },
+    {
+      "title": "資金持續棄半導體、轉向傳產防禦族群",
+      "detail": "官方最新可用數字(10/22,因連休未更新)顯示晶圓代工、IC設計連續12個交易日遭法人淨流出,資金排名分別為全市場最後1、2名;電信連續16個交易日資金流入排名第1,鋼鐵連10日、金融連2日、航運與國防同步流入。三大法人10/22合計賣超994.67億元,僅投信買超,外資與自營商同步賣超。",
+      "impact": "視數據而定",
+      "market": "台股",
+      "sectors": ["半導體", "電信", "鋼鐵", "金融"]
+    },
+    {
+      "title": "籌碼訊號:投信連買、創52週新高訊號歷史數據偏正",
+      "detail": "歷史回測(2019年至今)顯示「投信連續買超3天」訊號20日後平均跑贏大盤0.46個百分點、勝率45.1%(樣本12,479次,統計顯著);「創52週新高且放量」訊號平均跑贏大盤1.06個百分點(樣本6,137次)。10/22(最新交易日)兩訊號各觸發3檔,僅為歷史統計事實陳述,非買賣建議。",
+      "impact": "中性",
+      "market": "台股",
+      "sectors": []
+    }
+  ],
+  "calendar": [
+    {
+      "date": "2026-10-27",
+      "time": "全日",
+      "region": "台",
+      "event": "台股恢復交易(薔琵颱風、光復節連休4天後首個交易日)",
+      "forecast": null,
+      "previous": null,
+      "importance": "高",
+      "impact_note": "連休期間美股漲跌、台積電ADR與國際情勢消息尚未反映在台股價格與籌碼上,開盤可能出現補漲或補跌。"
+    },
+    {
+      "date": "2026-10-29",
+      "time": "02:00",
+      "region": "美",
+      "event": "聯準會(Fed)10月FOMC利率決議",
+      "forecast": "市場預期維持3.75%-4.00%區間不變(利率期貨隱含約90%機率)",
+      "previous": null,
+      "importance": "高",
+      "impact_note": "符合預期則影響有限;若意外偏鷹或暗示暫停降息循環,美債殖利率與美元走升,壓抑科技成長股、新台幣走弱,外資可能減碼台股電子權值股;若意外偏鴿則相反。"
+    },
+    {
+      "date": "2026-10-29",
+      "time": "02:30",
+      "region": "美",
+      "event": "Fed主席會後記者會",
+      "forecast": null,
+      "previous": null,
+      "importance": "中",
+      "impact_note": "市場將解讀對後續降息路徑的措辭,牽動美股與台積電ADR隔夜表現,間接影響台股次日開盤。"
+    }
+  ],
+  "earnings": [
+    { "region": "美", "ticker": "META", "name": "Meta", "date": "2026-10-21", "timing": "盤後", "note": "已公布Q3財報,市場聚焦AI資本支出指引,作為本週雲端四大廠財報的前哨" },
+    { "region": "美", "ticker": "MSFT", "name": "微軟", "date": "2026-10-28", "timing": "盤後(市場預估,尚未經官方正式確認)", "note": "市場關注Azure雲端成長與AI資本支出規模" },
+    { "region": "美", "ticker": "GOOGL", "name": "Alphabet", "date": "2026-10-28", "timing": "盤後(市場預估,尚未經官方正式確認)", "note": "市場關注Google Cloud成長與AI投資指引" },
+    { "region": "美", "ticker": "AMZN", "name": "Amazon", "date": "2026-10-29", "timing": "盤後", "note": "公司官方確認10/29公布Q3業績,市場關注AWS成長與資本支出" }
+  ],
+  "tw_flows": {
+    "date": "2026-10-22",
+    "foreign": -815.82,
+    "trust": 94.92,
+    "dealer": -273.77,
+    "foreign_futures_net_oi": null,
+    "margin_change": null,
+    "note": "因薔琵颱風(10/23休市)及光復節補假(10/26休市)台股連休4天,此為官方最新可用數字(10/22):三大法人合計賣超994.67億元,僅投信買超,外資與自營商同步賣超。今天(10/27)為連休後首個交易日,籌碼面將重新反映這段期間的消息。"
+  },
+  "sector_watch": [
+    { "sector": "晶圓代工", "view": "偏空", "reason": "20日法人淨流出3450億元、連續12個交易日淨流出,資金排名全市場最後(31/31)" },
+    { "sector": "IC設計", "view": "偏空", "reason": "20日法人淨流出1459億元、連續12個交易日淨流出,資金排名倒數第2(30/31)" },
+    { "sector": "電信", "view": "偏多", "reason": "法人連續16個交易日淨流入,資金排名全市場第1" },
+    { "sector": "鋼鐵", "view": "偏多", "reason": "法人連續10個交易日淨流入,資金排名第2" },
+    { "sector": "金融", "view": "偏多", "reason": "20日法人淨流入437億元、連續2個交易日淨流入,資金排名第4" },
+    { "sector": "國防與無人機", "view": "偏多", "reason": "法人連續3個交易日淨流入,資金排名第5" }
+  ],
+  "risks": [
+    "Fed利率決議或記者會若意外偏鷹,推升美債殖利率與美元,壓抑科技成長股與新台幣匯率",
+    "Microsoft、Alphabet、Amazon等雲端資本支出指引若不如預期,可能引發AI相關股獲利了結賣壓",
+    "台股連休4天後消息真空集中反應,開盤波動可能放大",
+    "台積電(20日法人賣超2824億元)、聯發科等權值股遭外資持續調節,加權指數仍處60日均線下方的空頭格局未變",
+    "地緣政治、美中半導體出口管制動向仍須留意,過去一年相關消息曾多次引發台股劇烈波動"
+  ],
+  "sources": [
+    { "title": "證交所宣布因颱風來襲台股明休市 光復節連假休市變四天-工商時報", "url": "https://www.ctee.com.tw/news/20261022702278-430201" },
+    { "title": "台股10/23因颱風休市!程曦、藍新掛牌順延-鉅亨網", "url": "https://news.cnyes.com/news/id/6636149" },
+    { "title": "北北基放颱風假了!證交所宣布台股連休四天 27日才開盤-聯合新聞網", "url": "https://udn.com/news/story/7251/9832123" },
+    { "title": "Stock market today: Dow, S&P 500, Nasdaq gain as Anthropic IPO buzz reignites AI trade ahead of busy tech earnings week-Yahoo Finance", "url": "https://finance.yahoo.com/markets/live/stock-market-today-dow-sp-500-nasdaq-rally-as-investors-parse-anthropic-ipo-filing-busy-week-of-tech-earnings-153428995.html" },
+    { "title": "Stock Market Today (Oct. 26, 2026): Nasdaq, S&P 500 jump after Anthropic IPO announcement; Fed and earnings anticipation-TheStreet", "url": "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-oct-26-2026" },
+    { "title": "Amazon will share its Q3 2026 earnings on October 29", "url": "https://www.aboutamazon.com/md/news/company-news/amazon-earnings-q3-2026-report" },
+    { "title": "Apple to Report Q4 2026 Earnings on November 2-MacRumors", "url": "https://www.macrumors.com/2026/10/06/apple-q4-2026-earnings-nov-2" },
+    { "title": "三大法人買賣金額統計表-臺灣證券交易所", "url": "https://www.twse.com.tw/zh/trading/foreign/bfi82u.html" }
+  ]
+}

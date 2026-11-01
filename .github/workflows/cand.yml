@@ -1,0 +1,46 @@
+name: 研究:候選改法(已看過資料上的沒壞掉檢查)
+
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/oos-2010/trigger-cand.txt]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: oos-cand
+  cancel-in-progress: false
+
+jobs:
+  cand:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - run: pip install -q pandas==3.0.5 numpy==2.5.3
+      - name: 取回補齊的 2010–2018 資料
+        run: |
+          id=$(gh run list -R "$GITHUB_REPOSITORY" --workflow diag.yml -b research/oos-2010 -L 20 --json databaseId,headSha -q '.[] | select(.headSha=="8be02265bef42294965bc868f93dcb809aa396b7") | .databaseId' | head -1)
+          echo "diag run: $id"
+          gh run download "$id" -R "$GITHUB_REPOSITORY" -n data-2010-2018-full -D /tmp/full
+          cp -rn /tmp/full/. data/
+          for y in 2010 2013 2018; do echo "$y $(ls data/history/$y | wc -l)"; done; ls data/revenue/2013-06.json
+      - name: 跑候選
+        run: |
+          cd research/oos-2010; mkdir -p cand
+          python frozen/prep.py ../.. 2>&1 | tail -2
+          python cand.py 2011-04-01 2019-01-01 > cand/cand_2011_2018.json
+          python cand.py 2019-05-01 2100-01-01 > cand/cand_2019_2026.json
+      - name: 結果寫回分支
+        if: always()
+        run: |
+          rm -f research/oos-2010/frozen/cache.pkl
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/oos-2010/cand
+          git commit -m "研究:候選改法在已看過資料上的結果" && git pull --rebase -q && git push

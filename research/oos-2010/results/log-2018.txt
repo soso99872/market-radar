@@ -1,0 +1,36 @@
+2018-12-31 MI_INDEX 很抱歉，沒有符合條件的資料!
+2018-12-28 ERR HTTP Error 403: Forbidden
+2018-12-27 ERR HTTP Error 403: Forbidden
+2018-12-26 ERR HTTP Error 403: Forbidden
+2018-12-25 ERR HTTP Error 403: Forbidden
+2018-12-24 ERR HTTP Error 403: Forbidden
+2018-12-21 ERR [Errno 104] Connection reset by peer
+2018-12-20 ERR HTTP Error 403: Forbidden
+2018-12-19 ERR HTTP Error 403: Forbidden
+2018-12-18 ERR [Errno 104] Connection reset by peer
+2018-12-17 ERR HTTP Error 403: Forbidden
+2018-12-14 ERR [Errno 104] Connection reset by peer
+2018-12-13 ERR HTTP Error 403: Forbidden
+2018-12-12 ERR [Errno 104] Connection reset by peer
+2018-12-11 ERR HTTP Error 403: Forbidden
+2018-12-10 ERR HTTP Error 403: Forbidden
+2018-12-07 ERR HTTP Error 403: Forbidden
+2018-12-06 ERR HTTP Error 403: Forbidden
+2018-12-05 ERR HTTP Error 403: Forbidden
+2018-12-04 ERR [Errno 104] Connection reset by peer
+2018-12-03 ERR HTTP Error 403: Forbidden
+2018-11-30 ERR HTTP Error 403: Forbidden
+2018-11-29 ERR HTTP Error 403: Forbidden
+2018-11-28 ERR HTTP Error 403: Forbidden
+2018-11-27 ERR HTTP Error 403: Forbidden
+2018-11-26 ERR HTTP Error 403: Forbidden
+2018-11-23 ERR HTTP Error 403: Forbidden
+2018-11-22 ERR [Errno 104] Connection reset by peer
+2018-11-21 ERR HTTP Error 403: Forbidden
+2018-11-20 ERR HTTP Error 403: Forbidden
+2018-11-19 ERR HTTP Error 403: Forbidden
+2018-11-16 ERR HTTP Error 403: Forbidden
+2018-11-15 ERR HTTP Error 403: Forbidden
+2018-11-14 ERR HTTP Error 403: Forbidden
+2018-11-13 ERR HTTP Error 403: Forbidden
+2018-11-12 ERR HTTP Error 403: Forbidden

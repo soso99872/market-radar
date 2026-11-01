@@ -13,17 +13,105 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  probe:
-    if: contains(github.event.head_commit.message, '[probe]')
+  smoke:
+    if: contains(github.event.head_commit.message, '[run]')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
-        with: { python-version: "3.12" }
-      - run: python research/oos-2010/probe.py
-      - name: 結果寫回分支
+        with: { python-version: "3.13" }
+      - run: python research/oos-2010/smoke.py
+
+  history:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        year: [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - name: 回補 ${{ matrix.year }} 年個股日資料
+        run: python research/oos-2010/backfill_old.py ${{ matrix.year }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: history-${{ matrix.year }}
+          path: |
+            data/history/${{ matrix.year }}
+            research/oos-2010/log-${{ matrix.year }}.txt
+          retention-days: 30
+          if-no-files-found: warn
+
+  revenue:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - name: 回補 2010–2017 月營收
+        run: python research/oos-2010/revenue_old.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: revenue-old
+          path: |
+            data/revenue/201[0-7]-*.json
+            research/oos-2010/log-revenue.txt
+          retention-days: 30
+
+  exam:
+    needs: [smoke, history, revenue]
+    if: always() && contains(github.event.head_commit.message, '[run]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - run: pip install -q pandas==3.0.5 numpy==2.5.3
+      - uses: actions/download-artifact@v4
+        with: { path: /tmp/art }
+      - name: 放回資料夾
         run: |
+          mkdir -p research/oos-2010/results
+          for d in /tmp/art/history-*; do cp -rn "$d/data/." data/ 2>/dev/null || true; cp "$d"/research/oos-2010/log-*.txt research/oos-2010/results/ 2>/dev/null || true; done
+          cp -rn /tmp/art/revenue-old/data/. data/ 2>/dev/null || true
+          cp /tmp/art/revenue-old/research/oos-2010/log-revenue.txt research/oos-2010/results/ 2>/dev/null || true
+          echo "smoke=${{ needs.smoke.result }} history=${{ needs.history.result }} revenue=${{ needs.revenue.result }}" > research/oos-2010/results/jobs.txt
+          ls data/history; ls data/revenue | head -3
+      - name: 核對凍結程式指紋
+        working-directory: research/oos-2010/frozen
+        run: |
+          cat > /tmp/sha.txt <<'SHA'
+          fffb13dce184e1b4175a7129fb64589eca7b8d6580734b157c54d170e8b7200f  bt.py
+          581d49af4bfc2d2aa7d2a309d6aa7c10e9e3deb60ff59399a6db9fe7b62faf7c  buy.py
+          dd5781f2ef58807426482a0cf2e2423abdf8fa04aedf3595f2da4956a322b571  prep.py
+          850416d86722245bf4fc1119332b1ab3c129030bf8b546a1c9519196fb7a855d  run_oos.py
+          SHA
+          sed -i 's/^ *//' /tmp/sha.txt
+          sha256sum -c /tmp/sha.txt | tee ../results/sha.txt
+      - name: 資料健檢
+        run: python research/oos-2010/data_check.py > research/oos-2010/results/data_check.json
+      - name: 考試(凍結規則)
+        run: |
+          cd research/oos-2010
+          python frozen/prep.py ../.. 2>&1 | tail -3 | tee results/prep.txt
+          python frozen/run_oos.py > results/oos_2011_2018.json 2> results/oos_err.txt
+          python frozen/run_oos.py 2019-05-01 2100-01-01 > results/control_2019.json 2>> results/oos_err.txt
+          python limit_check.py > results/limit_check.json 2>> results/oos_err.txt || true
+          tail -5 results/oos_err.txt || true
+      - name: 結果寫回分支
+        if: always()
+        run: |
+          rm -f research/oos-2010/frozen/cache.pkl research/oos-2010/frozen/oos_result.json
           git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add research/oos-2010/probe.json
-          git commit -m "研究:資料來源探測結果" && git push
+          git add research/oos-2010/results
+          git commit -m "研究:2010–2018 樣本外考試結果" && git pull --rebase -q && git push

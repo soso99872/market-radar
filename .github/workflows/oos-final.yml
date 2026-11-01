@@ -1,0 +1,70 @@
+name: 研究:補齊缺口後的 2010–2018 最終考試
+
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/oos-2010/trigger-final.txt]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: oos-2010
+  cancel-in-progress: false
+
+jobs:
+  exam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - run: pip install -q pandas==3.0.5 numpy==2.5.3
+      - name: 取回前兩次的資料
+        run: |
+          pick() { gh run list -R "$GITHUB_REPOSITORY" --workflow "$1" -b research/oos-2010 -L 20 --json databaseId,headSha \
+                   -q ".[] | select(.headSha==\"$2\") | .databaseId" | head -1; }
+          a=$(pick oos-2010.yml f0ebbc8a122b401a3947841f1fc2e375d22fcbb5); b=$(pick oos-2018.yml 6fad00b8ce503def3746043a5b060f7c8e7b866c)
+          echo "runs: $a $b"
+          gh run download "$a" -R "$GITHUB_REPOSITORY" -D /tmp/art1
+          gh run download "$b" -R "$GITHUB_REPOSITORY" -D /tmp/art2
+          for d in /tmp/art1/history-* /tmp/art2/history-*; do cp -rn "$d/data/." data/ 2>/dev/null || true; done
+          cp -rn /tmp/art1/revenue-old/data/. data/ 2>/dev/null || true
+      - name: 補缺口(2018-01 前幾天、2013-06 月營收;已有的會跳過)
+        run: |
+          R=research/oos-2010/results-final; mkdir -p $R
+          python research/oos-2010/backfill_old.py 2018 || true
+          python research/oos-2010/revenue_old.py || true
+          cp research/oos-2010/log-revenue.txt $R/log-revenue-gap.txt 2>/dev/null || true
+          grep -E "^2018-01-0" research/oos-2010/log-2018.txt > $R/log-2018-gap.txt || true
+          for y in 2010 2011 2012 2013 2014 2015 2016 2017 2018; do echo "$y $(ls data/history/$y | wc -l)"; done | tee $R/jobs.txt
+          ls data/revenue/2013-06.json >> $R/jobs.txt 2>&1 || true
+      - name: 核對凍結程式指紋
+        working-directory: research/oos-2010/frozen
+        run: |
+          printf '%s\n' \
+            "fffb13dce184e1b4175a7129fb64589eca7b8d6580734b157c54d170e8b7200f  bt.py" \
+            "581d49af4bfc2d2aa7d2a309d6aa7c10e9e3deb60ff59399a6db9fe7b62faf7c  buy.py" \
+            "dd5781f2ef58807426482a0cf2e2423abdf8fa04aedf3595f2da4956a322b571  prep.py" \
+            "850416d86722245bf4fc1119332b1ab3c129030bf8b546a1c9519196fb7a855d  run_oos.py" > /tmp/sha.txt
+          sha256sum -c /tmp/sha.txt | tee ../results-final/sha.txt
+      - name: 資料健檢
+        run: python research/oos-2010/data_check.py > research/oos-2010/results-final/data_check.json
+      - name: 考試(凍結規則)
+        run: |
+          cd research/oos-2010; R=results-final
+          python frozen/prep.py ../.. 2>&1 | tail -3 | tee $R/prep.txt
+          python frozen/run_oos.py > $R/oos_2011_2018.json 2> $R/oos_err.txt
+          python frozen/run_oos.py 2019-05-01 2100-01-01 > $R/control_2019.json 2>> $R/oos_err.txt
+          python limit_check.py > $R/limit_check.json 2>> $R/oos_err.txt || true
+      - name: 結果寫回分支
+        if: always()
+        run: |
+          rm -f research/oos-2010/frozen/cache.pkl research/oos-2010/frozen/oos_result.json
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/oos-2010/results-final
+          git commit -m "研究:補齊缺口後的最終考試結果" && git pull --rebase -q && git push

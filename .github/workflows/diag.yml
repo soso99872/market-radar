@@ -1,0 +1,65 @@
+name: 研究:診斷(匯出已看過資料的逐筆交易)
+
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/oos-2010/trigger-diag.txt]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: oos-diag
+  cancel-in-progress: false
+
+jobs:
+  exam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - run: pip install -q pandas==3.0.5 numpy==2.5.3
+      - name: 取回前兩次的資料
+        run: |
+          pick() { gh run list -R "$GITHUB_REPOSITORY" --workflow "$1" -b research/oos-2010 -L 20 --json databaseId,headSha \
+                   -q ".[] | select(.headSha==\"$2\") | .databaseId" | head -1; }
+          a=$(pick oos-2010.yml f0ebbc8a122b401a3947841f1fc2e375d22fcbb5); b=$(pick oos-2018.yml 6fad00b8ce503def3746043a5b060f7c8e7b866c)
+          echo "runs: $a $b"
+          gh run download "$a" -R "$GITHUB_REPOSITORY" -D /tmp/art1
+          gh run download "$b" -R "$GITHUB_REPOSITORY" -D /tmp/art2
+          for d in /tmp/art1/history-* /tmp/art2/history-*; do cp -rn "$d/data/." data/ 2>/dev/null || true; done
+          cp -rn /tmp/art1/revenue-old/data/. data/ 2>/dev/null || true
+      - name: 補缺口(2018-01 前幾天、2013-06 月營收;已有的會跳過)
+        run: |
+          R=research/oos-2010/diag; mkdir -p $R
+          python research/oos-2010/backfill_old.py 2018 || true
+          python research/oos-2010/revenue_old.py || true
+          cp research/oos-2010/log-revenue.txt $R/log-revenue-gap.txt 2>/dev/null || true
+          grep -E "^2018-01-0" research/oos-2010/log-2018.txt > $R/log-2018-gap.txt || true
+          for y in 2010 2011 2012 2013 2014 2015 2016 2017 2018; do echo "$y $(ls data/history/$y | wc -l)"; done | tee $R/jobs.txt
+          ls data/revenue/2013-06.json >> $R/jobs.txt 2>&1 || true
+      - name: 存一份補齊的完整資料(之後不用再補)
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-2010-2018-full
+          path: |
+            data/history/201[0-8]
+            data/revenue/201[0-7]-*.json
+          retention-days: 90
+      - name: 診斷
+        run: |
+          cd research/oos-2010
+          python frozen/prep.py ../.. 2>&1 | tail -2
+          python diag.py
+      - name: 結果寫回分支
+        if: always()
+        run: |
+          rm -f research/oos-2010/frozen/cache.pkl
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/oos-2010/diag
+          git commit -m "研究:診斷輸出(已看過資料)" && git pull --rebase -q && git push

@@ -1,0 +1,29 @@
+name: 研究:探測 2010 年前資料(只數筆數)
+
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/oos-pre2010/trigger-probe.txt]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: probe-pre2010
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - run: python research/oos-pre2010/probe.py
+      - name: 結果寫回分支
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/oos-pre2010/probe.json
+          git commit -m "研究:2010 年前資料探測結果(只有筆數)" && git pull --rebase -q && git push

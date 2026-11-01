@@ -1,0 +1,29 @@
+name: 研究:2010–2018 樣本外考試
+
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/oos-2010/trigger.txt]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: oos-2010
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: contains(github.event.head_commit.message, '[probe]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - run: python research/oos-2010/probe.py
+      - name: 結果寫回分支
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/oos-2010/probe.json
+          git commit -m "研究:資料來源探測結果" && git push

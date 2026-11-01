@@ -1,0 +1,6 @@
+2018-01-08 ok twse=910 otc=727 flows=869
+2018-01-05 ok twse=910 otc=725 flows=790
+2018-01-04 ok twse=908 otc=727 flows=787
+2018-01-03 ok twse=906 otc=727 flows=793
+2018-01-02 ok twse=910 otc=715 flows=801
+2018-01-01 MI_INDEX 很抱歉，沒有符合條件的資料!

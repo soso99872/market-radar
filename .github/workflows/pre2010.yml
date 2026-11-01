@@ -1,0 +1,88 @@
+name: 研究:回補 2004–2009(只回補與健檢,不考試)
+
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/oos-pre2010/trigger-backfill.txt]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pre2010-backfill
+  cancel-in-progress: false
+
+jobs:
+  history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        year: [2004, 2005, 2006, 2007, 2008, 2009]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - name: 回補 ${{ matrix.year }}(被擋就等 10 分鐘續跑)
+        shell: bash {0}
+        run: |
+          L=research/oos-pre2010/log-${{ matrix.year }}.txt
+          for k in 1 2 3 4 5 6; do
+            b=$(cat $L 2>/dev/null | wc -l)
+            timeout 60m python research/oos-pre2010/backfill_pre.py ${{ matrix.year }}; rc=$?
+            e=$(tail -n +$((b+1)) $L 2>/dev/null | grep -c ERR || true)
+            echo "round $k: rc=$rc new_errors=$e days=$(ls data/history/${{ matrix.year }} 2>/dev/null | wc -l)"
+            if [ "$rc" = 0 ] && [ "$e" = 0 ]; then break; fi
+            sleep 600
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pre-${{ matrix.year }}
+          path: |
+            data/history/${{ matrix.year }}
+            research/oos-pre2010/log-${{ matrix.year }}.txt
+          retention-days: 90
+
+  revenue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - run: python research/oos-pre2010/revenue_pre.py; python research/oos-pre2010/revenue_pre.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pre-revenue
+          path: |
+            data/revenue/200[4-9]-*.json
+            research/oos-pre2010/log-revenue.txt
+          retention-days: 90
+
+  check:
+    needs: [history, revenue]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - uses: actions/download-artifact@v4
+        with: { path: /tmp/art }
+      - name: 健檢(只有筆數)
+        run: |
+          R=research/oos-pre2010/backfill; mkdir -p $R
+          for d in /tmp/art/pre-*; do cp -rn "$d/data/." data/ 2>/dev/null || true; cp "$d"/research/oos-pre2010/log-*.txt $R/ 2>/dev/null || true; done
+          echo "history=${{ needs.history.result }} revenue=${{ needs.revenue.result }}" > $R/jobs.txt
+          python research/oos-pre2010/data_check_pre.py > $R/data_check.json
+      - name: 結果寫回分支
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/oos-pre2010/backfill
+          git commit -m "研究:2004–2009 回補健檢(只有筆數)" && git pull --rebase -q && git push

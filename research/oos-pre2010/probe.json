@@ -1,0 +1,261 @@
+{
+ "rev 2004-01 mopsov sii -": {
+  "ok": true,
+  "tr": 798,
+  "bytes": 213011
+ },
+ "rev 2004-01 mopsov sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2004-01 mopsov otc -": {
+  "ok": true,
+  "tr": 581,
+  "bytes": 151822
+ },
+ "rev 2004-01 mopsov otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2004-01 mops sii -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2004-01 mops sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2004-01 mops otc -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2004-01 mops otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2005-01 mopsov sii -": {
+  "ok": true,
+  "tr": 791,
+  "bytes": 211059
+ },
+ "rev 2005-01 mopsov sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2005-01 mopsov otc -": {
+  "ok": true,
+  "tr": 613,
+  "bytes": 160845
+ },
+ "rev 2005-01 mopsov otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2005-01 mops sii -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2005-01 mops sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2005-01 mops otc -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2005-01 mops otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2006-06 mopsov sii -": {
+  "ok": true,
+  "tr": 1164,
+  "bytes": 311523
+ },
+ "rev 2006-06 mopsov sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2006-06 mopsov otc -": {
+  "ok": true,
+  "tr": 1070,
+  "bytes": 286527
+ },
+ "rev 2006-06 mopsov otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2006-06 mops sii -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2006-06 mops sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2006-06 mops otc -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2006-06 mops otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2007-01 mopsov sii -": {
+  "ok": true,
+  "tr": 1216,
+  "bytes": 434190
+ },
+ "rev 2007-01 mopsov sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2007-01 mopsov otc -": {
+  "ok": true,
+  "tr": 1083,
+  "bytes": 387056
+ },
+ "rev 2007-01 mopsov otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2007-01 mops sii -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2007-01 mops sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2007-01 mops otc -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2007-01 mops otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2008-06 mopsov sii -": {
+  "ok": true,
+  "tr": 1256,
+  "bytes": 449653
+ },
+ "rev 2008-06 mopsov sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2008-06 mopsov otc -": {
+  "ok": true,
+  "tr": 1095,
+  "bytes": 391277
+ },
+ "rev 2008-06 mopsov otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2008-06 mops sii -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2008-06 mops sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2008-06 mops otc -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2008-06 mops otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2009-01 mopsov sii -": {
+  "ok": true,
+  "tr": 1284,
+  "bytes": 460269
+ },
+ "rev 2009-01 mopsov sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2009-01 mopsov otc -": {
+  "ok": true,
+  "tr": 1103,
+  "bytes": 393428
+ },
+ "rev 2009-01 mopsov otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2009-01 mops sii -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2009-01 mops sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2009-01 mops otc -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2009-01 mops otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2009-12 mopsov sii -": {
+  "ok": true,
+  "tr": 1320,
+  "bytes": 473676
+ },
+ "rev 2009-12 mopsov sii _0": {
+  "ok": true,
+  "tr": 1320,
+  "bytes": 473632
+ },
+ "rev 2009-12 mopsov otc -": {
+  "ok": true,
+  "tr": 1125,
+  "bytes": 402643
+ },
+ "rev 2009-12 mopsov otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: Not Found"
+ },
+ "rev 2009-12 mops sii -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2009-12 mops sii _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2009-12 mops otc -": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "rev 2009-12 mops otc _0": {
+  "ok": false,
+  "err": "HTTP Error 404: "
+ },
+ "px 2004-02-11": {
+  "twse_stocks": 711,
+  "twse_has_index_table": false,
+  "tpex_rows": 0
+ },
+ "px 2005-01-04": {
+  "twse_stocks": 720,
+  "twse_has_index_table": false,
+  "tpex_rows": 0
+ },
+ "px 2007-01-02": {
+  "twse_stocks": 705,
+  "twse_has_index_table": false,
+  "tpex_rows": 0
+ },
+ "px 2009-01-05": {
+  "twse_stocks": 742,
+  "twse_has_index_table": true,
+  "tpex_rows": 762
+ }
+}

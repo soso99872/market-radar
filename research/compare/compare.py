@@ -83,11 +83,12 @@ PERIODS = {"2005–2009": ("2005-04-01", "2010-01-01"), "2011–2018": ("2011-04
 R = lambda m: {k: round(float(v), 2) for k, v in m.items()}
 
 if __name__ == "__main__":
-    if "--check" in sys.argv:
+    if "--check" in sys.argv:              # 同一份資料上，這支的 A 要跟凍結程式 U.sim 完全一樣
         out = {}
         for name, (a, b) in PERIODS.items():
             if not any(a <= x < b for x in dates): continue
-            e, t, x = sim(start=a, end=b); out[name] = R(metrics(e, t, x))["年化%"]
+            e, t, x = sim(start=a, end=b); e2, t2, x2 = U.sim(timing="brk", exit_k=4, start=a, end=b)
+            out[name] = {"這支": R(metrics(e, t, x))["年化%"], "凍結": R(metrics(e2, t2, x2))["年化%"], "最大差": float(abs(e - e2).max())}
         print(json.dumps(out, ensure_ascii=False)); sys.exit()
     idx = {n: R(metrics(index_eq(a, b))) for n, (a, b) in PERIODS.items() if any(a <= x < b for x in dates)}
     rows = []

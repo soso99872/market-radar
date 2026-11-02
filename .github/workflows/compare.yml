@@ -59,12 +59,12 @@ jobs:
             "581d49af4bfc2d2aa7d2a309d6aa7c10e9e3deb60ff59399a6db9fe7b62faf7c  oos-2010/frozen/buy.py" \
             "dd5781f2ef58807426482a0cf2e2423abdf8fa04aedf3595f2da4956a322b571  oos-2010/frozen/prep.py" > /tmp/sha.txt
           sha256sum -c /tmp/sha.txt | tee compare/sha.txt
-      - name: 先重現 A 原規則三段的年化，對不上就停
+      - name: 先確認這支的 A 跟凍結程式在同一份資料上完全一樣，不一樣就停
         run: |
           mkdir -p research/compare/out
           cd research/oos-2010 && python frozen/prep.py ../.. 2>&1 | tail -2; cd ../compare
           python compare.py --check | tee out/check.json
-          python -c "import json;d=json.load(open('out/check.json'));exp={'2005–2009':17.31,'2011–2018':1.11,'2019–2026':68.25};bad={k:(d.get(k),v) for k,v in exp.items() if abs((d.get(k) or 0)-v)>0.05};print(bad);assert not bad"
+          python -c "import json;d=json.load(open('out/check.json'));bad={k:v for k,v in d.items() if v['最大差']>1e-9};print(bad);assert len(d)==3 and not bad"
       - name: 跑 48 種組合
         run: |
           cd research/compare

@@ -1,0 +1,81 @@
+name: 研究:台股常用策略回測(樣本內)
+
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/others/trigger.txt]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: others
+  cancel-in-progress: false
+
+jobs:
+  exam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - run: pip install -q pandas==3.0.5 numpy==2.5.3
+      - name: 取回前兩次的資料
+        run: |
+          pick() { gh run list -R "$GITHUB_REPOSITORY" --workflow "$1" -b research/oos-2010 -L 20 --json databaseId,headSha \
+                   -q ".[] | select(.headSha==\"$2\") | .databaseId" | head -1; }
+          a=$(pick oos-2010.yml f0ebbc8a122b401a3947841f1fc2e375d22fcbb5); b=$(pick oos-2018.yml 6fad00b8ce503def3746043a5b060f7c8e7b866c)
+          echo "runs: $a $b"
+          gh run download "$a" -R "$GITHUB_REPOSITORY" -D /tmp/art1
+          gh run download "$b" -R "$GITHUB_REPOSITORY" -D /tmp/art2
+          for d in /tmp/art1/history-* /tmp/art2/history-*; do cp -rn "$d/data/." data/ 2>/dev/null || true; done
+          cp -rn /tmp/art1/revenue-old/data/. data/ 2>/dev/null || true
+      - name: 補缺口(2018-01 前幾天、2013-06 月營收;已有的會跳過)
+        run: |
+          R=research/others/out; mkdir -p $R
+          python research/oos-2010/backfill_old.py 2018 || true
+          python research/oos-2010/revenue_old.py || true
+          cp research/oos-2010/log-revenue.txt $R/log-revenue-gap.txt 2>/dev/null || true
+          grep -E "^2018-01-0" research/oos-2010/log-2018.txt > $R/log-2018-gap.txt || true
+          for y in 2010 2011 2012 2013 2014 2015 2016 2017 2018; do echo "$y $(ls data/history/$y | wc -l)"; done | tee $R/jobs.txt
+          ls data/revenue/2013-06.json >> $R/jobs.txt 2>&1 || true
+      - name: 取回 2004–2009 資料
+        run: |
+          id=$(gh run list -R "$GITHUB_REPOSITORY" --workflow pre2010.yml -b research/oos-2010 -L 20 --json databaseId,headSha -q '.[] | select(.headSha=="1858d6bb392685d0a84e496df869e11eef5c2e51") | .databaseId' | head -1)
+          echo "pre2010 run: $id"
+          gh run download "$id" -R "$GITHUB_REPOSITORY" -D /tmp/pre
+          for d in /tmp/pre/pre-*; do cp -rn "$d/data/." data/ 2>/dev/null || true; done
+          ls data/history | tr '\n' ' '
+      - name: 核對凍結程式指紋
+        working-directory: research
+        run: |
+          printf '%s\n' \
+            "5cc9d2ad4238f00b5ee11f3b5a37552191a8cf4e19829e1b0472efda12529a34  oos-pre2010/exam_pre.py" \
+            "fffb13dce184e1b4175a7129fb64589eca7b8d6580734b157c54d170e8b7200f  oos-2010/frozen/bt.py" \
+            "581d49af4bfc2d2aa7d2a309d6aa7c10e9e3deb60ff59399a6db9fe7b62faf7c  oos-2010/frozen/buy.py" \
+            "dd5781f2ef58807426482a0cf2e2423abdf8fa04aedf3595f2da4956a322b571  oos-2010/frozen/prep.py" > /tmp/sha.txt
+          sha256sum -c /tmp/sha.txt | tee others/sha.txt
+      - name: 補每月本益比、淨值比、殖利率（已經有的月份跳過，抓完先存回分支）
+        run: |
+          python research/others/valhist.py 2005 2026 || true
+          ls data/valhist | wc -l
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f data/valhist research/others/log-valhist.txt && git commit -q -m "研究:每月估值快照" && git pull --rebase --autostash -q && git push || true
+      - name: 跑全部策略（含起漲雷達對照）
+        run: |
+          mkdir -p research/others/out
+          cd research/oos-2010 && python frozen/prep.py ../.. 2>&1 | tail -2; cd ../compare
+          python compare.py --check | tee ../others/out/check.json
+          cd ../others
+          python strategies.py > out/results.json 2> out/progress.txt
+      - name: 結果寫回分支
+        if: always()
+        run: |
+          rm -f research/oos-2010/frozen/cache.pkl
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/others
+          git commit -m "研究:台股常用策略回測結果(樣本內)" && git pull --rebase --autostash -q && git push

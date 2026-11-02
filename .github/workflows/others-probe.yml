@@ -1,0 +1,35 @@
+name: 研究:估值資料格式探測
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/others/trigger-probe.txt]
+permissions: { contents: write }
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - name: 抓三個月看格式（只記筆數）
+        run: |
+          python - <<'PY'
+          import json, sys, datetime as dt
+          sys.argv = ["x", "0", "0"]
+          src = open("research/others/valhist.py", encoding="utf-8").read().split("y0, y1 = int")[0]
+          g = {}; exec(src, g)
+          out = {}
+          for d in [dt.date(2005, 1, 11), dt.date(2007, 7, 11), dt.date(2010, 1, 11), dt.date(2026, 10, 12)]:
+              r = {}
+              for name in ("twse", "tpex"):
+                  try:
+                      v = g[name](d); r[name] = {"筆數": len(v), "有本益比": sum(1 for x in v.values() if x[0] is not None), "有淨值比": sum(1 for x in v.values() if x[1] is not None), "有殖利率": sum(1 for x in v.values() if x[2] is not None)}
+                  except Exception as e: r[name] = {"錯誤": str(e)[:120]}
+              out[str(d)] = r
+          json.dump(out, open("research/others/probe.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+          PY
+      - if: always()
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/others/probe.json && git commit -m "研究:估值資料格式探測結果" && git pull --rebase -q && git push

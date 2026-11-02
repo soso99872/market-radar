@@ -37,6 +37,7 @@ jobs:
           python research/forward/bench0050.py /tmp/b0050.json || echo '{"錯誤":"0050 抓取失敗"}' > /tmp/b0050.json
           python research/forward/forward.py /tmp/b0050.json > $R/$D.json
           cp $R/$D.json research/forward/latest.json
+          cp /tmp/b0050.json $R/$D-0050.json
       - name: 結果寫回分支
         if: always()
         run: |

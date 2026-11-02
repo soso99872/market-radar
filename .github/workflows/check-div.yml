@@ -1,0 +1,18 @@
+name: 研究:檢查 0050 除息解析
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/forward/check_div.py]
+permissions: { contents: write }
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - run: pip install -q numpy==2.5.3
+      - run: python research/forward/check_div.py > research/forward/check_div.txt 2>&1 || true
+      - run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/forward/check_div.txt && git commit -m "研究:0050 除息解析檢查結果" && git pull --rebase -q && git push

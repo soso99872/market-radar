@@ -1,0 +1,4 @@
+oos-pre2010/exam_pre.py: OK
+oos-2010/frozen/bt.py: OK
+oos-2010/frozen/buy.py: OK
+oos-2010/frozen/prep.py: OK

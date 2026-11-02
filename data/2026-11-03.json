@@ -1,0 +1,101 @@
+{
+ "date": "2026-11-03",
+ "generated_at": "2026-11-03T07:38+08:00",
+ "headline": "費半重挫3.4%、外資賣超台股735億元,美國期中選舉投票日與AMD財報成今日焦點",
+ "sentiment": { "label": "偏空", "score": -1, "summary": "美股晶片股續跌、VIX跳升,台股外資賣壓集中半導體,但投信逆勢買超、傳產防禦板塊資金回流,中性偏空格局。" },
+ "markets": [
+  {
+   "group": "美股指數",
+   "items": [
+    { "symbol": "^GSPC", "name": "S&P 500", "unit": "", "decimals": 2, "last": 7541.3999, "change": -38.6699, "change_pct": -0.51, "as_of": "2026-11-02", "spark": [7805.4502, 7718.9399, 7744.0601, 7659.4399, 7690.73, 7712.5698, 7757.1699, 7663.4302, 7623.6802, 7676.77, 7722.6001, 7743.98, 7720.3901, 7580.0698, 7541.3999] },
+    { "symbol": "^IXIC", "name": "那斯達克", "unit": "", "decimals": 2, "last": 25164.3164, "change": -272.6836, "change_pct": -1.07, "as_of": "2026-11-02", "spark": [27204.3809, 26692.8691, 26713.0293, 26140.0293, 26430.8906, 26424.8203, 26702.8594, 26008.8594, 25955.3398, 26169.3809, 26477.8105, 26549.8496, 26184.7207, 25437.0, 25164.3164] },
+    { "symbol": "^DJI", "name": "道瓊工業", "unit": "", "decimals": 2, "last": 51983.9805, "change": 213.6719, "change_pct": 0.41, "as_of": "2026-11-02", "spark": [51670.1016, 51621.4805, 52177.6914, 52002.4102, 51966.0312, 52495.8789, 52856.0898, 52867.9805, 52215.1602, 52361.5781, 52377.5703, 52475.1016, 52342.5586, 51770.3086, 51983.9805] },
+    { "symbol": "^SOX", "name": "費城半導體", "unit": "", "decimals": 2, "last": 10328.3291, "change": -360.4707, "change_pct": -3.37, "as_of": "2026-11-02", "spark": [12208.79, 11684.3799, 11581.21, 11137.29, 11316.3398, 11283.8096, 11505.5596, 10731.9805, 10779.46, 11083.4697, 11482.5, 11684.0, 11518.2002, 10688.7998, 10328.3291] }
+   ]
+  },
+  {
+   "group": "台股",
+   "items": [
+    { "symbol": "^TWII", "name": "加權指數", "unit": "", "decimals": 2, "last": 45211.8281, "change": -1156.5, "change_pct": -2.49, "as_of": "2026-10-30", "spark": [49806.3711, 49313.4414, 49301.9609, 48341.3086, 48625.8281, 46969.8711, 47111.2617, 46822.0781, 46292.9297, 46887.7695, 46041.4297, 46096.2305, 47035.5781, 46368.3281, 45211.8281] },
+    { "symbol": "2330.TW", "name": "台積電", "unit": "元", "decimals": 1, "last": 2330.0, "change": -40.0, "change_pct": -1.69, "as_of": "2026-11-02", "spark": [2540.0, 2490.0, 2490.0, 2440.0, 2420.0, 2420.0, 2405.0, 2420.0, 2385.0, 2385.0, 2400.0, 2425.0, 2415.0, 2370.0, 2330.0] },
+    { "symbol": "TSM", "name": "台積電 ADR", "unit": "USD", "decimals": 2, "last": 398.63, "change": -7.5, "change_pct": -1.85, "as_of": "2026-11-02" }
+   ]
+  },
+  {
+   "group": "權值股",
+   "items": [
+    { "symbol": "NVDA", "name": "輝達", "unit": "USD", "decimals": 2, "last": 202.06, "change": -2.58, "change_pct": -1.26, "as_of": "2026-11-02" },
+    { "symbol": "AAPL", "name": "蘋果", "unit": "USD", "decimals": 2, "last": 338.32, "change": -6.31, "change_pct": -1.83, "as_of": "2026-11-02" },
+    { "symbol": "MSFT", "name": "微軟", "unit": "USD", "decimals": 2, "last": 507.12, "change": -14.79, "change_pct": -2.83, "as_of": "2026-11-02" },
+    { "symbol": "2317.TW", "name": "鴻海", "unit": "元", "decimals": 1, "last": 251.0, "change": 5.5, "change_pct": 2.24, "as_of": "2026-11-02" },
+    { "symbol": "2454.TW", "name": "聯發科", "unit": "元", "decimals": 1, "last": 3970.0, "change": 55.0, "change_pct": 1.4, "as_of": "2026-11-02" }
+   ]
+  },
+  {
+   "group": "利率・匯率",
+   "items": [
+    { "symbol": "^TNX", "name": "美 10 年債殖利率", "unit": "%", "decimals": 3, "last": 4.894, "change": -0.035, "change_pct": -0.71, "as_of": "2026-11-02" },
+    { "symbol": "DX-Y.NYB", "name": "美元指數", "unit": "", "decimals": 3, "last": 101.772, "change": -0.108, "change_pct": -0.11, "as_of": "2026-11-02" },
+    { "symbol": "TWD=X", "name": "美元/新台幣", "unit": "", "decimals": 3, "last": 32.604, "change": 0.0371, "change_pct": 0.11, "as_of": "2026-11-02" },
+    { "symbol": "JPY=X", "name": "美元/日圓", "unit": "", "decimals": 3, "last": 157.933, "change": 0.129, "change_pct": 0.08, "as_of": "2026-11-02" }
+   ]
+  },
+  {
+   "group": "商品・情緒",
+   "items": [
+    { "symbol": "^VIX", "name": "VIX 恐慌指數", "unit": "", "decimals": 2, "last": 21.15, "change": 1.73, "change_pct": 8.91, "as_of": "2026-11-02" },
+    { "symbol": "CL=F", "name": "WTI 原油", "unit": "USD", "decimals": 2, "last": 96.44, "change": -7.68, "change_pct": -7.38, "as_of": "2026-11-02" },
+    { "symbol": "GC=F", "name": "黃金", "unit": "USD", "decimals": 2, "last": 3956.3, "change": 57.4001, "change_pct": 1.47, "as_of": "2026-11-02" },
+    { "symbol": "BTC-USD", "name": "比特幣", "unit": "USD", "decimals": 2, "last": 76674.2734, "change": -1574.1797, "change_pct": -2.01, "as_of": "2026-11-02" }
+   ]
+  }
+ ],
+ "tsm_adr_premium_pct": 11.56,
+ "key_points": [
+  { "title": "美股晶片股領跌,費半重挫3.37%", "detail": "美股11/2(一)收盤那指跌1.07%、S&P 500跌0.51%,費半更重挫3.37%,道瓊則逆勢收漲0.41%。Marvell因宣布以115億美元收購Lumentum暴跌逾12%,Astera Labs、Credo Technology、英特爾、超微等AI晶片供應鏈同步走弱,反映法人對AI資本支出報酬率的疑慮升溫。若此疑慮持續擴散,台廠AI伺服器與晶圓代工供應鏈(台積電、鴻海、廣達等)情緒可能同步承壓;若僅為個股事件(Marvell併購),對大盤影響則可能較為有限。", "impact": "利空", "market": "台美股", "sectors": ["半導體", "AI 伺服器"] },
+  { "title": "油價暴跌7.4%、VIX跳升近9%,市場波動風險上升", "detail": "WTI原油11/2重挫7.38%至96.44美元,市場傳美伊外交斡旋有進展、緩解地緣供給風險疑慮;VIX恐慌指數同日跳升8.91%至21.15,顯示避險需求增加。油價下跌若延續,有助緩解通膨與企業成本壓力,對運輸、航空類股為利多;但VIX走高通常伴隨股市波動加大,對高beta成長股(半導體、AI)相對不利。", "impact": "視數據而定", "market": "美股", "sectors": ["能源", "半導體"] },
+  { "title": "美國期中選舉投票日,國會控制權牽動政策預期", "detail": "11/3為美國期中選舉投票日,將改選全部435席眾議院、約1/3參議院席次及36州州長。市場普遍預期國會分治(民主黨較有機會拿下眾院、共和黨守住參院)為基準情境;若結果偏離預期,AI產業投資、能源政策、稅務與聯準會利率路徑的不確定性可能放大,透過美元與美債殖利率波動傳導至台股與新台幣匯率。", "impact": "視數據而定", "market": "美股", "sectors": [] },
+  { "title": "AMD財報將公布,市場聚焦AI晶片營收與資本支出能見度", "detail": "超微(AMD)預計美東11/3盤後(台北時間11/4清晨)公布第三季財報,為本週科技財報重頭戲之一,市場關注其AI加速器出貨與客戶資本支出展望。若展望優於預期,有助提振台股AI伺服器與先進封裝供應鏈情緒;若展望保守或毛利率不如預期,可能加劇近期AI供應鏈評價疑慮的賣壓。", "impact": "視數據而定", "market": "台美股", "sectors": ["AI 伺服器", "半導體"] },
+  { "title": "台股三大法人11/2賣超550億元,外資集中提款半導體", "detail": "台股前一交易日(11/2)三大法人合計賣超549.93億元,其中外資賣超735.21億元,投信逆勢買超338.16億元,自營商賣超152.88億元(證交所official數字)。資金面上,晶圓代工板塊20日法人淨流出近3968億元且流出加速(連續4日),IC設計、電源供應等板塊同步資金排名墊底;資金則轉向電信、鋼鐵、航運、營建、金融等傳產與防禦型板塊,20日資金排名居前五。", "impact": "利空", "market": "台股", "sectors": ["晶圓代工", "IC 設計", "電信", "金融"] },
+  { "title": "歷史回測:資金排名墊底板塊過去相對報酬顯著落後", "detail": "根據站內歷史回測(2019年至今,扣除交易成本),法人買賣超排名全市場最後5名的板塊,其後20個交易日相對大盤報酬平均落後1.28個百分點(勝率38.6%,統計上顯著,t值-5.16);目前晶圓代工、IC設計、電源供應等板塊即落在此排名區間。此為歷史統計規律,僅供參考,不代表未來必然重複,也非個股買賣建議。", "impact": "中性", "market": "台股", "sectors": ["半導體"] }
+ ],
+ "calendar": [
+  { "date": "2026-11-03", "time": "23:00", "region": "美", "event": "美國9月job openings(JOLTS)職位空缺", "forecast": null, "previous": null, "importance": "中", "impact_note": "若職缺數高於預期 → 勞動市場偏緊、降息預期降溫 → 美債殖利率上升、科技成長股承壓;若低於預期則相反。" },
+  { "date": "2026-11-03", "time": "全日", "region": "美", "event": "美國期中選舉投票日(改選國會與36州州長)", "forecast": null, "previous": null, "importance": "高", "impact_note": "市場基準情境為國會分治;若選舉結果明顯偏離預期(如單一政黨完全掌控國會),可能改變對財政、關稅、AI產業政策的預期,透過美元、美債殖利率傳導至全球股市與新台幣匯率。" },
+  { "date": "2026-11-06", "time": "21:30", "region": "美", "event": "美國10月非農就業報告", "forecast": null, "previous": null, "importance": "高", "impact_note": "就業數據強於預期 → 降息預期降溫、美元走強 → 科技成長股與新興市場貨幣承壓;弱於預期則相反,有利降息預期升溫。" }
+ ],
+ "earnings": [
+  { "region": "美", "ticker": "AMD", "name": "超微", "date": "2026-11-03", "timing": "盤後", "note": "市場關注AI加速器出貨成長與客戶資本支出展望,為本週美股科技財報重頭戲之一;公司尚未正式確認時間,以投資人關係公告為準。" }
+ ],
+ "tw_flows": {
+  "date": "2026-11-02",
+  "foreign": -735.21, "trust": 338.16, "dealer": -152.88,
+  "foreign_futures_net_oi": null,
+  "margin_change": null,
+  "note": "三大法人合計賣超549.93億元(上市),外資為主要賣方,投信逆勢買超;數字取自證交所官方三大法人買賣金額統計。"
+ },
+ "sector_watch": [
+  { "sector": "晶圓代工", "view": "偏空", "reason": "20日法人淨流出近3968億元,資金排名全市場最後1名,且流出速度加速。" },
+  { "sector": "IC 設計", "view": "偏空", "reason": "20日法人淨流出1600億元,資金排名全市場倒數第2。" },
+  { "sector": "電信", "view": "偏多", "reason": "20日法人淨流入205億元,資金排名全市場第1,近5日仍在流入。" },
+  { "sector": "金融", "view": "偏多", "reason": "20日法人淨流入598億元,資金排名第5,合庫金、兆豐金等個股買盤集中。" },
+  { "sector": "鋼鐵", "view": "中性", "reason": "20日法人淨流入83億元,資金排名第2,但本益比偏低反映基本面仍待驗證。" }
+ ],
+ "risks": [
+  "美國期中選舉結果若明顯偏離「國會分治」基準情境,可能放大政策不確定性與市場波動。",
+  "AI資本支出報酬率疑慮若從晶片股擴散至雲端巨頭財報與展望,可能加劇全球科技股賣壓。",
+  "外資對台股半導體權值股賣壓若未見收斂,新台幣貶值壓力與台股波動可能同步放大。",
+  "AMD等AI供應鏈財報展望不如預期,可能牽動台廠AI伺服器與先進封裝供應鏈股價情緒。"
+ ],
+ "sources": [
+  { "title": "Stock market today: S&P 500 and Nasdaq extend tech sell-off, Dow gains as oil prices plunge (Yahoo Finance)", "url": "https://finance.yahoo.com/markets/live/stock-market-today-monday-november-2-dow-sp-500-nasdaq-091835095.html" },
+  { "title": "Nasdaq starts November with 1% loss as tech melts down again (CNBC)", "url": "https://www.cnbc.com/2026/11/01/stock-market-today-live-updates.html" },
+  { "title": "Tech Stocks Pull the Nasdaq Lower in the Stock Market Today Live, November 2, 2026 (StockTitan)", "url": "https://www.stocktitan.net/articles/stock-market-today-live-november-2-2026" },
+  { "title": "台股11月首戰遇美股空襲!開低急殺逾800點 聯發科、鴻海翻紅收斂跌勢 (udn)", "url": "https://udn.com/news/story/7251/9851113" },
+  { "title": "US midterms 2026: what investors need to know (CMC Markets)", "url": "https://www.cmcmarkets.com/en-au/analysis/us-midterms-2026-what-investors-need-to-know" },
+  { "title": "What the 2026 Midterms Could Mean for the Markets (Schwab Asset Management)", "url": "https://www.schwabassetmanagement.com/story/what-2026-midterms-could-mean-markets" },
+  { "title": "ADVANCED MICRO DEVICES (AMD) Earnings Date (Unusual Whales)", "url": "https://unusualwhales.com/stock/AMD/earnings" },
+  { "title": "Senate confirms Kevin Warsh as next Federal Reserve chair (Private Banker International)", "url": "https://www.privatebankerinternational.com/news/kevin-warsh-confirmed-as-next-federal-reserve-chair/" },
+  { "title": "三大法人買賣金額統計表 (臺灣證券交易所)", "url": "https://www.twse.com.tw/zh/trading/foreign/bfi82u.html" }
+ ]
+}

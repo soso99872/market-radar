@@ -3,3 +3,5 @@
 fffb13dce184e1b4175a7129fb64589eca7b8d6580734b157c54d170e8b7200f  oos-2010/frozen/bt.py
 581d49af4bfc2d2aa7d2a309d6aa7c10e9e3deb60ff59399a6db9fe7b62faf7c  oos-2010/frozen/buy.py
 dd5781f2ef58807426482a0cf2e2423abdf8fa04aedf3595f2da4956a322b571  oos-2010/frozen/prep.py
+7dba6bc5ce0612ea562329bd09d9f17d5fdd16345e56fa2609ed808a8da58675  compare/compare.py
+cf5e8dfc2d470b4472fc709a1e665bebbee9285b9963a8f4e508aa4e981d3332  forward/forward2.py

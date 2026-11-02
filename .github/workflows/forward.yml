@@ -38,10 +38,12 @@ jobs:
           python research/forward/forward.py /tmp/b0050.json > $R/$D.json
           cp $R/$D.json research/forward/latest.json
           cp /tmp/b0050.json $R/$D-0050.json
+          python research/forward/forward2.py /tmp/b0050.json > $R/$D-batch2.json
+          cp $R/$D-batch2.json research/forward/latest2.json
       - name: 結果寫回分支
         if: always()
         run: |
           rm -f research/oos-2010/frozen/cache.pkl
           git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add research/forward/log research/forward/latest.json
+          git add research/forward/log research/forward/latest.json research/forward/latest2.json
           git commit -m "研究:前進觀察紀錄 $(date -u +%F)" && git pull --rebase -q && git push

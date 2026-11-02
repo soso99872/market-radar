@@ -75,6 +75,7 @@ def sim(entry="brk", exit="stars", filt="none", slots=10, start="2000-01-01", en
         else:
             buy_next = [j for j in watch if j not in pos and not np.isnan(U.HI20[d, j]) and C[d, j] > U.HI20[d, j]]
     for j, v in pos.items(): trades.append((v["last"] / v["entry"], d1 - v["e"]))
+    global LAST; LAST = ({j: dict(v) for j, v in pos.items()}, set(to_sell), d1)   # 期末持股（前進觀察用，不影響結果）
     s = pd.Series([x[1] for x in eq], index=pd.to_datetime([x[0] for x in eq]))
     return s, trades, expo / max(len(eq), 1)
 

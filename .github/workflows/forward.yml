@@ -1,0 +1,46 @@
+name: 研究:前進觀察(紙上交易,每月記錄)
+
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/forward/trigger.txt]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forward
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.13" }
+      - run: pip install -q pandas==3.0.5 numpy==2.5.3
+      - name: 拿 main 上最新的每日資料(只拿 data,程式用凍結版)
+        run: |
+          git fetch -q --depth=1 origin main
+          mkdir -p /tmp/mr && cp -r scripts /tmp/mr/
+          git archive FETCH_HEAD data/history data/revenue data/profile | tar -x -C /tmp/mr
+          ls /tmp/mr/data/history/2026 | tail -1
+      - name: 核對凍結程式指紋
+        working-directory: research
+        run: sha256sum -c forward/SHA256SUMS
+      - name: 記錄
+        run: |
+          R=research/forward/log; mkdir -p $R; D=$(date -u +%F)
+          cd research/oos-2010 && python frozen/prep.py /tmp/mr 2>&1 | tail -2; cd ../..
+          python research/forward/bench0050.py /tmp/b0050.json || echo '{"錯誤":"0050 抓取失敗"}' > /tmp/b0050.json
+          python research/forward/forward.py /tmp/b0050.json > $R/$D.json
+          cp $R/$D.json research/forward/latest.json
+      - name: 結果寫回分支
+        if: always()
+        run: |
+          rm -f research/oos-2010/frozen/cache.pkl
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/forward/log research/forward/latest.json
+          git commit -m "研究:前進觀察紀錄 $(date -u +%F)" && git pull --rebase -q && git push

@@ -96,6 +96,7 @@ def sim(select, n, every, start, end):
                 if j not in keep: sell.add(j)
             buy = [j for j in lst if j not in pos or j in sell]
     for j, v in pos.items(): trades.append((v["last"] / v["entry"], d1 - v["e"]))
+    global LAST; LAST = ({j: dict(v) for j, v in pos.items()}, set(sell), d1)   # 期末持股（前進觀察用，不影響結果）
     s = pd.Series([x[1] for x in eq], index=pd.to_datetime([x[0] for x in eq]))
     return s, trades, expo / max(len(eq), 1), cnt
 

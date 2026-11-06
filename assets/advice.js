@@ -88,6 +88,17 @@
     return { date: D, dir: dir, watch: watch };
   }
 
+  // 最大回撤只算到資料日前已結算的期；全部結算完就用原值
+  function mddTo(c, d) {
+    var eq = c.eq || [], vs = [], i;
+    for (i = 0; i < eq.length; i++) if ((i + 1 < eq.length ? eq[i + 1][0] : addDays(eq[i][0], 31)) <= d) vs.push(eq[i][1]);
+    if (!vs.length) return null;
+    if (vs.length === eq.length) return has(c.mdd) ? c.mdd : null;
+    var peak = vs[0], m = 0;
+    for (i = 0; i < vs.length; i++) { peak = Math.max(peak, vs[i]); m = Math.min(m, vs[i] / peak - 1); }
+    return rnd(100 * m, 1);
+  }
+
   function stratRow(key, ck, name, curve, d, advice) {
     var c = (curve || {})[ck];
     if (!c || !(c.eq && c.eq.length)) return null;
@@ -113,7 +124,7 @@
       state = "持有"; st = m + " 月這一籃（約 " + m + "/12 起）；下次換股約 " + m2 + "/12";
     }
     return { key: key, name: name, kind: "strategy", grade: null, state: state, state_text: st, stats: stats,
-      mdd: has(c.mdd) ? c.mdd : null, link: "strategy.html", advice: advice };
+      mdd: mddTo(c, d), link: "strategy.html", advice: advice };
   }
 
   function watchCount(key, W) {
@@ -138,7 +149,8 @@
     // 部位建議只放在 4★ 這一條（對應策略績效頁回測過的規則）
     var c4 = (curve || {})["4★ 以上"] || {};
     var adv = ["分散買，單檔不超過可投入金額的 1/10，只用虧得起的錢：從名單只買 1 檔，約 18% 的機率 60 日內虧超過 15%；分散買 10 檔降到約 5%。"];
-    if (has(c4.mdd)) adv.push("回測最大回撤 " + num(c4.mdd, 1) + "%：要能接受帳面上虧掉這麼多，才適合照這個方法操作。");
+    var m4 = mddTo(c4, d);
+    if (has(m4)) adv.push("回測最大回撤 " + num(m4, 1) + "%：要能接受帳面上虧掉這麼多，才適合照這個方法操作。");
     var g = (regime["5★ · 大盤空頭"] || {}).is;
     if ((T.regime_now || "").indexOf("空頭") === 0 && isObj(g) && has(g.med60) && has(g.crash)) {
       adv.push("目前加權指數在 60 日均線之下（空頭）：歷史上空頭時的 5★，60 日中位數 " + sgn(g.med60, 1) + "%、60 日內曾跌 25% 的有 " +

@@ -1,0 +1,112 @@
+- generic [active] [ref=f10e1]:
+  - banner [ref=f10e2]:
+    - generic [ref=f10e3]:
+      - generic [ref=f10e4]: 盤前雷達
+      - searchbox "查詢個股" [ref=f10e14]
+      - navigation "頁面" [ref=f10e15]:
+        - link "晨報" [ref=f10e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f10e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f10e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "關注名單" [ref=f10e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f10e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f10e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f10e22] [cursor=pointer]:
+          - /url: my.html
+      - generic [ref=f10e23]:
+        - button "前一天" [disabled] [ref=f10e24]: ‹
+        - combobox "選擇日期" [ref=f10e25] [cursor=pointer]:
+          - option "2026-10-23"
+          - option "2026-10-22"
+          - option "2026-10-21"
+          - option "2026-10-20"
+          - option "2026-10-19"
+          - option "2026-10-15"
+          - option "2026-10-14"
+          - option "2026-10-13"
+          - option "2026-10-09"
+          - option "2026-10-08"
+          - option "2026-10-07" [selected]
+        - button "後一天" [ref=f10e26] [cursor=pointer]: ›
+      - group "漲跌顏色" [ref=f10e27]:
+        - button "紅漲綠跌" [pressed] [ref=f10e28] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f10e29] [cursor=pointer]
+  - main [ref=f10e30]:
+    - generic [ref=f10e31]:
+      - generic [ref=f10e32]: 2026 年 10 月 7 日 星期三
+      - generic [ref=f10e33]: 資料截至 10:18
+      - link "對照舊版" [ref=f10e34] [cursor=pointer]:
+        - /url: ./#2026-10-07
+      - button "說明:這頁怎麼算" [ref=f10e36] [cursor=pointer]: "?"
+    - heading "費半漲 2.89%、台積電 ADR 漲 2.75%" [level=1] [ref=f10e37]
+    - paragraph [ref=f10e38]: 10/6 三大法人合計賣超 192.01 億：外資 -66.57、投信 -142.65、自營商 +17.21
+    - region "4 個重點數字" [ref=f10e39]:
+      - generic [ref=f10e40]:
+        - heading "加權指數" [level=2] [ref=f10e41]
+        - generic [ref=f10e42]: 49,822.55
+        - generic [ref=f10e43]: +110.51 (+0.22%)
+        - generic [ref=f10e44]: 晨報沒有近期走勢
+        - generic [ref=f10e45]: 10/6 收盤
+      - generic [ref=f10e46]:
+        - heading "費城半導體" [level=2] [ref=f10e47]
+        - generic [ref=f10e48]: 6,774.06
+        - generic [ref=f10e49]: +190.32 (+2.89%)
+        - generic [ref=f10e50]: 晨報沒有近期走勢
+        - generic [ref=f10e51]: 10/6 收盤
+      - generic [ref=f10e52]:
+        - heading "台積電 ADR" [level=2] [ref=f10e53]
+        - generic [ref=f10e54]: "485.80"
+        - generic [ref=f10e55]: +13.02 (+2.75%)
+        - generic [ref=f10e56]: 對台股現股溢價 19.40%
+        - generic [ref=f10e57]: 10/6 收盤
+      - generic [ref=f10e58]:
+        - heading "外資買賣超" [level=2] [ref=f10e59]
+        - generic [ref=f10e60]: "-66.57億"
+        - generic [ref=f10e61]: 10/6 外資賣超
+        - generic [ref=f10e62]: 前一交易日不在晨報紀錄
+        - generic [ref=f10e63]: 10/6 盤後
+    - generic [ref=f10e64]:
+      - heading "今天起的事件" [level=2] [ref=f10e65]
+      - list "今天起的事件時間軸" [ref=f10e66]:
+        - listitem [ref=f10e67]:
+          - generic [ref=f10e68]:
+            - text: 10/7
+            - generic [ref=f10e69]: 週三 · 今天
+          - list [ref=f10e70]:
+            - listitem [ref=f10e71]: 沒有登錄事件
+        - listitem [ref=f10e72]:
+          - generic [ref=f10e73]:
+            - text: 10/8
+            - generic [ref=f10e74]: 週四
+          - list [ref=f10e75]:
+            - listitem [ref=f10e76]: 聯準會公布9月FOMC會議紀要 02:00
+        - listitem [ref=f10e77]:
+          - generic [ref=f10e78]:
+            - text: 10/14
+            - generic [ref=f10e79]: 週三
+          - list [ref=f10e80]:
+            - listitem [ref=f10e81]: 美國9月CPI(公布時程可能因政府關門延後) 20:30
+        - listitem [ref=f10e82]:
+          - generic [ref=f10e83]:
+            - text: 10/16
+            - generic [ref=f10e84]: 週五
+          - list [ref=f10e85]:
+            - listitem [ref=f10e86]: 台積電法說會
+        - listitem [ref=f10e87]:
+          - generic [ref=f10e88]:
+            - text: 10/29
+            - generic [ref=f10e89]: 週四
+          - list [ref=f10e90]:
+            - listitem [ref=f10e91]: FOMC利率決策 02:00
+    - group [ref=f10e92]:
+      - generic "其餘行情與三大法人明細" [ref=f10e93] [cursor=pointer]
+      - text: ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕
+  - contentinfo [ref=f10e94]:
+    - text: 本網站內容由 AI 每日自動彙整公開資訊產生，可能有延遲或錯誤，僅供參考，不構成任何投資意見或邀約。行情為前一交易日收盤資料。
+    - group [ref=f10e96]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-24 10:21" [ref=f10e97] [cursor=pointer]

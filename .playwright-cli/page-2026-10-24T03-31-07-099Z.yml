@@ -1,0 +1,101 @@
+- generic [active] [ref=f6e1]:
+  - banner [ref=f6e2]:
+    - generic [ref=f6e3]:
+      - generic [ref=f6e4]: 盤前雷達
+      - searchbox "查詢個股" [ref=f6e14]
+      - navigation "頁面" [ref=f6e15]:
+        - link "晨報" [ref=f6e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f6e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f6e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f6e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f6e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f6e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f6e22] [cursor=pointer]:
+          - /url: my.html
+      - generic [ref=f6e23]:
+        - button "前一天" [ref=f6e24] [cursor=pointer]: ‹
+        - combobox "選擇日期" [ref=f6e25] [cursor=pointer]:
+          - option "2026-10-23" [selected]
+          - option "2026-10-22"
+          - option "2026-10-21"
+          - option "2026-10-20"
+          - option "2026-10-19"
+          - option "2026-10-15"
+          - option "2026-10-14"
+          - option "2026-10-13"
+          - option "2026-10-09"
+          - option "2026-10-08"
+          - option "2026-10-07"
+        - button "後一天" [disabled] [ref=f6e26]: ›
+      - group "漲跌顏色" [ref=f6e27]:
+        - button "紅漲綠跌" [pressed] [ref=f6e28] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f6e29] [cursor=pointer]
+  - main [ref=f6e30]:
+    - generic [ref=f6e31]:
+      - generic [ref=f6e32]: 2026 年 10 月 23 日 星期五
+      - generic [ref=f6e33]: 資料截至 07:30
+      - link "對照舊版" [ref=f6e34] [cursor=pointer]:
+        - /url: ./
+      - button "說明:這頁怎麼算" [ref=f6e35] [cursor=pointer]: "?"
+    - heading "費半跌 6.06%、台積電 ADR 跌 4.63%，今天先看加權近 15 日低點 46,293" [level=1] [ref=f6e36]
+    - paragraph [ref=f6e37]: 10/22 三大法人合計賣超 994.67 億：外資 -815.82、投信 +94.92、自營商 -273.77
+    - region "4 個重點數字" [ref=f6e38]:
+      - generic [ref=f6e39]:
+        - heading "加權指數" [level=2] [ref=f6e40]
+        - generic [ref=f6e41]: 46,887.77
+        - generic [ref=f6e42]: +594.84 (+1.28%)
+        - generic [ref=f6e43]: 14 個交易日跌 2.2%
+        - generic [ref=f6e44]: 10/21 收盤
+      - generic [ref=f6e45]:
+        - heading "費城半導體" [level=2] [ref=f6e46]
+        - generic [ref=f6e47]: 10,808.56
+        - generic [ref=f6e48]: "-697.00 (-6.06%)"
+        - generic [ref=f6e49]: 14 個交易日跌 17.7%
+        - generic [ref=f6e50]: 10/22 收盤
+      - generic [ref=f6e51]:
+        - heading "台積電 ADR" [level=2] [ref=f6e52]
+        - generic [ref=f6e53]: "411.89"
+        - generic [ref=f6e54]: "-20.00 (-4.63%)"
+        - generic [ref=f6e55]: 對台股現股溢價 10.94%
+        - generic [ref=f6e56]: 10/22 收盤
+      - generic [ref=f6e57]:
+        - heading "外資買賣超" [level=2] [ref=f6e58]
+        - generic [ref=f6e59]: "-815.82億"
+        - generic [ref=f6e60]: 10/22 外資賣超
+        - generic [ref=f6e61]: 前一天 10/21 買超 22 億
+        - generic [ref=f6e62]: 10/22 盤後
+    - generic [ref=f6e63]:
+      - heading "今天起的事件" [level=2] [ref=f6e64]
+      - list "今天起的事件時間軸" [ref=f6e65]:
+        - listitem [ref=f6e66]:
+          - generic [ref=f6e67]:
+            - text: 10/23
+            - generic [ref=f6e68]: 週五 · 今天
+          - list [ref=f6e69]:
+            - listitem [ref=f6e70]: 沒有登錄事件
+        - listitem [ref=f6e71]:
+          - generic [ref=f6e72]:
+            - text: 10/28
+            - generic [ref=f6e73]: 週三
+          - list [ref=f6e74]:
+            - listitem [ref=f6e75]: 美股大型科技股財報週(Meta、蘋果等約10/28-10/29前後公布,日期為市場預估)
+        - listitem [ref=f6e76]:
+          - generic [ref=f6e77]:
+            - text: 10/29
+            - generic [ref=f6e78]: 週四
+          - list [ref=f6e79]:
+            - listitem [ref=f6e80]: FOMC利率決議(10/27-28會議) 02:00
+            - listitem [ref=f6e81]: 美國第三季GDP初值、9月PCE物價指數 20:30
+    - group [ref=f6e82]:
+      - generic "其餘行情與三大法人明細" [ref=f6e83] [cursor=pointer]
+      - text: ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕
+  - contentinfo [ref=f6e84]:
+    - text: 本網站內容由 AI 每日自動彙整公開資訊產生，可能有延遲或錯誤，僅供參考，不構成任何投資建議。行情為前一交易日收盤資料。
+    - group [ref=f6e86]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-24 10:21" [ref=f6e87] [cursor=pointer]

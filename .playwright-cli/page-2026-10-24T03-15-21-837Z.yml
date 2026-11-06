@@ -1,0 +1,97 @@
+- generic [active] [ref=f4e1]:
+  - banner [ref=f4e2]:
+    - generic [ref=f4e3]:
+      - generic [ref=f4e4]: 盤前雷達
+      - searchbox "查詢個股" [ref=f4e14]
+      - navigation "頁面" [ref=f4e15]:
+        - link "晨報" [ref=f4e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f4e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f4e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "關注名單" [ref=f4e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f4e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f4e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f4e22] [cursor=pointer]:
+          - /url: my.html
+      - generic [ref=f4e23]:
+        - button "前一天" [ref=f4e24] [cursor=pointer]: ‹
+        - combobox "選擇日期" [ref=f4e25] [cursor=pointer]:
+          - option "2026-10-23"
+          - option "2026-10-22"
+          - option "2026-10-21"
+          - option "2026-10-20"
+          - option "2026-10-19"
+          - option "2026-10-15" [selected]
+          - option "2026-10-14"
+          - option "2026-10-13"
+          - option "2026-10-09"
+          - option "2026-10-08"
+          - option "2026-10-07"
+        - button "後一天" [ref=f4e26] [cursor=pointer]: ›
+      - group "漲跌顏色" [ref=f4e27]:
+        - button "紅漲綠跌" [pressed] [ref=f4e28] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f4e29] [cursor=pointer]
+  - main [ref=f4e30]:
+    - generic [ref=f4e31]:
+      - generic [ref=f4e32]: 2026 年 10 月 15 日 星期四
+      - generic [ref=f4e33]: 資料截至 07:30
+      - link "對照舊版" [ref=f4e34] [cursor=pointer]:
+        - /url: ./#2026-10-15
+      - button "說明:這頁怎麼算" [ref=f4e35] [cursor=pointer]: "?"
+    - heading "費半跌 4.02%、台積電 ADR 跌 3.27%，今天先看台積電法說會 14:00" [level=1] [ref=f4e36]
+    - paragraph [ref=f4e37]: 10/14 三大法人合計賣超 154.80 億：外資 -200.37、投信 +160.27、自營商 -114.70
+    - region "4 個重點數字" [ref=f4e38]:
+      - generic [ref=f4e39]:
+        - heading "加權指數" [level=2] [ref=f4e40]
+        - generic [ref=f4e41]: 48,341.31
+        - generic [ref=f4e42]: "-960.65 (-1.95%)"
+        - generic [ref=f4e43]: 連 4 天跌
+        - generic [ref=f4e44]: 10/13 收盤
+      - generic [ref=f4e45]:
+        - heading "費城半導體" [level=2] [ref=f4e46]
+        - generic [ref=f4e47]: 11,718.36
+        - generic [ref=f4e48]: "-490.43 (-4.02%)"
+        - generic [ref=f4e49]: 連 6 天跌
+        - generic [ref=f4e50]: 10/14 收盤
+      - generic [ref=f4e51]:
+        - heading "台積電 ADR" [level=2] [ref=f4e52]
+        - generic [ref=f4e53]: "430.55"
+        - generic [ref=f4e54]: "-14.57 (-3.27%)"
+        - generic [ref=f4e55]: 對台股現股溢價 11.18%
+        - generic [ref=f4e56]: 10/14 收盤
+      - generic [ref=f4e57]:
+        - heading "外資買賣超" [level=2] [ref=f4e58]
+        - generic [ref=f4e59]: "-200.37億"
+        - generic [ref=f4e60]: 10/14 外資賣超
+        - generic [ref=f4e61]: 10/12 起連 3 天賣超
+        - generic [ref=f4e62]: 10/14 盤後
+    - generic [ref=f4e63]:
+      - heading "今天起的事件" [level=2] [ref=f4e64]
+      - list "今天起的事件時間軸" [ref=f4e65]:
+        - listitem [ref=f4e66]:
+          - generic [ref=f4e67]:
+            - text: 10/15
+            - generic [ref=f4e68]: 週四 · 今天
+          - list [ref=f4e69]:
+            - listitem [ref=f4e70]: 台積電2026年第三季法人說明會 14:00
+            - listitem [ref=f4e71]: 美國9月零售銷售初值(月增率) 20:30
+            - listitem [ref=f4e72]: 美國9月生產者物價指數(PPI)年增率 20:30
+            - listitem [ref=f4e73]: 另 1 項
+        - listitem [ref=f4e74]:
+          - generic [ref=f4e75]:
+            - text: 10/16
+            - generic [ref=f4e76]: 週五
+          - list [ref=f4e77]:
+            - listitem [ref=f4e78]: 美國9月工業生產與產能利用率 21:15
+    - group [ref=f4e79]:
+      - generic "其餘行情與三大法人明細" [ref=f4e80] [cursor=pointer]
+      - text: ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕
+  - contentinfo [ref=f4e81]:
+    - text: 本網站內容由 AI 每日自動彙整公開資訊產生，可能有延遲或錯誤，僅供參考，不構成任何投資意見或邀約。行情為前一交易日收盤資料。
+    - group [ref=f4e83]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-24 10:21" [ref=f4e84] [cursor=pointer]

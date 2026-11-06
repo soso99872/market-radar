@@ -1,0 +1,32 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e3]:
+    - generic [ref=f5e12]: 盤前雷達
+    - generic [ref=f5e13]: 營收 · 動能 · 題材 ── 每個交易日 06:00 更新
+  - banner [ref=f5e16]:
+    - generic [ref=f5e17]:
+      - link [ref=f5e18] [cursor=pointer]:
+        - /url: ./
+        - generic [ref=f5e26]: 盤前雷達台美股 · 每個交易日 06:00
+      - navigation "頁面" [ref=f5e27]:
+        - link "晨報" [ref=f5e28] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f5e29] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f5e30] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f5e31] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f5e32] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f5e33] [cursor=pointer]:
+          - /url: strategy.html
+        - link "建議" [ref=f5e34] [cursor=pointer]:
+          - /url: advice.html
+        - link "我的自選" [ref=f5e35] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=f5e36]:
+        - button "紅漲綠跌" [pressed] [ref=f5e37] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f5e38] [cursor=pointer]
+  - main [ref=f5e39]:
+    - generic "載入中" [ref=f5e40]
+  - contentinfo [ref=f5e45]: 名單依公開的月營收、股價與成交資料,用固定規則篩出;每個交易日收盤後自動更新,開啟頁面時若證交所已公布更新的收盤資料,上市股會直接用官方資料即時更新。 不是買賣建議,也不代表會漲。回測期間是 AI 多頭行情,空頭時表現可能差很多。

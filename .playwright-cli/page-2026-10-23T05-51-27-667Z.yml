@@ -1,0 +1,353 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e12]: 盤前雷達
+    - generic [ref=e13]: 營收 · 動能 · 題材 ── 每個交易日 06:00 更新
+  - banner [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]: 盤前雷達台美股 · 每個交易日 06:00
+      - searchbox "查詢個股" [ref=e28]
+      - navigation "頁面" [ref=e29]:
+        - link "晨報" [ref=e30] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=e31] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=e32] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=e33] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=e34] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=e35] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=e36] [cursor=pointer]:
+          - /url: my.html
+      - generic [ref=e37]:
+        - button "前一天" [ref=e38] [cursor=pointer]: ‹
+        - combobox "選擇日期" [ref=e39] [cursor=pointer]:
+          - option "2026-10-21" [selected]
+          - option "2026-10-20"
+          - option "2026-10-19"
+          - option "2026-10-15"
+          - option "2026-10-14"
+          - option "2026-10-13"
+          - option "2026-10-09"
+          - option "2026-10-08"
+          - option "2026-10-07"
+        - button "後一天" [disabled] [ref=e40]: ›
+      - group "漲跌顏色" [ref=e41]:
+        - button "紅漲綠跌" [pressed] [ref=e42] [cursor=pointer]
+        - button "綠漲紅跌" [ref=e43] [cursor=pointer]
+  - main [ref=e44]:
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e47]: 2026 年 10 月 21 日 星期三 · 更新 06:12
+        - heading "美股財報優於預期挺盤、油價重挫,台股三大法人昨賣超964億元" [level=1] [ref=e48]
+      - generic [ref=e56]:
+        - generic [ref=e57]: 開盤情緒 偏空
+        - paragraph [ref=e58]: 美股道瓊因財報優於預期與油價重挫而大漲,但那指幾乎平盤、費半漲幅有限,AI與晶片股同步轉弱;台股昨日三大法人合計賣超963.6億元,外資與自營商同步調節,晶圓代工資金連10日淨流出,顯示台股開盤氣氛偏向謹慎。
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - heading "美股指數" [level=2] [ref=e61]
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic "S&P 500" [ref=e64]
+            - generic [ref=e65]: ^GSPC
+            - generic [ref=e66]: 7,720.49
+            - generic [ref=e67]: +0.39%
+          - generic [ref=e72]:
+            - generic "那斯達克" [ref=e73]
+            - generic [ref=e74]: ^IXIC
+            - generic [ref=e75]: 26,488.79
+            - generic [ref=e76]: +0.22%
+          - generic [ref=e81]:
+            - generic "道瓊工業" [ref=e82]
+            - generic [ref=e83]: ^DJI
+            - generic [ref=e84]: 52,473.38
+            - generic [ref=e85]: +0.98%
+          - generic [ref=e90]:
+            - generic "費城半導體" [ref=e91]
+            - generic [ref=e92]: ^SOX
+            - generic [ref=e93]: 11,341.48
+            - generic [ref=e94]: +0.22%
+      - generic [ref=e99]:
+        - heading "台股" [level=2] [ref=e100]
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - generic "加權指數" [ref=e103]
+            - generic [ref=e104]: ^TWII
+            - generic [ref=e105]: 46,822.08
+            - generic [ref=e106]: −0.61%
+          - generic [ref=e111]:
+            - generic "台積電" [ref=e112]
+            - generic [ref=e113]: 2330.TW
+            - generic [ref=e114]: 2,420.0 元
+            - generic [ref=e115]: 0.00%
+          - generic [ref=e120]:
+            - generic "台積電 ADR" [ref=e121]
+            - generic [ref=e122]: TSM
+            - generic [ref=e123]: 427.10 USD
+            - generic [ref=e124]: +1.64%
+        - generic [ref=e129]: 台積電 ADR 溢價 +15.2%(1 ADR = 5 股,依美元/新台幣換算)
+      - generic [ref=e130]:
+        - heading "權值股" [level=2] [ref=e131]
+        - generic [ref=e132]:
+          - generic [ref=e133]:
+            - generic "輝達" [ref=e134]
+            - generic [ref=e135]: NVDA
+            - generic [ref=e136]: 217.06 USD
+            - generic [ref=e137]: −0.02%
+          - generic [ref=e142]:
+            - generic "蘋果" [ref=e143]
+            - generic [ref=e144]: AAPL
+            - generic [ref=e145]: 341.31 USD
+            - generic [ref=e146]: −0.48%
+          - generic [ref=e151]:
+            - generic "微軟" [ref=e152]
+            - generic [ref=e153]: MSFT
+            - generic [ref=e154]: 533.49 USD
+            - generic [ref=e155]: −0.01%
+          - generic [ref=e160]:
+            - generic "鴻海" [ref=e161]
+            - generic [ref=e162]: 2317.TW
+            - generic [ref=e163]: 239.5 元
+            - generic [ref=e164]: −1.84%
+          - generic [ref=e169]:
+            - generic "聯發科" [ref=e170]
+            - generic [ref=e171]: 2454.TW
+            - generic [ref=e172]: 4,205 元
+            - generic [ref=e173]: −1.06%
+      - generic [ref=e178]:
+        - heading "利率・匯率" [level=2] [ref=e179]
+        - generic [ref=e180]:
+          - generic [ref=e181]:
+            - generic "美 10 年債殖利率" [ref=e182]
+            - generic [ref=e183]: ^TNX
+            - generic [ref=e184]: 5.132%
+            - generic [ref=e185]: −0 bp
+          - generic [ref=e190]:
+            - generic "美元指數" [ref=e191]
+            - generic [ref=e192]: DX-Y.NYB
+            - generic [ref=e193]: "101.74"
+            - generic [ref=e194]: −0.23%
+          - generic [ref=e199]:
+            - generic "美元/新台幣" [ref=e200]
+            - generic [ref=e201]: TWD=X
+            - generic [ref=e202]: "32.641"
+            - generic [ref=e203]: +0.78%
+          - generic [ref=e208]:
+            - generic "美元/日圓" [ref=e209]
+            - generic [ref=e210]: JPY=X
+            - generic [ref=e211]: "158.18"
+            - generic [ref=e212]: +0.24%
+      - generic [ref=e217]:
+        - heading "商品・情緒" [level=2] [ref=e218]
+        - generic [ref=e219]:
+          - generic [ref=e220]:
+            - generic "VIX 恐慌指數" [ref=e221]
+            - generic [ref=e222]: ^VIX
+            - generic [ref=e223]: "17.71"
+            - generic [ref=e224]: −3.96%
+          - generic [ref=e229]:
+            - generic "WTI 原油" [ref=e230]
+            - generic [ref=e231]: CL=F
+            - generic [ref=e232]: 98.09 USD
+            - generic [ref=e233]: −5.37%
+          - generic [ref=e238]:
+            - generic "黃金" [ref=e239]
+            - generic [ref=e240]: GC=F
+            - generic [ref=e241]: 4,139.3 USD
+            - generic [ref=e242]: −0.50%
+          - generic [ref=e247]:
+            - generic "比特幣" [ref=e248]
+            - generic [ref=e249]: BTC-USD
+            - generic [ref=e250]: 82,657 USD
+            - generic [ref=e251]: +0.98%
+    - generic [ref=e256]:
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - heading "今日重點與影響" [level=2] [ref=e259]
+          - list [ref=e260]:
+            - listitem [ref=e261]:
+              - generic [ref=e263]:
+                - heading "美股財報優於預期挺盤,道瓊漲近1% 視數據而定" [level=3] [ref=e264]:
+                  - text: 美股財報優於預期挺盤,道瓊漲近1%
+                  - generic [ref=e265]: 視數據而定
+                - paragraph [ref=e266]: 美股10/20道瓊大漲507點(+0.98%),主因3M、諾斯洛普格魯曼等工業股財報優於預期並上修展望,帶動資金轉向傳產與醫療保健等防禦類股;那指幾近平盤(+0.22%)、費半僅溫和上漲(+0.22%),輝達、微軟等AI權值股同步走弱,顯示資金出現從AI/科技股輪動至財報優異的傳統產業的跡象。若這一輪動持續,台股的電子權值股可能較難直接受惠於美股這波上漲。
+                - generic [ref=e267]:
+                  - generic [ref=e268]: 美股
+                  - generic [ref=e269]: 工業
+                  - generic [ref=e270]: 醫療保健
+                  - generic [ref=e271]: AI
+            - listitem [ref=e272]:
+              - generic [ref=e274]:
+                - heading "三大法人昨賣超台股963.6億元 利空" [level=3] [ref=e275]:
+                  - text: 三大法人昨賣超台股963.6億元
+                  - generic [ref=e276]: 利空
+                - paragraph [ref=e277]: 證交所資料顯示,10/20三大法人合計賣超963.6億元,其中外資賣超795.4億元、自營商賣超355.79億元,僅投信逆勢買超187.59億元。外資與自營商同步調節,顯示短線籌碼面轉向保守,若賣壓延續,台股開盤及盤中恐承受較大賣壓;若轉為買超則可視為籌碼面轉強的訊號。
+                - generic [ref=e278]: 台股
+            - listitem [ref=e280]:
+              - generic [ref=e282]:
+                - heading "半導體供應鏈資金全面撤出,防禦與傳產板塊吸金 視數據而定" [level=3] [ref=e283]:
+                  - text: 半導體供應鏈資金全面撤出,防禦與傳產板塊吸金
+                  - generic [ref=e284]: 視數據而定
+                - paragraph [ref=e285]: 板塊資金流向資料顯示,晶圆代工、IC設計分別連續10日資金淨流出(20日累計淨賣超2600億元、1005億元),矽晶圓、記憶體、半導體設備等上下游同步遭調節,台積電、聯電為主要調節標的;相對地,電信已連續14日資金淨流入(20日淨買超180億元,全市場31個板塊排名第1)、鋼鐵連8日淨流入(淨買超69億元),顯示法人短線轉向防禦與傳產類股。若半導體資金持續外流,台股權值股恐持續承壓;若轉為回補則有助指數止穩。
+                - generic [ref=e286]:
+                  - generic [ref=e287]: 台股
+                  - generic [ref=e288]: 晶圓代工
+                  - generic [ref=e289]: IC 設計
+                  - generic [ref=e290]: 電信
+                  - generic [ref=e291]: 鋼鐵
+            - listitem [ref=e292]:
+              - generic [ref=e294]:
+                - heading "油價重挫5.4%,為通膨與降息路徑添變數 視數據而定" [level=3] [ref=e295]:
+                  - text: 油價重挫5.4%,為通膨與降息路徑添變數
+                  - generic [ref=e296]: 視數據而定
+                - paragraph [ref=e297]: WTI原油10/20重挫5.37%至每桶98.09美元,為近期單日最大跌幅之一;美債10年期殖利率同步小跌0.08個百分點。若油價回落趨勢延續,有助緩解通膨壓力、支撐降息預期,對成長股估值偏正面;但若反映的是市場對需求轉弱的擔憂,則可能是風險情緒轉弱的訊號,需留意後續油價與經濟數據是否一致。
+                - generic [ref=e298]:
+                  - generic [ref=e299]: 美股
+                  - generic [ref=e300]: 能源
+            - listitem [ref=e301]:
+              - generic [ref=e303]:
+                - heading "新台幣走貶、美元指數走弱,匯率背離 視數據而定" [level=3] [ref=e304]:
+                  - text: 新台幣走貶、美元指數走弱,匯率背離
+                  - generic [ref=e305]: 視數據而定
+                - paragraph [ref=e306]: 美元指數10/20下跌0.23%至101.742,但美元兌新台幣同步走升0.78%至32.641,新台幣對美元走貶,與美元指數走勢背離,可能反映外資匯出或台股資金流出壓力。新台幣若延續貶勢,理論上有利電子代工、傳產出口商的匯兌收益,但也可能加重外資持有台股的匯損顧慮,進而影響外資加碼意願。
+                - generic [ref=e307]:
+                  - generic [ref=e308]: 台美股
+                  - generic [ref=e309]: 出口
+            - listitem [ref=e310]:
+              - generic [ref=e312]:
+                - heading "本週關注聯準會10/27-28利率會議 視數據而定" [level=3] [ref=e313]:
+                  - text: 本週關注聯準會10/27-28利率會議
+                  - generic [ref=e314]: 視數據而定
+                - paragraph [ref=e315]: 聯準會10月FOMC會議訂於10/27-28召開,為新任主席華許(Kevin Warsh,今年5月接替鮑爾)上任後主持的重要會議之一,市場對本次降息機率預期不高。若會後聲明偏鷹派、降息預期降溫,美元與美債殖利率可能回升,對新興市場與台股資金動能偏不利;若偏鴿派則有利風險資產與台股外資回補。
+                - generic [ref=e316]: 台美股
+        - generic [ref=e318]:
+          - heading "經濟日曆(台北時間)" [level=2] [ref=e319]
+          - table [ref=e321]:
+            - rowgroup [ref=e322]:
+              - row [ref=e323]:
+                - columnheader "時間" [ref=e324]
+                - columnheader "事件 / 可能影響" [ref=e325]
+                - columnheader "預期" [ref=e326]
+                - columnheader "前值" [ref=e327]
+                - columnheader "重要" [ref=e328]
+            - rowgroup [ref=e329]:
+              - row [ref=e330]:
+                - cell "10/29 02:00" [ref=e331]
+                - cell "美FOMC 利率決議(10/27-28會議,台北時間次日公布) 若維持利率不變且聲明偏鷹派 → 降息預期降溫、美元與美債殖利率上升 → 科技成長股與新興市場資金承壓;若意外降息或聲明偏鴿 → 風險資產與台股外資回補動能增強" [ref=e332]:
+                  - text: 美FOMC 利率決議(10/27-28會議,台北時間次日公布)
+                  - generic [ref=e333]: 若維持利率不變且聲明偏鷹派 → 降息預期降溫、美元與美債殖利率上升 → 科技成長股與新興市場資金承壓;若意外降息或聲明偏鴿 → 風險資產與台股外資回補動能增強
+                - cell "—" [ref=e334]
+                - cell "—" [ref=e335]
+                - cell [ref=e336]:
+                  - generic "重要性:高" [ref=e337]
+      - generic [ref=e341]:
+        - generic [ref=e342]:
+          - heading "台股籌碼(10/20)" [level=2] [ref=e343]
+          - generic [ref=e344]:
+            - generic [ref=e345]:
+              - generic [ref=e346]: 外資(億)
+              - text: −795.4
+            - generic [ref=e347]:
+              - generic [ref=e348]: 投信(億)
+              - text: "+187.6"
+            - generic [ref=e349]:
+              - generic [ref=e350]: 自營商(億)
+              - text: −355.8
+            - generic [ref=e351]:
+              - generic [ref=e352]: 外資台指期淨未平倉(口)
+              - text: —
+            - generic [ref=e353]:
+              - generic [ref=e354]: 融資增減(億)
+              - text: —
+          - paragraph [ref=e355]: 三大法人合計賣超963.6億元,外資與自營商同步調節、僅投信逆勢買超;晶圓代工資金連續10日淨流出,籌碼面偏保守
+        - generic [ref=e356]:
+          - heading "產業觀察" [level=2] [ref=e357]
+          - generic [ref=e358]:
+            - generic [ref=e359]:
+              - generic [ref=e360]: 電信
+              - generic [ref=e361]: 偏多
+              - generic [ref=e362]: 連續14日資金淨流入,20日累計淨買超180億元,資金排名全市場31個板塊第1
+            - generic [ref=e363]:
+              - generic [ref=e364]: 鋼鐵
+              - generic [ref=e365]: 偏多
+              - generic [ref=e366]: 連續8日資金淨流入,20日累計淨買超69億元,資金排名第2
+            - generic [ref=e367]:
+              - generic [ref=e368]: 營建
+              - generic [ref=e369]: 偏多
+              - generic [ref=e370]: 連續5日資金淨流入,20日累計淨買超6.6億元
+            - generic [ref=e371]:
+              - generic [ref=e372]: 金融
+              - generic [ref=e373]: 中性
+              - generic [ref=e374]: 20日累計仍淨流入347億元,但近1日轉為淨流出,買盤力道轉弱
+            - generic [ref=e375]:
+              - generic [ref=e376]: 晶圓代工
+              - generic [ref=e377]: 偏空
+              - generic [ref=e378]: 連續10日資金淨流出,20日累計淨賣超2600億元,台積電、聯電同步遭調節
+            - generic [ref=e379]:
+              - generic [ref=e380]: IC 設計
+              - generic [ref=e381]: 偏空
+              - generic [ref=e382]: 連續10日資金淨流出,20日累計淨賣超1005億元
+            - generic [ref=e383]:
+              - generic [ref=e384]: AI 伺服器代工
+              - generic [ref=e385]: 中性
+              - generic [ref=e386]: 單日資金轉為淨流入,但20日來仍淨流出586億元,資金尚未全面回補
+        - generic [ref=e387]:
+          - heading "財報與法說" [level=2] [ref=e388]
+          - table [ref=e390]:
+            - rowgroup [ref=e391]:
+              - row [ref=e392]:
+                - cell "10/20" [ref=e393]
+                - cell "美3M MMM 盤前 · 每股收益優於預期並上修全年展望,股價上漲逾5%,帶動道瓊工業股走升" [ref=e394]:
+                  - text: 美3M MMM
+                  - generic [ref=e395]: 盤前 · 每股收益優於預期並上修全年展望,股價上漲逾5%,帶動道瓊工業股走升
+              - row [ref=e396]:
+                - cell "10/20" [ref=e397]
+                - cell "美諾斯洛普格魯曼 NOC 盤前 · 獲利優於預期,股價上漲逾4%" [ref=e398]:
+                  - text: 美諾斯洛普格魯曼 NOC
+                  - generic [ref=e399]: 盤前 · 獲利優於預期,股價上漲逾4%
+              - row [ref=e400]:
+                - cell "10/15" [ref=e401]
+                - cell "台台積電 2330 法說會 14:00 · 已公布第三季財報與第四季展望,法說後一週代工股仍遭外資調節,留意法說效應是否延續" [ref=e402]:
+                  - text: 台台積電 2330
+                  - generic [ref=e403]: 法說會 14:00 · 已公布第三季財報與第四季展望,法說後一週代工股仍遭外資調節,留意法說效應是否延續
+        - generic [ref=e404]:
+          - heading "風險提醒" [level=2] [ref=e405]
+          - list [ref=e406]:
+            - listitem [ref=e407]: 美股AI/晶片股資金輪動若加劇,台股電子權值股可能缺乏美股上漲的連動支撐
+            - listitem [ref=e408]: 台股外資若連續大額賣超,籌碼面轉弱可能放大指數波動
+            - listitem [ref=e409]: 油價劇烈波動若反映需求轉弱擔憂,而非單純供給因素,可能是全球景氣降溫訊號
+            - listitem [ref=e410]: 新台幣貶勢若加速,可能影響外資對台股的匯兌評價與持股意願
+            - listitem [ref=e411]: 10/27-28 FOMC會議結果與新主席華許的政策訊號存在不確定性
+        - generic [ref=e412]:
+          - heading "資料來源" [level=2] [ref=e413]
+          - list [ref=e414]:
+            - listitem [ref=e415]:
+              - link "台灣證券交易所 三大法人買賣金額統計表" [ref=e416] [cursor=pointer]:
+                - /url: https://www.twse.com.tw/zh/trading/foreign/bfi82u.html
+            - listitem [ref=e417]:
+              - link "Dow Rallies More Than 500 Points as Healthcare Stocks Surge" [ref=e418] [cursor=pointer]:
+                - /url: https://yournews.com/2026/10/20/7232141/dow-rallies-more-than-500-points-as-healthcare-stocks-surge/
+            - listitem [ref=e419]:
+              - link "Dow Gains Over 200 Points; GE Aerospace Posts Upbeat Earnings" [ref=e420] [cursor=pointer]:
+                - /url: https://www.benzinga.com/markets/market-summary/26/10/62467921/dow-gains-over-200-points-ge-aerospace-posts-upbeat-earnings
+            - listitem [ref=e421]:
+              - 'link "S&P 500 Index: Chip Stocks Slide Again as the Dow Leads Earnings Rotation" [ref=e422] [cursor=pointer]':
+                - /url: https://www.fxempire.com/forecasts/article/sp-500-index-chip-stocks-slide-again-as-the-dow-leads-earnings-rotation-1639252
+            - listitem [ref=e423]:
+              - 'link "Dow jumps 500 points as earnings optimism steadies market: Live updates" [ref=e424] [cursor=pointer]':
+                - /url: https://www.cnbc.com/2026/10/19/stock-market-today-live-updates.html
+            - listitem [ref=e425]:
+              - link "Senate Confirms Kevin Warsh as Next Fed Chair" [ref=e426] [cursor=pointer]:
+                - /url: https://themortgagepoint.com/2026/05/13/senate-confirms-kevin-warsh-as-next-fed-chair/
+            - listitem [ref=e427]:
+              - link "法人:台積電法說會15日登場 有助支撐台股高檔整理" [ref=e428] [cursor=pointer]:
+                - /url: https://cna.com.tw/news/afe/202610090133.aspx
+            - listitem [ref=e429]:
+              - link "No 'Black Monday'? Nasdaq, S&P 500, Dow Futures Spike As Big Tech Earnings Loom This Week" [ref=e430] [cursor=pointer]:
+                - /url: https://stocktwits.com/news-articles/markets/equity/no-black-monday-nasdaq-s-and-p-500-dow-futures-spike-as-big-tech-earnings-loom-this-week-retail-stays-cautious/cZx8aBfRBt6
+  - contentinfo [ref=e431]:
+    - text: 本網站內容由 AI 每日自動彙整公開資訊產生，可能有延遲或錯誤，僅供參考，不構成任何投資建議。行情為前一交易日收盤資料。
+    - group [ref=e433]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-21 07:59" [ref=e434] [cursor=pointer]

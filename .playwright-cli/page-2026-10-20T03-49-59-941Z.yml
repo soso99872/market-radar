@@ -1,0 +1,183 @@
+- generic [active] [ref=f29e1]:
+  - banner [ref=f29e2]:
+    - generic [ref=f29e3]:
+      - link [ref=f29e4] [cursor=pointer]:
+        - /url: ./
+        - generic [ref=f29e12]: 盤前雷達台美股 · 每個交易日 06:00
+      - searchbox "查詢個股" [ref=f29e14]
+      - navigation "頁面" [ref=f29e15]:
+        - link "晨報" [ref=f29e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f29e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f29e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f29e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f29e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f29e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f29e22] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=f29e23]:
+        - button "紅漲綠跌" [pressed] [ref=f29e24] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f29e25] [cursor=pointer]
+  - main [ref=f29e26]:
+    - generic [ref=f29e27]:
+      - generic [ref=f29e28]: 資料日 2026-10-19
+      - generic [ref=f29e30]: 最新營收月份 2026-09
+      - generic [ref=f29e32]: 已是最新資料
+    - generic [ref=f29e33]:
+      - generic [ref=f29e34]:
+        - heading [level=2] [ref=f29e35]:
+          - text: 今天先看這 10 檔
+          - button "說明:今天先看這 10 檔:怎麼選、有多準" [ref=f29e36] [cursor=pointer]: "?"
+        - generic [ref=f29e37]: 起漲雷達 4★ 以上共 85 檔
+      - generic [ref=f29e38]:
+        - button "5 顆星 47.15 −2.58% 3311閎暉通信網路 9 月營收年增 +447% · 60 日 +38% · 新公告" [ref=f29e39] [cursor=pointer]:
+          - generic [ref=f29e40]:
+            - generic "5 顆星" [ref=f29e41]: ★★★★★
+            - generic [ref=f29e42]: 47.15 −2.58%
+          - generic [ref=f29e43]: 3311閎暉通信網路
+          - generic [ref=f29e44]: 9 月營收年增 +447% · 60 日 +38% · 新公告
+        - button "5 顆星 2570 +0.98% 3081聯亞通信網路 9 月營收年增 +190% · 60 日 +54% · 新公告" [ref=f29e45] [cursor=pointer]:
+          - generic [ref=f29e46]:
+            - generic "5 顆星" [ref=f29e47]: ★★★★★
+            - generic [ref=f29e48]: 2570 +0.98%
+          - generic [ref=f29e49]: 3081聯亞通信網路
+          - generic [ref=f29e50]: 9 月營收年增 +190% · 60 日 +54% · 新公告
+        - button "5 顆星 562 −4.91% 6672騰輝電子-KY電子零組件 9 月營收年增 +202% · 60 日 +139% · 新公告" [ref=f29e51] [cursor=pointer]:
+          - generic [ref=f29e52]:
+            - generic "5 顆星" [ref=f29e53]: ★★★★★
+            - generic [ref=f29e54]: 562 −4.91%
+          - generic [ref=f29e55]: 6672騰輝電子-KY電子零組件
+          - generic [ref=f29e56]: 9 月營收年增 +202% · 60 日 +139% · 新公告
+        - button "5 顆星 175 −4.89% 4977眾達-KY通信網路 9 月營收年增 +126% · 60 日 +31% · 新公告" [ref=f29e57] [cursor=pointer]:
+          - generic [ref=f29e58]:
+            - generic "5 顆星" [ref=f29e59]: ★★★★★
+            - generic [ref=f29e60]: 175 −4.89%
+          - generic [ref=f29e61]: 4977眾達-KY通信網路
+          - generic [ref=f29e62]: 9 月營收年增 +126% · 60 日 +31% · 新公告
+        - button "5 顆星 1630 +0.93% 6274台燿電子零組件 9 月營收年增 +115% · 60 日 +20% · 新公告" [ref=f29e63] [cursor=pointer]:
+          - generic [ref=f29e64]:
+            - generic "5 顆星" [ref=f29e65]: ★★★★★
+            - generic [ref=f29e66]: 1630 +0.93%
+          - generic [ref=f29e67]: 6274台燿電子零組件
+          - generic [ref=f29e68]: 9 月營收年增 +115% · 60 日 +20% · 新公告
+        - button "5 顆星 133.5 −6.32% 6834天二科技電子零組件 9 月營收年增 +132% · 60 日 +33% · 新公告" [ref=f29e69] [cursor=pointer]:
+          - generic [ref=f29e70]:
+            - generic "5 顆星" [ref=f29e71]: ★★★★★
+            - generic [ref=f29e72]: 133.5 −6.32%
+          - generic [ref=f29e73]: 6834天二科技電子零組件
+          - generic [ref=f29e74]: 9 月營收年增 +132% · 60 日 +33% · 新公告
+        - button "5 顆星 102 +1.49% 6209今國光光電 9 月營收年增 +82% · 60 日 +46% · 新公告" [ref=f29e75] [cursor=pointer]:
+          - generic [ref=f29e76]:
+            - generic "5 顆星" [ref=f29e77]: ★★★★★
+            - generic [ref=f29e78]: 102 +1.49%
+          - generic [ref=f29e79]: 6209今國光光電
+          - generic [ref=f29e80]: 9 月營收年增 +82% · 60 日 +46% · 新公告
+        - button "5 顆星 40.3 −1.35% 2489瑞軒光電 9 月營收年增 +33% · 60 日 +28% · 新公告" [ref=f29e81] [cursor=pointer]:
+          - generic [ref=f29e82]:
+            - generic "5 顆星" [ref=f29e83]: ★★★★★
+            - generic [ref=f29e84]: 40.3 −1.35%
+          - generic [ref=f29e85]: 2489瑞軒光電
+          - generic [ref=f29e86]: 9 月營收年增 +33% · 60 日 +28% · 新公告
+        - button "5 顆星 49.3 −3.52% 2468華經資訊服務 9 月營收年增 +69% · 60 日 +39% · 新公告" [ref=f29e87] [cursor=pointer]:
+          - generic [ref=f29e88]:
+            - generic "5 顆星" [ref=f29e89]: ★★★★★
+            - generic [ref=f29e90]: 49.3 −3.52%
+          - generic [ref=f29e91]: 2468華經資訊服務
+          - generic [ref=f29e92]: 9 月營收年增 +69% · 60 日 +39% · 新公告
+        - button "5 顆星 256 −7.58% 3455由田光電 9 月營收年增 +23% · 60 日 +27% · 新公告" [ref=f29e93] [cursor=pointer]:
+          - generic [ref=f29e94]:
+            - generic "5 顆星" [ref=f29e95]: ★★★★★
+            - generic [ref=f29e96]: 256 −7.58%
+          - generic [ref=f29e97]: 3455由田光電
+          - generic [ref=f29e98]: 9 月營收年增 +23% · 60 日 +27% · 新公告
+      - group [ref=f29e99]:
+        - generic "其餘 75 檔 4★ 以上" [ref=f29e100] [cursor=pointer]
+      - paragraph [ref=f29e101]: 分散買、單檔不超過可投入金額的 1/10。
+    - paragraph [ref=f29e102]:
+      - text: 這頁在找什麼、有多準
+      - button "說明:這頁在找什麼、有多準" [ref=f29e103] [cursor=pointer]: "?"
+    - tablist "檢視" [ref=f29e105]:
+      - tab "潛在排行" [ref=f29e106] [cursor=pointer]
+      - tab "營收動能 · 爆發前" [ref=f29e107] [cursor=pointer]
+      - tab "產業循環" [ref=f29e108] [cursor=pointer]
+      - tab "爆量突破 · 剛爆發" [ref=f29e109] [cursor=pointer]
+      - tab "落後補漲" [selected] [ref=f29e110] [cursor=pointer]
+      - tab "驗證與實績" [ref=f29e111] [cursor=pointer]
+    - generic [ref=f29e112]:
+      - heading "落後補漲 僅供參考 說明:落後補漲:怎麼選、報酬怎麼算" [level=2] [ref=f29e113]:
+        - text: 落後補漲
+        - generic [ref=f29e114]: 僅供參考
+        - button "說明:落後補漲:怎麼選、報酬怎麼算" [ref=f29e115] [cursor=pointer]: "?"
+      - paragraph [ref=f29e116]: 題材有人發動、營收跟上但股價還沒漲。
+    - table [ref=f29e118]:
+      - rowgroup [ref=f29e119]:
+        - row [ref=f29e120]:
+          - columnheader "個股 ↕" [ref=f29e121] [cursor=pointer]
+          - columnheader "題材 ↕" [ref=f29e122] [cursor=pointer]
+          - columnheader "已發動的同題材個股 ↕" [ref=f29e123] [cursor=pointer]
+          - columnheader "營收年增 ↕" [ref=f29e124] [cursor=pointer]
+          - columnheader "近 20 日漲幅 ↕" [ref=f29e125] [cursor=pointer]
+      - rowgroup [ref=f29e126]:
+        - row [ref=f29e127]:
+          - cell [ref=f29e128]:
+            - button "3141 晶宏" [ref=f29e129] [cursor=pointer]
+          - cell "顯示驅動 IC" [ref=f29e130]
+          - cell "聯詠、天鈺" [ref=f29e131]
+          - cell "+33.4% 中位 +29.9%" [ref=f29e132]:
+            - text: +33.4%
+            - generic [ref=f29e133]: 中位 +29.9%
+          - cell "−19.1% 中位 +6.5%" [ref=f29e134]:
+            - text: −19.1%
+            - generic [ref=f29e135]: 中位 +6.5%
+        - row [ref=f29e136]:
+          - cell [ref=f29e137]:
+            - button "3045 台灣大" [ref=f29e138] [cursor=pointer]
+            - text: 新進
+          - cell "電信" [ref=f29e139]
+          - cell "中華電、4904" [ref=f29e140]
+          - cell "+10.3% 中位 +10.3%" [ref=f29e141]:
+            - text: +10.3%
+            - generic [ref=f29e142]: 中位 +10.3%
+          - cell "+5.2% 中位 +6.6%" [ref=f29e143]:
+            - text: +5.2%
+            - generic [ref=f29e144]: 中位 +6.6%
+    - generic [ref=f29e145]:
+      - heading "歷史回測" [level=2] [ref=f29e146]
+      - paragraph [ref=f29e147]: 期間 2019-01-02 ~ 2026-10-16 · 觸發 1,491 次 · 超額報酬已扣成本 0.5425%
+    - table [ref=f29e149]:
+      - rowgroup [ref=f29e150]:
+        - row [ref=f29e151]:
+          - columnheader "持有 ↕" [ref=f29e152] [cursor=pointer]
+          - columnheader "樣本 ↕" [ref=f29e153] [cursor=pointer]
+          - columnheader "勝率 ↕" [ref=f29e154] [cursor=pointer]
+          - columnheader "平均超額 ↕" [ref=f29e155] [cursor=pointer]
+          - columnheader "中位數 ↕" [ref=f29e156] [cursor=pointer]
+          - columnheader "虧損率 ↕" [ref=f29e157] [cursor=pointer]
+      - rowgroup [ref=f29e158]:
+        - row [ref=f29e159]:
+          - cell "20 日" [ref=f29e160]
+          - cell "127 檔 n 1,044" [ref=f29e161]:
+            - text: 127 檔
+            - generic [ref=f29e162]: n 1,044
+          - cell "40.5%" [ref=f29e163]
+          - cell "+0.33%" [ref=f29e164]
+          - cell "−2.49%" [ref=f29e165]
+          - cell "50.4%" [ref=f29e166]
+        - row [ref=f29e167]:
+          - cell "60 日" [ref=f29e168]
+          - cell "127 檔 n 1,025" [ref=f29e169]:
+            - text: 127 檔
+            - generic [ref=f29e170]: n 1,025
+          - cell "43.4%" [ref=f29e171]
+          - cell "+2.26%" [ref=f29e172]
+          - cell "−4.94%" [ref=f29e173]
+          - cell "50.1%" [ref=f29e174]
+  - contentinfo [ref=f29e175]:
+    - text: 名單依公開的月營收、股價與成交資料,用固定規則篩出;每個交易日收盤後自動更新,開啟頁面時若證交所已公布更新的收盤資料,上市股會直接用官方資料即時更新。 不是買賣建議,也不代表會漲。回測期間是 AI 多頭行情,空頭時表現可能差很多。
+    - group [ref=f29e177]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-20 08:24" [ref=f29e178] [cursor=pointer]

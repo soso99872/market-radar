@@ -1,0 +1,477 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e12]: 盤前雷達
+    - generic [ref=e13]: 營收 · 動能 · 題材 ── 每個交易日 06:00 更新
+  - banner [ref=e16]:
+    - generic [ref=e17]:
+      - link [ref=e18] [cursor=pointer]:
+        - /url: ./
+        - generic [ref=e26]: 盤前雷達台美股 · 每個交易日 06:00
+      - searchbox "查詢個股" [ref=e28]
+      - navigation "頁面" [ref=e29]:
+        - link "晨報" [ref=e30] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=e31] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=e32] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=e33] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=e34] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=e35] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=e36] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=e37]:
+        - button "紅漲綠跌" [pressed] [ref=e38] [cursor=pointer]
+        - button "綠漲紅跌" [ref=e39] [cursor=pointer]
+  - main [ref=e40]:
+    - generic [ref=e41]:
+      - generic [ref=e42]: 資料日 2026-10-22
+      - generic [ref=e44]: 大盤 空頭(加權指數在 60 日均線之下)
+      - generic [ref=e46]: 證交所尚未公布更新的收盤資料
+      - generic [ref=e48]: 回測 2019-01-02 ～ 2026-10-22
+    - paragraph [ref=e49]:
+      - text: 用 2019 年以來的資料驗證過的結論
+      - button "說明:用 2019 年以來的資料驗證過的結論" [ref=e50] [cursor=pointer]: "?"
+    - tablist "檢視" [ref=e52]:
+      - tab "產業趨勢" [selected] [ref=e53] [cursor=pointer]
+      - tab "法人資金流向 33" [ref=e54] [cursor=pointer]
+      - tab "留意風險" [ref=e55] [cursor=pointer]
+    - generic [ref=e56]:
+      - heading [level=2] [ref=e57]:
+        - text: 產業趨勢
+        - button "說明:產業趨勢:怎麼排名、怎麼看" [ref=e58] [cursor=pointer]: "?"
+      - paragraph [ref=e59]: 依 20 日法人買賣超佔成交比排名。
+    - table [ref=e61]:
+      - rowgroup [ref=e62]:
+        - row [ref=e63]:
+          - columnheader "# ↕" [ref=e64] [cursor=pointer]
+          - columnheader "板塊 ↕" [ref=e65] [cursor=pointer]
+          - columnheader "資金狀態 ↕" [ref=e66] [cursor=pointer]
+          - columnheader "20 日法人 ↕" [ref=e67] [cursor=pointer]
+          - columnheader "佔成交 ↕" [ref=e68] [cursor=pointer]
+          - columnheader "60 日資金走勢 ↕" [ref=e69] [cursor=pointer]
+          - columnheader "20 日漲跌 ↕" [ref=e70] [cursor=pointer]
+          - columnheader "本益比中位數 ↕" [ref=e71] [cursor=pointer]
+          - columnheader "9 月營收年增中位數 ↕" [ref=e72] [cursor=pointer]
+          - columnheader "解讀 ↕" [ref=e73] [cursor=pointer]
+      - rowgroup [ref=e74]:
+        - row [ref=e75]:
+          - cell "1" [ref=e76]
+          - cell [ref=e77]:
+            - link "電信" [ref=e78] [cursor=pointer]:
+              - /url: sectors.html#telecom
+          - cell "流入" [ref=e79]
+          - cell "+184.0 億" [ref=e81]
+          - cell "+28.6%" [ref=e82]
+          - cell [ref=e83]
+          - cell "+8.23%" [ref=e86]
+          - cell "28.0" [ref=e87]
+          - cell "+10%" [ref=e88]
+          - cell "資金與股價同步走強" [ref=e89]
+        - row [ref=e90]:
+          - cell "2" [ref=e91]
+          - cell [ref=e92]:
+            - link "鋼鐵" [ref=e93] [cursor=pointer]:
+              - /url: sectors.html#steel
+          - cell "流入" [ref=e94]
+          - cell "+84.00 億" [ref=e96]
+          - cell "+26.9%" [ref=e97]
+          - cell [ref=e98]
+          - cell "+7.22%" [ref=e101]
+          - cell "10.0" [ref=e102]
+          - cell "+21%" [ref=e103]
+          - cell "資金與股價同步走強" [ref=e104]
+        - row [ref=e105]:
+          - cell "3" [ref=e106]
+          - cell [ref=e107]:
+            - link "航運" [ref=e108] [cursor=pointer]:
+              - /url: sectors.html#shipping
+          - cell "流入" [ref=e109]
+          - cell "+234.4 億" [ref=e111]
+          - cell "+15.0%" [ref=e112]
+          - cell [ref=e113]
+          - cell "+2.03%" [ref=e116]
+          - cell "9.5" [ref=e117]
+          - cell "+66%" [ref=e118]
+          - cell "資金與股價同步走強" [ref=e119]
+        - row [ref=e120]:
+          - cell "4" [ref=e121]
+          - cell [ref=e122]:
+            - link "金融" [ref=e123] [cursor=pointer]:
+              - /url: sectors.html#finance
+          - cell "流入" [ref=e124]
+          - cell "+436.6 億" [ref=e126]
+          - cell "+12.3%" [ref=e127]
+          - cell [ref=e128]
+          - cell "+3.07%" [ref=e131]
+          - cell "17.7" [ref=e132]
+          - cell "+3%" [ref=e133]
+          - cell "資金與股價同步走強" [ref=e134]
+        - row [ref=e135]:
+          - cell "5" [ref=e136]
+          - cell [ref=e137]:
+            - link "國防與無人機" [ref=e138] [cursor=pointer]:
+              - /url: sectors.html#defense
+          - cell "流入" [ref=e139]
+          - cell "+16.10 億" [ref=e141]
+          - cell "+7.5%" [ref=e142]
+          - cell [ref=e143]
+          - cell "−4.82%" [ref=e146]
+          - cell "25.4" [ref=e147]
+          - cell "+13%" [ref=e148]
+          - cell "資金先進場、股價相對落後" [ref=e149]
+        - row [ref=e150]:
+          - cell "6" [ref=e151]
+          - cell [ref=e152]:
+            - link "IC 載板" [ref=e153] [cursor=pointer]:
+              - /url: sectors.html#substrate
+          - cell "轉弱" [ref=e154]
+          - cell "+735.3 億" [ref=e156]
+          - cell "+7.0%" [ref=e157]
+          - cell [ref=e158]
+          - cell "+14.99%" [ref=e161]
+          - cell "148.7" [ref=e162]
+          - cell "+58%" [ref=e163]
+          - cell "20 日仍流入,近 5 日轉為賣超" [ref=e164]
+        - row [ref=e165]:
+          - cell "7" [ref=e166]
+          - cell [ref=e167]:
+            - link "營建" [ref=e168] [cursor=pointer]:
+              - /url: sectors.html#construction
+          - cell "流入" [ref=e169]
+          - cell "+8.60 億" [ref=e171]
+          - cell "+6.0%" [ref=e172]
+          - cell [ref=e173]
+          - cell "−2.46%" [ref=e176]
+          - cell "7.7" [ref=e177]
+          - cell "+60%" [ref=e178]
+          - cell "資金與股價同步走強" [ref=e179]
+        - row [ref=e180]:
+          - cell "8" [ref=e181]
+          - cell [ref=e182]:
+            - link "化合物半導體" [ref=e183] [cursor=pointer]:
+              - /url: sectors.html#compound
+          - cell "轉弱" [ref=e184]
+          - cell "+167.0 億" [ref=e186]
+          - cell "+4.3%" [ref=e187]
+          - cell [ref=e188]
+          - cell "+0.46%" [ref=e191]
+          - cell "57.1" [ref=e192]
+          - cell "+27%" [ref=e193]
+          - cell "20 日仍流入,近 5 日轉為賣超" [ref=e194]
+        - row [ref=e195]:
+          - cell "9" [ref=e196]
+          - cell [ref=e197]:
+            - link "ASIC 與矽智財" [ref=e198] [cursor=pointer]:
+              - /url: sectors.html#asic
+          - cell "流入" [ref=e199]
+          - cell "+222.4 億" [ref=e201]
+          - cell "+4.0%" [ref=e202]
+          - cell [ref=e203]
+          - cell "−3.09%" [ref=e206]
+          - cell "83.4" [ref=e207]
+          - cell "+18%" [ref=e208]
+          - cell "資金先進場、股價相對落後" [ref=e209]
+        - row [ref=e210]:
+          - cell "10" [ref=e211]
+          - cell [ref=e212]:
+            - link "PCB 製造" [ref=e213] [cursor=pointer]:
+              - /url: sectors.html#pcb
+          - cell "流入" [ref=e214]
+          - cell "+251.2 億" [ref=e216]
+          - cell "+2.8%" [ref=e217]
+          - cell [ref=e218]
+          - cell "+9.08%" [ref=e221]
+          - cell "30.0" [ref=e222]
+          - cell "+36%" [ref=e223]
+          - cell "資金與股價同步走強" [ref=e224]
+        - row [ref=e225]:
+          - cell "11" [ref=e226]
+          - cell [ref=e227]:
+            - link "塑化" [ref=e228] [cursor=pointer]:
+              - /url: sectors.html#petchem
+          - cell "轉弱" [ref=e229]
+          - cell "+164.0 億" [ref=e231]
+          - cell "+1.9%" [ref=e232]
+          - cell [ref=e233]
+          - cell "+10.97%" [ref=e236]
+          - cell "38.0" [ref=e237]
+          - cell "+26%" [ref=e238]
+          - cell "20 日仍流入,近 5 日轉為賣超" [ref=e239]
+        - row [ref=e240]:
+          - cell "12" [ref=e241]
+          - cell [ref=e242]:
+            - link "重電與電網" [ref=e243] [cursor=pointer]:
+              - /url: sectors.html#grid
+          - cell "轉弱" [ref=e244]
+          - cell "+7.00 億" [ref=e246]
+          - cell "+1.1%" [ref=e247]
+          - cell [ref=e248]
+          - cell "−4.43%" [ref=e251]
+          - cell "22.2" [ref=e252]
+          - cell "+10%" [ref=e253]
+          - cell "20 日仍流入,近 5 日轉為賣超" [ref=e254]
+        - row [ref=e255]:
+          - cell "13" [ref=e256]
+          - cell [ref=e257]:
+            - link "連接器與線材" [ref=e258] [cursor=pointer]:
+              - /url: sectors.html#connector
+          - cell "流出" [ref=e259]
+          - cell "−17.80 億" [ref=e261]
+          - cell "−0.6%" [ref=e262]
+          - cell [ref=e263]
+          - cell "−3.48%" [ref=e266]
+          - cell "21.9" [ref=e267]
+          - cell "+23%" [ref=e268]
+          - cell "資金與股價同步轉弱" [ref=e269]
+        - row [ref=e270]:
+          - cell "14" [ref=e271]
+          - cell [ref=e272]:
+            - link "生技醫療" [ref=e273] [cursor=pointer]:
+              - /url: sectors.html#biotech
+          - cell "流出" [ref=e274]
+          - cell "−5.40 億" [ref=e276]
+          - cell "−0.9%" [ref=e277]
+          - cell [ref=e278]
+          - cell "+8.98%" [ref=e281]
+          - cell "33.2" [ref=e282]
+          - cell "+1%" [ref=e283]
+          - cell "股價仍強但資金在撤(背離)" [ref=e284]
+        - row [ref=e285]:
+          - cell "15" [ref=e286]
+          - cell [ref=e287]:
+            - link "銅箔基板" [ref=e288] [cursor=pointer]:
+              - /url: sectors.html#ccl
+          - cell "流出" [ref=e289]
+          - cell "−108.8 億" [ref=e291]
+          - cell "−1.1%" [ref=e292]
+          - cell [ref=e293]
+          - cell "+8.78%" [ref=e296]
+          - cell "75.7" [ref=e297]
+          - cell "+113%" [ref=e298]
+          - cell "股價仍強但資金在撤(背離)" [ref=e299]
+        - row [ref=e300]:
+          - cell "16" [ref=e301]
+          - cell [ref=e302]:
+            - link "被動元件" [ref=e303] [cursor=pointer]:
+              - /url: sectors.html#passive
+          - cell "流出" [ref=e304]
+          - cell "−245.1 億" [ref=e306]
+          - cell "−2.2%" [ref=e307]
+          - cell [ref=e308]
+          - cell "−0.44%" [ref=e311]
+          - cell "37.7" [ref=e312]
+          - cell "+38%" [ref=e313]
+          - cell "股價仍強但資金在撤(背離)" [ref=e314]
+        - row [ref=e315]:
+          - cell "17" [ref=e316]
+          - cell [ref=e317]:
+            - link "面板" [ref=e318] [cursor=pointer]:
+              - /url: sectors.html#panel
+          - cell "回流" [ref=e319]
+          - cell "−160.1 億" [ref=e321]
+          - cell "−2.7%" [ref=e322]
+          - cell [ref=e323]
+          - cell "−1.26%" [ref=e326]
+          - cell "—" [ref=e327]
+          - cell "−4%" [ref=e328]
+          - cell "20 日流出,近 5 日開始回流" [ref=e329]
+        - row [ref=e330]:
+          - cell "18" [ref=e331]
+          - cell [ref=e332]:
+            - link "散熱" [ref=e333] [cursor=pointer]:
+              - /url: sectors.html#cooling
+          - cell "回流" [ref=e334]
+          - cell "−200.5 億" [ref=e336]
+          - cell "−3.1%" [ref=e337]
+          - cell [ref=e338]
+          - cell "−3.65%" [ref=e341]
+          - cell "48.5" [ref=e342]
+          - cell "+43%" [ref=e343]
+          - cell "20 日流出,近 5 日開始回流" [ref=e344]
+        - row [ref=e345]:
+          - cell "19" [ref=e346]
+          - cell [ref=e347]:
+            - link "AI 先進封裝" [ref=e348] [cursor=pointer]:
+              - /url: sectors.html#cowos
+          - cell "流出" [ref=e349]
+          - cell "−305.2 億" [ref=e351]
+          - cell "−3.4%" [ref=e352]
+          - cell [ref=e353]
+          - cell "−8.94%" [ref=e356]
+          - cell "46.2" [ref=e357]
+          - cell "+40%" [ref=e358]
+          - cell "資金與股價同步轉弱" [ref=e359]
+        - row [ref=e360]:
+          - cell "20" [ref=e361]
+          - cell [ref=e362]:
+            - link "半導體廠務與設備" [ref=e363] [cursor=pointer]:
+              - /url: sectors.html#fab-equip
+          - cell "流出" [ref=e364]
+          - cell "−50.70 億" [ref=e366]
+          - cell "−3.4%" [ref=e367]
+          - cell [ref=e368]
+          - cell "−3.72%" [ref=e371]
+          - cell "18.1" [ref=e372]
+          - cell "+28%" [ref=e373]
+          - cell "資金與股價同步轉弱" [ref=e374]
+        - row [ref=e375]:
+          - cell "21" [ref=e376]
+          - cell [ref=e377]:
+            - link "矽晶圓" [ref=e378] [cursor=pointer]:
+              - /url: sectors.html#wafer
+          - cell "流出" [ref=e379]
+          - cell "−287.4 億" [ref=e381]
+          - cell "−4.5%" [ref=e382]
+          - cell [ref=e383]
+          - cell "−7.10%" [ref=e386]
+          - cell "176.2" [ref=e387]
+          - cell "+4%" [ref=e388]
+          - cell "資金與股價同步轉弱" [ref=e389]
+        - row [ref=e390]:
+          - cell "22" [ref=e391]
+          - cell [ref=e392]:
+            - link "測試介面" [ref=e393] [cursor=pointer]:
+              - /url: sectors.html#probe
+          - cell "流出" [ref=e394]
+          - cell "−115.5 億" [ref=e396]
+          - cell "−4.6%" [ref=e397]
+          - cell [ref=e398]
+          - cell "−12.49%" [ref=e401]
+          - cell "75.4" [ref=e402]
+          - cell "+69%" [ref=e403]
+          - cell "資金與股價同步轉弱" [ref=e404]
+        - row [ref=e405]:
+          - cell "23" [ref=e406]
+          - cell [ref=e407]:
+            - link "AI 伺服器代工" [ref=e408] [cursor=pointer]:
+              - /url: sectors.html#server
+          - cell "回流" [ref=e409]
+          - cell "−357.8 億" [ref=e411]
+          - cell "−4.7%" [ref=e412]
+          - cell [ref=e413]
+          - cell "−4.82%" [ref=e416]
+          - cell "15.1" [ref=e417]
+          - cell "+77%" [ref=e418]
+          - cell "20 日流出,近 5 日開始回流" [ref=e419]
+        - row [ref=e420]:
+          - cell "24" [ref=e421]
+          - cell [ref=e422]:
+            - link "光學鏡頭" [ref=e423] [cursor=pointer]:
+              - /url: sectors.html#lens
+          - cell "流出" [ref=e424]
+          - cell "−266.0 億" [ref=e426]
+          - cell "−5.1%" [ref=e427]
+          - cell [ref=e428]
+          - cell "+4.52%" [ref=e431]
+          - cell "31.4" [ref=e432]
+          - cell "−0%" [ref=e433]
+          - cell "股價仍強但資金在撤(背離)" [ref=e434]
+        - row [ref=e435]:
+          - cell "25" [ref=e436]
+          - cell [ref=e437]:
+            - link "網通設備" [ref=e438] [cursor=pointer]:
+              - /url: sectors.html#network
+          - cell "流出" [ref=e439]
+          - cell "−148.6 億" [ref=e441]
+          - cell "−6.0%" [ref=e442]
+          - cell [ref=e443]
+          - cell "+0.69%" [ref=e446]
+          - cell "25.2" [ref=e447]
+          - cell "+36%" [ref=e448]
+          - cell "股價仍強但資金在撤(背離)" [ref=e449]
+        - row [ref=e450]:
+          - cell "26" [ref=e451]
+          - cell [ref=e452]:
+            - link "光通訊" [ref=e453] [cursor=pointer]:
+              - /url: sectors.html#optical
+          - cell "流出" [ref=e454]
+          - cell "−284.0 億" [ref=e456]
+          - cell "−6.2%" [ref=e457]
+          - cell [ref=e458]
+          - cell "−16.91%" [ref=e461]
+          - cell "73.7" [ref=e462]
+          - cell "+98%" [ref=e463]
+          - cell "資金與股價同步轉弱" [ref=e464]
+        - row [ref=e465]:
+          - cell "27" [ref=e466]
+          - cell [ref=e467]:
+            - link "記憶體" [ref=e468] [cursor=pointer]:
+              - /url: sectors.html#memory
+          - cell "流出 墊底" [ref=e469]:
+            - generic [ref=e470]: 流出
+            - generic [ref=e471]: 墊底
+          - cell "−599.4 億" [ref=e472]
+          - cell "−6.2%" [ref=e473]
+          - cell [ref=e474]
+          - cell "−12.95%" [ref=e477]
+          - cell "8.0" [ref=e478]
+          - cell "+274%" [ref=e479]
+          - cell "資金與股價同步轉弱" [ref=e480]
+        - row [ref=e481]:
+          - cell "28" [ref=e482]
+          - cell [ref=e483]:
+            - link "電源供應" [ref=e484] [cursor=pointer]:
+              - /url: sectors.html#power
+          - cell "流出 墊底" [ref=e485]:
+            - generic [ref=e486]: 流出
+            - generic [ref=e487]: 墊底
+          - cell "−541.4 億" [ref=e488]
+          - cell "−10.4%" [ref=e489]
+          - cell [ref=e490]
+          - cell "−7.11%" [ref=e493]
+          - cell "34.2" [ref=e494]
+          - cell "+15%" [ref=e495]
+          - cell "資金與股價同步轉弱" [ref=e496]
+        - row [ref=e497]:
+          - cell "29" [ref=e498]
+          - cell [ref=e499]:
+            - link "機器人與自動化" [ref=e500] [cursor=pointer]:
+              - /url: sectors.html#robot
+          - cell "流出 墊底" [ref=e501]:
+            - generic [ref=e502]: 流出
+            - generic [ref=e503]: 墊底
+          - cell "−49.60 億" [ref=e504]
+          - cell "−12.1%" [ref=e505]
+          - cell [ref=e506]
+          - cell "−10.07%" [ref=e509]
+          - cell "24.9" [ref=e510]
+          - cell "+23%" [ref=e511]
+          - cell "資金與股價同步轉弱" [ref=e512]
+        - row [ref=e513]:
+          - cell "30" [ref=e514]
+          - cell [ref=e515]:
+            - link "IC 設計" [ref=e516] [cursor=pointer]:
+              - /url: sectors.html#icdesign
+          - cell "流出 墊底" [ref=e517]:
+            - generic [ref=e518]: 流出
+            - generic [ref=e519]: 墊底
+          - cell "−1458.9 億" [ref=e520]
+          - cell "−13.6%" [ref=e521]
+          - cell [ref=e522]
+          - cell "−2.93%" [ref=e525]
+          - cell "20.0" [ref=e526]
+          - cell "+14%" [ref=e527]
+          - cell "資金與股價同步轉弱" [ref=e528]
+        - row [ref=e529]:
+          - cell "31" [ref=e530]
+          - cell [ref=e531]:
+            - link "晶圓代工" [ref=e532] [cursor=pointer]:
+              - /url: sectors.html#foundry
+          - cell "流出 墊底" [ref=e533]:
+            - generic [ref=e534]: 流出
+            - generic [ref=e535]: 墊底
+          - cell "−3450.4 億" [ref=e536]
+          - cell "−17.3%" [ref=e537]
+          - cell [ref=e538]
+          - cell "−9.74%" [ref=e541]
+          - cell "24.9" [ref=e542]
+          - cell "+41%" [ref=e543]
+          - cell "資金與股價同步轉弱" [ref=e544]
+  - contentinfo [ref=e545]:
+    - text: 名單是依公開的法人買賣超、股價與基本面資料,用固定規則篩出來的,每個交易日收盤後更新;不是買賣建議,也不代表會漲或會跌。 每一項條件都附上 2019 年以來的回測結果,歷史表現不代表未來。本益比與月營收只有最新一期,沒有經過回測,僅供參考。
+    - group [ref=e547]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-23 23:29" [ref=e548] [cursor=pointer]

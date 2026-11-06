@@ -1,0 +1,373 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e3]:
+    - generic [ref=f2e12]: 盤前雷達
+    - generic [ref=f2e13]: 營收 · 動能 · 題材 ── 每個交易日 06:00 更新
+  - banner [ref=f2e16]:
+    - generic [ref=f2e17]:
+      - generic [ref=f2e18]: 盤前雷達
+      - searchbox "查詢個股" [ref=f2e28]
+      - navigation "頁面" [ref=f2e29]:
+        - link "晨報" [ref=f2e30] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f2e31] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f2e32] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f2e33] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f2e34] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f2e35] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f2e36] [cursor=pointer]:
+          - /url: my.html
+      - generic [ref=f2e37]:
+        - button "前一天" [ref=f2e38] [cursor=pointer]: ‹
+        - combobox "選擇日期" [ref=f2e39] [cursor=pointer]:
+          - option "2026-10-23" [selected]
+          - option "2026-10-22"
+          - option "2026-10-21"
+          - option "2026-10-20"
+          - option "2026-10-19"
+          - option "2026-10-15"
+          - option "2026-10-14"
+          - option "2026-10-13"
+          - option "2026-10-09"
+          - option "2026-10-08"
+          - option "2026-10-07"
+        - button "後一天" [disabled] [ref=f2e40]: ›
+      - group "漲跌顏色" [ref=f2e41]:
+        - button "紅漲綠跌" [pressed] [ref=f2e42] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f2e43] [cursor=pointer]
+  - main [ref=f2e44]:
+    - generic [ref=f2e45]:
+      - generic [ref=f2e46]:
+        - generic [ref=f2e47]: 2026 年 10 月 23 日 星期五 · 更新 07:30
+        - heading "科磊供應警訊引爆AI晶片股全面殺跌,費半單日重挫6.06%、台積電ADR暴跌4.63%,法人同步賣超台股994億" [level=1] [ref=f2e48]
+      - generic [ref=f2e56]:
+        - generic [ref=f2e57]: 開盤情緒 偏空
+        - paragraph [ref=f2e58]: 隔夜美股AI晶片鏈全面重挫、費半創波段最大單日跌幅,台積電ADR同步重挫並壓縮對台股溢價,加上台股三大法人前一交易日大舉賣超、VIX急升15%,風險情緒明顯轉弱,預期台股開盤承壓。
+    - generic [ref=f2e59]:
+      - generic [ref=f2e60]:
+        - heading "美股指數" [level=2] [ref=f2e61]
+        - generic [ref=f2e62]:
+          - generic [ref=f2e63]:
+            - generic "S&P 500" [ref=f2e64]
+            - generic [ref=f2e65]: ^GSPC
+            - generic [ref=f2e66]: 7,657.71
+            - generic [ref=f2e67]: −1.28%
+          - generic [ref=f2e72]:
+            - generic "那斯達克" [ref=f2e73]
+            - generic [ref=f2e74]: ^IXIC
+            - generic [ref=f2e75]: 26,051.61
+            - generic [ref=f2e76]: −2.44%
+          - generic [ref=f2e81]:
+            - generic "道瓊工業" [ref=f2e82]
+            - generic [ref=f2e83]: ^DJI
+            - generic [ref=f2e84]: 52,784.51
+            - generic [ref=f2e85]: −0.14%
+          - generic [ref=f2e90]:
+            - generic "費城半導體" [ref=f2e91]
+            - generic [ref=f2e92]: ^SOX
+            - generic [ref=f2e93]: 10,808.56
+            - generic [ref=f2e94]: −6.06%
+      - generic [ref=f2e99]:
+        - heading "台股" [level=2] [ref=f2e100]
+        - generic [ref=f2e101]:
+          - generic [ref=f2e102]:
+            - generic "加權指數" [ref=f2e103]
+            - generic [ref=f2e104]: ^TWII
+            - generic [ref=f2e105]: 46,887.77
+            - generic [ref=f2e106]: +1.28%
+          - generic [ref=f2e111]:
+            - generic "台積電" [ref=f2e112]
+            - generic [ref=f2e113]: 2330.TW
+            - generic [ref=f2e114]: 2,420.0 元
+            - generic [ref=f2e115]: +0.62%
+          - generic [ref=f2e120]:
+            - generic "台積電 ADR" [ref=f2e121]
+            - generic [ref=f2e122]: TSM
+            - generic [ref=f2e123]: 411.89 USD
+            - generic [ref=f2e124]: −4.63%
+        - generic [ref=f2e129]: 台積電 ADR 溢價 +10.9%(1 ADR = 5 股,依美元/新台幣換算)
+      - generic [ref=f2e130]:
+        - heading "權值股" [level=2] [ref=f2e131]
+        - generic [ref=f2e132]:
+          - generic [ref=f2e133]:
+            - generic "輝達" [ref=f2e134]
+            - generic [ref=f2e135]: NVDA
+            - generic [ref=f2e136]: 213.22 USD
+            - generic [ref=f2e137]: −3.94%
+          - generic [ref=f2e142]:
+            - generic "蘋果" [ref=f2e143]
+            - generic [ref=f2e144]: AAPL
+            - generic [ref=f2e145]: 346.24 USD
+            - generic [ref=f2e146]: +0.65%
+          - generic [ref=f2e151]:
+            - generic "微軟" [ref=f2e152]
+            - generic [ref=f2e153]: MSFT
+            - generic [ref=f2e154]: 523.75 USD
+            - generic [ref=f2e155]: −1.73%
+          - generic [ref=f2e160]:
+            - generic "鴻海" [ref=f2e161]
+            - generic [ref=f2e162]: 2317.TW
+            - generic [ref=f2e163]: 250.0 元
+            - generic [ref=f2e164]: +3.52%
+          - generic [ref=f2e169]:
+            - generic "聯發科" [ref=f2e170]
+            - generic [ref=f2e171]: 2454.TW
+            - generic [ref=f2e172]: 4,140 元
+            - generic [ref=f2e173]: −0.24%
+      - generic [ref=f2e178]:
+        - heading "利率・匯率" [level=2] [ref=f2e179]
+        - generic [ref=f2e180]:
+          - generic [ref=f2e181]:
+            - generic "美 10 年債殖利率" [ref=f2e182]
+            - generic [ref=f2e183]: ^TNX
+            - generic [ref=f2e184]: 4.965%
+            - generic [ref=f2e185]: −18 bp
+          - generic [ref=f2e190]:
+            - generic "美元指數" [ref=f2e191]
+            - generic [ref=f2e192]: DX-Y.NYB
+            - generic [ref=f2e193]: "101.55"
+            - generic [ref=f2e194]: −0.23%
+          - generic [ref=f2e199]:
+            - generic "美元/新台幣" [ref=f2e200]
+            - generic [ref=f2e201]: TWD=X
+            - generic [ref=f2e202]: "32.590"
+            - generic [ref=f2e203]: +0.04%
+          - generic [ref=f2e208]:
+            - generic "美元/日圓" [ref=f2e209]
+            - generic [ref=f2e210]: JPY=X
+            - generic [ref=f2e211]: "156.97"
+            - generic [ref=f2e212]: −0.82%
+      - generic [ref=f2e217]:
+        - heading "商品・情緒" [level=2] [ref=f2e218]
+        - generic [ref=f2e219]:
+          - generic [ref=f2e220]:
+            - generic "VIX 恐慌指數" [ref=f2e221]
+            - generic [ref=f2e222]: ^VIX
+            - generic [ref=f2e223]: "19.20"
+            - generic [ref=f2e224]: +15.11%
+          - generic [ref=f2e229]:
+            - generic "WTI 原油" [ref=f2e230]
+            - generic [ref=f2e231]: CL=F
+            - generic [ref=f2e232]: 99.28 USD
+            - generic [ref=f2e233]: +2.19%
+          - generic [ref=f2e238]:
+            - generic "黃金" [ref=f2e239]
+            - generic [ref=f2e240]: GC=F
+            - generic [ref=f2e241]: 4,060.4 USD
+            - generic [ref=f2e242]: −2.16%
+          - generic [ref=f2e247]:
+            - generic "比特幣" [ref=f2e248]
+            - generic [ref=f2e249]: BTC-USD
+            - generic [ref=f2e250]: 81,316 USD
+            - generic [ref=f2e251]: −3.21%
+    - generic [ref=f2e256]:
+      - generic [ref=f2e257]:
+        - generic [ref=f2e258]:
+          - heading "今日重點與影響" [level=2] [ref=f2e259]
+          - list [ref=f2e260]:
+            - listitem [ref=f2e261]:
+              - generic [ref=f2e263]:
+                - heading "科磊供應警訊引爆AI晶片股全面拋售,費半創波段最大單日跌幅 利空" [level=3] [ref=f2e264]:
+                  - text: 科磊供應警訊引爆AI晶片股全面拋售,費半創波段最大單日跌幅
+                  - generic [ref=f2e265]: 利空
+                - paragraph [ref=f2e266]: 晶圓設備廠科磊(Lam Research)釋出供應受限的保守展望,觸發AI晶片供應鏈全面殺盤:Marvell、AMD盤中跌約8%,英特爾跌約7%,科磊本身重挫約9%,費城半導體指數單日重挫6.06%,為6月下旬以來最大單日跌幅;那斯達克綜合指數跌2.44%,創6月以來最差單日表現。市場同時對AI資本支出能否帶來對等回報的疑慮再度升溫。若今日台北開盘後,AI供應鏈情緒延續偏空,台股晶圓代工、ASIC、AI伺服器等出口相關個股恐面臨補跌壓力;若美股尾盤止穩或出現逢低買盤,台股跌幅則可能收斂。
+                - generic [ref=f2e267]:
+                  - generic [ref=f2e268]: 美股
+                  - generic [ref=f2e269]: 半導體
+                  - generic [ref=f2e270]: AI伺服器
+                  - generic [ref=f2e271]: ASIC 與矽智財
+            - listitem [ref=f2e272]:
+              - generic [ref=f2e274]:
+                - heading "台積電ADR暴跌4.63%,對台北現股溢價收窄至10.94% 利空" [level=3] [ref=f2e275]:
+                  - text: 台積電ADR暴跌4.63%,對台北現股溢價收窄至10.94%
+                  - generic [ref=f2e276]: 利空
+                - paragraph [ref=f2e277]: 台積電ADR(TSM)隨美股半導體全面重挫同步下跌4.63%,收411.89美元,較台北現股(10/21收2420元)溢價由前一日的高檔收窄至10.94%。傳導路徑為:美股費半重挫→台積電ADR領跌→台北開盘時台積電現股及晶圓代工、設備族群情緒承壓;若溢價持續收斂,代表外資在美盤的賣壓已超過台北現股的既有估值,台股開盘補跌風險隨之上升。
+                - generic [ref=f2e278]:
+                  - generic [ref=f2e279]: 台美股
+                  - generic [ref=f2e280]: 半導體
+                  - generic [ref=f2e281]: 晶圓代工
+            - listitem [ref=f2e282]:
+              - generic [ref=f2e284]:
+                - heading "風險資產與避險資產同步下跌,顯示市場出現去風險(deleveraging)跡象 利空" [level=3] [ref=f2e285]:
+                  - text: 風險資產與避險資產同步下跌,顯示市場出現去風險(deleveraging)跡象
+                  - generic [ref=f2e286]: 利空
+                - paragraph [ref=f2e287]: VIX恐慌指數單日急升15.11%至19.2,同時美10年債殖利率下跌3.52個基點、美元指數小跌0.23%,但黃金重挫2.16%、比特幣下跌3.21%。殖利率與美元走弱卻未能撐住黃金與比特幣,顯示本輪賣壓較可能是資金全面減碼風險部位、回補保證金所致,而非單純轉向傳統避險資產;若去風險情緒持續擴大,新興市場與台股等風險資產仍可能承壓,反之若VIX回落,資金可能重新分散配置。
+                - generic [ref=f2e288]: 美股
+            - listitem [ref=f2e290]:
+              - generic [ref=f2e292]:
+                - heading "台股三大法人前一交易日大舉賣超994.67億元,外資為主要賣壓 利空" [level=3] [ref=f2e293]:
+                  - text: 台股三大法人前一交易日大舉賣超994.67億元,外資為主要賣壓
+                  - generic [ref=f2e294]: 利空
+                - paragraph [ref=f2e295]: 10/22三大法人合計賣超994.67億元,其中外資賣超815.82億元、自營商賣超273.77億元,僅投信逆勢買超94.92億元。法人轉趨保守的態度與隔夜美股AI晶片鏈重挫的氣氛相呼應;若外資今日持續調節,台股開盘量能與情緒恐進一步受壓,投信逆勢買超的防禦性佈局則可能提供部分緩衝。
+                - generic [ref=f2e296]: 台股
+            - listitem [ref=f2e298]:
+              - generic [ref=f2e300]:
+                - heading "外資台指期淨空單維持相對高檔,官方最新資料僅至10/13 視數據而定" [level=3] [ref=f2e301]:
+                  - text: 外資台指期淨空單維持相對高檔,官方最新資料僅至10/13
+                  - generic [ref=f2e302]: 視數據而定
+                - paragraph [ref=f2e303]: 據財經媒體整理,外資台指期未平倉淨空單在10/13約為8.7萬口,處於9月下旬以來的相對高檔區間(7.6萬至8.7萬口),但期交所官方資料目前僅更新至該日,尚無法確認10/22當日的期貨籌碼變化。若外資於隔夜美股重挫後同步在台指期加碼空單,台股開盘上方賣壓恐增加;若外資轉為回補空單,則可能減緩下跌動能。
+                - generic [ref=f2e304]: 台股
+            - listitem [ref=f2e306]:
+              - generic [ref=f2e308]:
+                - heading "本週聚焦FOMC利率決議與美國GDP、PCE物價數據,科技巨頭財報週同步登場 視數據而定" [level=3] [ref=f2e309]:
+                  - text: 本週聚焦FOMC利率決議與美國GDP、PCE物價數據,科技巨頭財報週同步登場
+                  - generic [ref=f2e310]: 視數據而定
+                - paragraph [ref=f2e311]: 美國聯準會將於10/27-28召開FOMC會議,利率決議約於台北時間10/29凌晨公布;同日稍晚(台北時間10/29晚間20:30)將公布美國第三季GDP初值與9月PCE物價指數。市場先前在Fed主席Warsh於Jackson Hole發表偏鷹言論後,一度將9月升息機率由34%上修至54%,目前聯邦資金利率區間約為3.75%至4.00%。若PCE通膀數據高於預期或FOMC決議偏鷹,將強化再升息預期,推升美元與殖利率,對科技成長股估值形成壓力;若數據降溫或Fed維持不變,風險情緒可望緩和。此外,Meta、蘋果等美股大型科技公司預計於本週(約10/28-10/29前後)密集公布財報,AI資本支出指引能否說服市場將是觀察重點。
+                - generic [ref=f2e312]:
+                  - generic [ref=f2e313]: 美股
+                  - generic [ref=f2e314]: AI
+                  - generic [ref=f2e315]: 科技股
+            - listitem [ref=f2e316]:
+              - generic [ref=f2e318]:
+                - heading "板塊資金呈現防禦輪動,晶圓代工連續12日遭資金撤出 中性" [level=3] [ref=f2e319]:
+                  - text: 板塊資金呈現防禦輪動,晶圓代工連續12日遭資金撤出
+                  - generic [ref=f2e320]: 中性
+                - paragraph [ref=f2e321]: 據板塊資金流資料,電信、鋼鐵、航運、金融等板塊20日法人資金持續淨流入,其中電信20日淨流入184億元、資金排名全市場31個板塊中第1,金融淨流入437億元排名第4;相對地,晶圓代工連續12日遭資金淨流出,20日累計淨流出3450億元,外資在台積電等權值股的賣壓最為明顯。此現象僅為事實陳述,反映近期AI急殺後資金階段性轉往傳統內需或高息板塊,若隔夜美股晶片股賣壓延續,晶圓代工資金流出狀態可能持續;若AI鏈情緒回穩,資金亦可能重新流入。
+                - generic [ref=f2e322]:
+                  - generic [ref=f2e323]: 台股
+                  - generic [ref=f2e324]: 電信
+                  - generic [ref=f2e325]: 金融
+                  - generic [ref=f2e326]: 鋼鐵
+                  - generic [ref=f2e327]: 晶圓代工
+        - generic [ref=f2e328]:
+          - heading "經濟日曆(台北時間)" [level=2] [ref=f2e329]
+          - table [ref=f2e331]:
+            - rowgroup [ref=f2e332]:
+              - row [ref=f2e333]:
+                - columnheader "時間 ↕" [ref=f2e334] [cursor=pointer]
+                - columnheader "事件 / 可能影響 ↕" [ref=f2e335] [cursor=pointer]
+                - columnheader "預期 ↕" [ref=f2e336] [cursor=pointer]
+                - columnheader "前值 ↕" [ref=f2e337] [cursor=pointer]
+                - columnheader "重要 ↕" [ref=f2e338] [cursor=pointer]
+            - rowgroup [ref=f2e339]:
+              - row [ref=f2e340]:
+                - cell "10/29 02:00" [ref=f2e341]
+                - cell "美FOMC利率決議(10/27-28會議) 若決議再升息或聲明偏鷹→美元、殖利率走升,科技成長股估值承壓;若維持不變或偏鴿→風險情緒可望緩和,台積電ADR與台股有望獲得支撐" [ref=f2e342]:
+                  - text: 美FOMC利率決議(10/27-28會議)
+                  - generic [ref=f2e343]: 若決議再升息或聲明偏鷹→美元、殖利率走升,科技成長股估值承壓;若維持不變或偏鴿→風險情緒可望緩和,台積電ADR與台股有望獲得支撐
+                - cell "—" [ref=f2e344]
+                - cell "3.75%-4.00%(9月升息後水準)" [ref=f2e345]
+                - cell [ref=f2e346]:
+                  - generic "重要性:高" [ref=f2e347]
+              - row [ref=f2e351]:
+                - cell "10/29 20:30" [ref=f2e352]
+                - cell "美美國第三季GDP初值、9月PCE物價指數 PCE通膀高於預期→強化再升息預期,美元與殖利率上升,壓抑科技成長股;低於預期則相反,有利風險資產反彈" [ref=f2e353]:
+                  - text: 美美國第三季GDP初值、9月PCE物價指數
+                  - generic [ref=f2e354]: PCE通膀高於預期→強化再升息預期,美元與殖利率上升,壓抑科技成長股;低於預期則相反,有利風險資產反彈
+                - cell "—" [ref=f2e355]
+                - cell "—" [ref=f2e356]
+                - cell [ref=f2e357]:
+                  - generic "重要性:高" [ref=f2e358]
+              - row [ref=f2e362]:
+                - cell "10/28 —" [ref=f2e363]
+                - cell "美美股大型科技股財報週(Meta、蘋果等約10/28-10/29前後公布,日期為市場預估) 若AI資本支出指引優於預期或展現明確回報→有助AI硬體鏈信心修復,外溢台積電ADR與台股供應鏈;若指引保守或資本支出降溫→可能延續隔夜的AI鏈賣壓" [ref=f2e364]:
+                  - text: 美美股大型科技股財報週(Meta、蘋果等約10/28-10/29前後公布,日期為市場預估)
+                  - generic [ref=f2e365]: 若AI資本支出指引優於預期或展現明確回報→有助AI硬體鏈信心修復,外溢台積電ADR與台股供應鏈;若指引保守或資本支出降溫→可能延續隔夜的AI鏈賣壓
+                - cell "—" [ref=f2e366]
+                - cell "—" [ref=f2e367]
+                - cell [ref=f2e368]:
+                  - generic "重要性:高" [ref=f2e369]
+      - generic [ref=f2e373]:
+        - generic [ref=f2e374]:
+          - heading "台股籌碼(10/22)" [level=2] [ref=f2e375]
+          - generic [ref=f2e376]:
+            - generic [ref=f2e377]:
+              - generic [ref=f2e378]: 外資(億)
+              - text: −815.8
+            - generic [ref=f2e379]:
+              - generic [ref=f2e380]: 投信(億)
+              - text: "+94.9"
+            - generic [ref=f2e381]:
+              - generic [ref=f2e382]: 自營商(億)
+              - text: −273.8
+            - generic [ref=f2e383]:
+              - generic [ref=f2e384]: 外資台指期淨未平倉(口)
+              - text: —
+            - generic [ref=f2e385]:
+              - generic [ref=f2e386]: 融資增減(億)
+              - text: —
+          - paragraph [ref=f2e387]: 三大法人合計賣超994.67億元,外資為主要賣壓,僅投信逆勢買超,法人態度轉趨保守。
+        - generic [ref=f2e388]:
+          - heading "產業觀察" [level=2] [ref=f2e389]
+          - generic [ref=f2e390]:
+            - generic [ref=f2e391]:
+              - generic [ref=f2e392]: 晶圓代工
+              - generic [ref=f2e393]: 偏空
+              - generic [ref=f2e394]: 資金連續12日淨流出,20日累計淨流出3450億元,且隔夜美股費半重挫、台積電ADR跌4.63%
+            - generic [ref=f2e395]:
+              - generic [ref=f2e396]: 電信
+              - generic [ref=f2e397]: 偏多
+              - generic [ref=f2e398]: 20日法人淨流入184億元,資金排名全板塊第1,近5日仍在流入
+            - generic [ref=f2e399]:
+              - generic [ref=f2e400]: 金融
+              - generic [ref=f2e401]: 偏多
+              - generic [ref=f2e402]: 20日法人淨流入437億元排名第4,近5日持續流入,具防禦性資金輪動特性
+            - generic [ref=f2e403]:
+              - generic [ref=f2e404]: 鋼鐵
+              - generic [ref=f2e405]: 偏多
+              - generic [ref=f2e406]: 20日法人淨流入84億元排名第2,近5日流入加速
+            - generic [ref=f2e407]:
+              - generic [ref=f2e408]: ASIC 與矽智財
+              - generic [ref=f2e409]: 中性
+              - generic [ref=f2e410]: 資金連續4日流入但近日流入速度放緩,且屬AI鏈,易受隔夜美股晶片股賣壓波及
+        - generic [ref=f2e411]:
+          - heading "風險提醒" [level=2] [ref=f2e412]
+          - list [ref=f2e413]:
+            - listitem [ref=f2e414]: 美股AI晶片鏈賣壓若延續,台積電ADR重挫可能傳導至台北開盘補跌
+            - listitem [ref=f2e415]: FOMC(10/27-28)決議前市場對再升息預期升溫,美元與美債殖利率波動可能放大
+            - listitem [ref=f2e416]: 外資台指期淨空單官方資料僅更新至10/13、約8.7萬口處於相對高檔,若隨美股重挫加碼空單,台股上方壓力恐增加
+            - listitem [ref=f2e417]: 本週美股科技巨頭財報密集公布,若AI資本支出指引不如預期,AI硬體供應鏈恐再度承壓
+            - listitem [ref=f2e418]: VIX急升伴隨黃金、比特幣同步下跌,顯示市場可能出現跨資產去風險情緒,波動性仍有擴大風險
+        - generic [ref=f2e419]:
+          - heading "資料來源" [level=2] [ref=f2e420]
+          - list [ref=f2e421]:
+            - listitem [ref=f2e422]:
+              - 'link "Chip Stocks Fall as Supply Warning Deepens AI Selloff: Marvell and AMD Sink 8%, Intel Drops 7% - Yahoo Finance" [ref=f2e423] [cursor=pointer]':
+                - /url: https://finance.yahoo.com/technology/articles/chip-stocks-fall-supply-warning-154508313.html
+            - listitem [ref=f2e424]:
+              - link "Chip Stocks Fall as Supply Warning Deepens AI Selloff - 24/7 Wall St." [ref=f2e425] [cursor=pointer]:
+                - /url: https://247wallst.com/investing/2026/10/22/chip-stocks-fall-as-supply-warning-deepens-ai-selloff-marvell-and-amd-sink-8-intel-drops-7/
+            - listitem [ref=f2e426]:
+              - link "Nasdaq falls more than 2% for worst day since June as AI spending woes, oil prices spark sell-off - CNBC" [ref=f2e427] [cursor=pointer]:
+                - /url: https://www.cnbc.com/2026/10/21/stock-market-today-live-updates.html
+            - listitem [ref=f2e428]:
+              - link "Global chip selloff deepens as AI worries, China competition weigh - Yahoo Finance" [ref=f2e429] [cursor=pointer]:
+                - /url: https://finance.yahoo.com/technology/articles/global-chip-selloff-deepens-ai-085657296.html
+            - listitem [ref=f2e430]:
+              - link "S&P 500, Nasdaq end sharply lower as revived AI doubts ignite tech selloff - Yahoo Finance" [ref=f2e431] [cursor=pointer]:
+                - /url: https://finance.yahoo.com/markets/stocks/articles/nasdaq-futures-drop-over-1-093849296.html
+            - listitem [ref=f2e432]:
+              - 'link "Markets Brief: Chip Stocks Sell Off, Investors Rotate Into Value, and What to Watch in Big Tech Earnings - Morningstar" [ref=f2e433] [cursor=pointer]':
+                - /url: https://www.morningstar.com/markets/markets-brief-chip-stocks-sell-off-investors-rotate-into-value-what-watch-big-tech-earnings
+            - listitem [ref=f2e434]:
+              - link "Micron, SK Hynix stocks tumble as chip sell-off deepens following South Korean market rout - Yahoo Finance" [ref=f2e435] [cursor=pointer]:
+                - /url: https://finance.yahoo.com/markets/stocks/article/micron-sk-hynix-stocks-tumble-as-chip-sell-off-deepens-following-south-korean-market-rout-134944408.html
+            - listitem [ref=f2e436]:
+              - link "Fed rate decision in October (Oct 28, 2026) - Robinhood Prediction Markets" [ref=f2e437] [cursor=pointer]:
+                - /url: https://robinhood.com/us/en/prediction-markets/economics/events/fed-rate-decision-in-october-oct-28-2026/
+            - listitem [ref=f2e438]:
+              - 'link "Short-term yields rise on Warsh''s inflation pledge: Markets wrap - Swissinfo" [ref=f2e439] [cursor=pointer]':
+                - /url: https://www.swissinfo.ch/eng/short-term-yields-rise-on-warshs-inflation-pledge%3a-markets-wrap/91966939
+            - listitem [ref=f2e440]:
+              - 'link "Big Tech Earnings Week Begins: AI Capex Under the Spotlight - HeyGoTrade" [ref=f2e441] [cursor=pointer]':
+                - /url: https://www.heygotrade.com/en/news/big-tech-earnings-week-ai-capex-spotlight/
+            - listitem [ref=f2e442]:
+              - link "台積電3Q26法說會新聞稿 (PR TSMC)" [ref=f2e443] [cursor=pointer]:
+                - /url: https://pr.tsmc.com/system/files/newspdf/attachment/50eaed429b24ec4f7f9c9e975fa20063f9d80b5b/3Q26%20%28C%29_with%20guidance_final_wmn.pdf
+            - listitem [ref=f2e444]:
+              - link "2026年10月13日外資期貨多單減少1259口 空單增加3174口 - Wantgoo" [ref=f2e445] [cursor=pointer]:
+                - /url: https://www.wantgoo.com/blog/383464/post/164
+            - listitem [ref=f2e446]:
+              - link "台灣證券交易所三大法人買賣金額統計表" [ref=f2e447] [cursor=pointer]:
+                - /url: https://www.twse.com.tw/zh/trading/foreign/bfi82u.html
+            - listitem [ref=f2e448]:
+              - link "Taiwan is to curb AI chip exports to China as part of the US trade deal, Bloomberg reports - Newsquawk" [ref=f2e449] [cursor=pointer]:
+                - /url: https://www.newsquawk.com/headlines/taiwan-is-to-curb-ai-chip-exports-to-china-as-part-of-the-us-trade-deal-bloomberg-reports
+  - contentinfo [ref=f2e450]:
+    - text: 本網站內容由 AI 每日自動彙整公開資訊產生，可能有延遲或錯誤，僅供參考，不構成任何投資建議。行情為前一交易日收盤資料。
+    - group [ref=f2e452]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-24 10:21" [ref=f2e453] [cursor=pointer]

@@ -1,0 +1,1051 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - link [ref=f1e4] [cursor=pointer]:
+        - /url: ./
+        - generic [ref=f1e12]: 盤前雷達台美股 · 每個交易日 06:00
+      - searchbox "查詢個股" [ref=f1e14]
+      - navigation "頁面" [ref=f1e15]:
+        - link "晨報" [ref=f1e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f1e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f1e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f1e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f1e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f1e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f1e22] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=f1e23]:
+        - button "紅漲綠跌" [pressed] [ref=f1e24] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f1e25] [cursor=pointer]
+  - main [ref=f1e26]:
+    - generic [ref=f1e27]:
+      - generic [ref=f1e28]: 資料日 2026-10-20
+      - generic [ref=f1e30]: 最新營收月份 2026-09
+      - generic [ref=f1e32]: 已是最新資料
+    - generic [ref=f1e33]:
+      - generic [ref=f1e34]:
+        - heading [level=2] [ref=f1e35]:
+          - text: 今天先看這 10 檔
+          - button "說明:今天先看這 10 檔:怎麼選、有多準" [ref=f1e36] [cursor=pointer]: "?"
+        - generic [ref=f1e37]: 起漲雷達 4★ 以上共 94 檔
+      - generic [ref=f1e38]:
+        - button "5 顆星 46.75 −0.85% 3311閎暉通信網路 9 月營收年增 +447% · 60 日 +37% · 新公告" [ref=f1e39] [cursor=pointer]:
+          - generic [ref=f1e40]:
+            - generic "5 顆星" [ref=f1e41]: ★★★★★
+            - generic [ref=f1e42]: 46.75 −0.85%
+          - generic [ref=f1e43]: 3311閎暉通信網路
+          - generic [ref=f1e44]: 9 月營收年增 +447% · 60 日 +37% · 新公告
+        - button "5 顆星 2490 −3.11% 3081聯亞通信網路 9 月營收年增 +190% · 60 日 +36% · 新公告" [ref=f1e45] [cursor=pointer]:
+          - generic [ref=f1e46]:
+            - generic "5 顆星" [ref=f1e47]: ★★★★★
+            - generic [ref=f1e48]: 2490 −3.11%
+          - generic [ref=f1e49]: 3081聯亞通信網路
+          - generic [ref=f1e50]: 9 月營收年增 +190% · 60 日 +36% · 新公告
+        - button "5 顆星 570 +1.42% 6672騰輝電子-KY電子零組件 9 月營收年增 +202% · 60 日 +147% · 新公告" [ref=f1e51] [cursor=pointer]:
+          - generic [ref=f1e52]:
+            - generic "5 顆星" [ref=f1e53]: ★★★★★
+            - generic [ref=f1e54]: 570 +1.42%
+          - generic [ref=f1e55]: 6672騰輝電子-KY電子零組件
+          - generic [ref=f1e56]: 9 月營收年增 +202% · 60 日 +147% · 新公告
+        - button "5 顆星 171 −2.29% 4977眾達-KY通信網路 9 月營收年增 +126% · 60 日 +27% · 新公告" [ref=f1e57] [cursor=pointer]:
+          - generic [ref=f1e58]:
+            - generic "5 顆星" [ref=f1e59]: ★★★★★
+            - generic [ref=f1e60]: 171 −2.29%
+          - generic [ref=f1e61]: 4977眾達-KY通信網路
+          - generic [ref=f1e62]: 9 月營收年增 +126% · 60 日 +27% · 新公告
+        - button "5 顆星 131 −1.87% 6834天二科技電子零組件 9 月營收年增 +132% · 60 日 +35% · 新公告" [ref=f1e63] [cursor=pointer]:
+          - generic [ref=f1e64]:
+            - generic "5 顆星" [ref=f1e65]: ★★★★★
+            - generic [ref=f1e66]: 131 −1.87%
+          - generic [ref=f1e67]: 6834天二科技電子零組件
+          - generic [ref=f1e68]: 9 月營收年增 +132% · 60 日 +35% · 新公告
+        - button "5 顆星 749 −2.35% 6213聯茂電子零組件 9 月營收年增 +111% · 60 日 +118% · 新公告" [ref=f1e69] [cursor=pointer]:
+          - generic [ref=f1e70]:
+            - generic "5 顆星" [ref=f1e71]: ★★★★★
+            - generic [ref=f1e72]: 749 −2.35%
+          - generic [ref=f1e73]: 6213聯茂電子零組件
+          - generic [ref=f1e74]: 9 月營收年增 +111% · 60 日 +118% · 新公告
+        - button "5 顆星 112 +9.80% 6209今國光光電 9 月營收年增 +82% · 60 日 +56% · 新公告" [ref=f1e75] [cursor=pointer]:
+          - generic [ref=f1e76]:
+            - generic "5 顆星" [ref=f1e77]: ★★★★★
+            - generic [ref=f1e78]: 112 +9.80%
+          - generic [ref=f1e79]: 6209今國光光電
+          - generic [ref=f1e80]: 9 月營收年增 +82% · 60 日 +56% · 新公告
+        - button "5 顆星 40.1 −0.50% 2489瑞軒光電 9 月營收年增 +33% · 60 日 +26% · 新公告" [ref=f1e81] [cursor=pointer]:
+          - generic [ref=f1e82]:
+            - generic "5 顆星" [ref=f1e83]: ★★★★★
+            - generic [ref=f1e84]: 40.1 −0.50%
+          - generic [ref=f1e85]: 2489瑞軒光電
+          - generic [ref=f1e86]: 9 月營收年增 +33% · 60 日 +26% · 新公告
+        - button "5 顆星 48.75 −1.12% 2468華經資訊服務 9 月營收年增 +69% · 60 日 +39% · 新公告" [ref=f1e87] [cursor=pointer]:
+          - generic [ref=f1e88]:
+            - generic "5 顆星" [ref=f1e89]: ★★★★★
+            - generic [ref=f1e90]: 48.75 −1.12%
+          - generic [ref=f1e91]: 2468華經資訊服務
+          - generic [ref=f1e92]: 9 月營收年增 +69% · 60 日 +39% · 新公告
+        - button "5 顆星 257 +0.39% 3455由田光電 9 月營收年增 +23% · 60 日 +28% · 新公告" [ref=f1e93] [cursor=pointer]:
+          - generic [ref=f1e94]:
+            - generic "5 顆星" [ref=f1e95]: ★★★★★
+            - generic [ref=f1e96]: 257 +0.39%
+          - generic [ref=f1e97]: 3455由田光電
+          - generic [ref=f1e98]: 9 月營收年增 +23% · 60 日 +28% · 新公告
+      - group [ref=f1e99]:
+        - generic "其餘 84 檔 4★ 以上" [ref=f1e100] [cursor=pointer]
+      - paragraph [ref=f1e101]: 分散買、單檔不超過可投入金額的 1/10。
+    - paragraph [ref=f1e102]:
+      - text: 這頁在找什麼、有多準
+      - button "說明:這頁在找什麼、有多準" [ref=f1e103] [cursor=pointer]: "?"
+    - region "使用步驟" [ref=f1e104]:
+      - button "3 步驟用好這頁 ▴" [expanded] [ref=f1e105] [cursor=pointer]
+      - list [ref=f1e106]:
+        - listitem [ref=f1e107]:
+          - generic [ref=f1e108]: 看方向。先看個股的評級和條件標籤,挑出你想追的方向。
+        - listitem [ref=f1e109]:
+          - generic [ref=f1e110]: 縮名單。在「潛在排行」用篩選器或預設篩選,把名單縮到幾檔。
+        - listitem [ref=f1e111]:
+          - generic [ref=f1e112]: 再決定。點個股看細節與回測,確認後再做決定。
+    - tablist "檢視" [ref=f1e114]:
+      - tab "潛在排行" [selected] [ref=f1e115] [cursor=pointer]
+      - tab "營收動能 · 爆發前" [ref=f1e116] [cursor=pointer]
+      - tab "產業循環" [ref=f1e117] [cursor=pointer]
+      - tab "爆量突破 · 剛爆發" [ref=f1e118] [cursor=pointer]
+      - tab "落後補漲" [ref=f1e119] [cursor=pointer]
+      - tab "驗證與實績" [ref=f1e120] [cursor=pointer]
+    - generic [ref=f1e121]:
+      - heading [level=2] [ref=f1e122]:
+        - text: 潛在排行
+        - button "說明:潛在排行:欄位怎麼算、可信度" [ref=f1e123] [cursor=pointer]: "?"
+      - paragraph [ref=f1e124]: 依動能分數排序,點代號看算式與詳細資料。
+    - generic [ref=f1e125]:
+      - generic [ref=f1e126]: 排序
+      - group "rs" [ref=f1e127]:
+        - button "動能分數" [pressed] [ref=f1e128] [cursor=pointer]
+        - button "前瞻空間" [ref=f1e129] [cursor=pointer]
+        - button "營收連續創新高" [ref=f1e130] [cursor=pointer]
+        - button "接近 52 週高" [ref=f1e131] [cursor=pointer]
+      - generic [ref=f1e132]: 只看
+      - group "rf" [ref=f1e133]:
+        - button "全部" [pressed] [ref=f1e134] [cursor=pointer]
+        - button "有分析師預估" [ref=f1e135] [cursor=pointer]
+        - button "前瞻不高估" [ref=f1e136] [cursor=pointer]
+        - button "前瞻低估" [ref=f1e137] [cursor=pointer]
+      - generic [ref=f1e138] [cursor=pointer]:
+        - checkbox "隱藏低波動股" [checked] [ref=f1e139]
+        - text: 隱藏低波動股
+    - region "篩選條件" [ref=f1e140]:
+      - generic [ref=f1e141]:
+        - button "篩選條件 ▴" [expanded] [ref=f1e142] [cursor=pointer]
+        - status [ref=f1e143]:
+          - text: 符合
+          - generic [ref=f1e144]: "182"
+          - text: 檔
+        - button "清除" [disabled] [ref=f1e145]
+      - generic [ref=f1e146]:
+        - generic [ref=f1e147]:
+          - generic [ref=f1e148]: 快速套用
+          - button "強勢突破 7" [ref=f1e149] [cursor=pointer]:
+            - text: 強勢突破
+            - generic [ref=f1e150]: "7"
+          - button "營收＋籌碼 27" [ref=f1e151] [cursor=pointer]:
+            - text: 營收＋籌碼
+            - generic [ref=f1e152]: "27"
+          - button "題材補漲 0" [ref=f1e153] [cursor=pointer]:
+            - text: 題材補漲
+            - generic [ref=f1e154]: "0"
+        - generic [ref=f1e155]:
+          - generic [ref=f1e156]: 自訂
+          - button "儲存目前條件" [disabled] [ref=f1e157]
+          - generic [ref=f1e158]: 先選好條件再儲存
+        - generic [ref=f1e159]:
+          - generic [ref=f1e160]: 評級
+          - button "5★ 30" [ref=f1e161] [cursor=pointer]:
+            - text: 5★
+            - generic [ref=f1e162]: "30"
+          - button "4★ 以上 103" [ref=f1e163] [cursor=pointer]:
+            - text: 4★ 以上
+            - generic [ref=f1e164]: "103"
+          - button "3★ 以上 171" [ref=f1e165] [cursor=pointer]:
+            - text: 3★ 以上
+            - generic [ref=f1e166]: "171"
+          - button "說明:評級" [ref=f1e167] [cursor=pointer]: "?"
+        - generic [ref=f1e168]:
+          - generic [ref=f1e169]: 價格帶
+          - button "< 50 25" [ref=f1e170] [cursor=pointer]:
+            - text: < 50
+            - generic [ref=f1e171]: "25"
+          - button "50–150 59" [ref=f1e172] [cursor=pointer]:
+            - text: 50–150
+            - generic [ref=f1e173]: "59"
+          - button "150–500 55" [ref=f1e174] [cursor=pointer]:
+            - text: 150–500
+            - generic [ref=f1e175]: "55"
+          - button "≥ 500 43" [ref=f1e176] [cursor=pointer]:
+            - text: ≥ 500
+            - generic [ref=f1e177]: "43"
+          - button "說明:價格帶" [ref=f1e178] [cursor=pointer]: "?"
+        - generic [ref=f1e179]:
+          - generic [ref=f1e180]: 技術
+          - generic [ref=f1e181]:
+            - button "量能放大 47" [ref=f1e182] [cursor=pointer]:
+              - text: 量能放大
+              - generic [ref=f1e183]: "47"
+            - button "說明:條件標籤:量能放大" [ref=f1e184] [cursor=pointer]: "?"
+          - generic [ref=f1e185]:
+            - button "均線轉強 58" [ref=f1e186] [cursor=pointer]:
+              - text: 均線轉強
+              - generic [ref=f1e187]: "58"
+            - button "說明:條件標籤:均線轉強" [ref=f1e188] [cursor=pointer]: "?"
+          - generic [ref=f1e189]:
+            - button "接近 52 週高 11" [ref=f1e190] [cursor=pointer]:
+              - text: 接近 52 週高
+              - generic [ref=f1e191]: "11"
+            - button "說明:條件標籤:接近 52 週高" [ref=f1e192] [cursor=pointer]: "?"
+        - generic [ref=f1e193]:
+          - generic [ref=f1e194]: 籌碼
+          - generic [ref=f1e195]:
+            - button "籌碼偏多 59" [ref=f1e196] [cursor=pointer]:
+              - text: 籌碼偏多
+              - generic [ref=f1e197]: "59"
+            - button "說明:條件標籤:籌碼偏多" [ref=f1e198] [cursor=pointer]: "?"
+        - generic [ref=f1e199]:
+          - generic [ref=f1e200]: 基本面
+          - generic [ref=f1e201]:
+            - button "營收動能 169" [ref=f1e202] [cursor=pointer]:
+              - text: 營收動能
+              - generic [ref=f1e203]: "169"
+            - button "說明:條件標籤:營收動能" [ref=f1e204] [cursor=pointer]: "?"
+        - generic [ref=f1e205]:
+          - generic [ref=f1e206]: 題材
+          - generic [ref=f1e207]:
+            - button "題材同步發動 0" [ref=f1e208] [cursor=pointer]:
+              - text: 題材同步發動
+              - generic [ref=f1e209]: "0"
+            - button "說明:條件標籤:題材同步發動" [ref=f1e210] [cursor=pointer]: "?"
+          - generic [ref=f1e211]:
+            - button "落後補漲 0" [ref=f1e212] [cursor=pointer]:
+              - text: 落後補漲
+              - generic [ref=f1e213]: "0"
+            - button "說明:條件標籤:落後補漲" [ref=f1e214] [cursor=pointer]: "?"
+    - table [ref=f1e216]:
+      - rowgroup [ref=f1e217]:
+        - row [ref=f1e218]:
+          - columnheader "#" [ref=f1e219]
+          - columnheader "個股" [ref=f1e220]
+          - columnheader "評級 ↕" [ref=f1e221] [cursor=pointer]
+          - columnheader "股價 ↕" [ref=f1e222] [cursor=pointer]
+          - columnheader "動能分數 ↕" [ref=f1e223] [cursor=pointer]
+          - columnheader "統計 60 日區間(25%~中位~75%) ↕" [ref=f1e224] [cursor=pointer]
+          - columnheader "前瞻本益比 / 歷史中位 ↕" [ref=f1e225] [cursor=pointer]
+          - columnheader "前瞻合理價 ↕" [ref=f1e226] [cursor=pointer]
+          - columnheader "前瞻空間 ↕" [ref=f1e227] [cursor=pointer]
+          - columnheader "前瞻評價 ↕" [ref=f1e228] [cursor=pointer]
+          - columnheader "分析師目標價 ↕" [ref=f1e229] [cursor=pointer]
+          - columnheader "營收年增 ↕" [ref=f1e230] [cursor=pointer]
+          - columnheader "入選原因" [ref=f1e231]
+      - rowgroup [ref=f1e232]:
+        - row [ref=f1e233]:
+          - cell "1" [ref=f1e234]
+          - cell [ref=f1e235]:
+            - button "6672 騰輝電子-KY" [ref=f1e236] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e237]:
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e238]: 均線轉強
+              - generic "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%" [ref=f1e239]: 接近 52 週高
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e240]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e241]: 籌碼偏多
+          - cell [ref=f1e242]:
+            - generic "5 顆星" [ref=f1e243]: ★★★★★
+          - cell "570" [ref=f1e244]
+          - cell "100" [ref=f1e245]
+          - cell "490.31 ~ 575.93 ~ 712.56" [ref=f1e246]
+          - cell "17.7 / 14.1" [ref=f1e247]
+          - cell "455.91" [ref=f1e248]
+          - cell "−20%" [ref=f1e249]
+          - cell "高估" [ref=f1e250]
+          - cell "660(+16%)" [ref=f1e251]
+          - cell "+202%" [ref=f1e252]
+          - cell "營收動能" [ref=f1e253]
+        - row [ref=f1e254]:
+          - cell "2" [ref=f1e255]
+          - cell [ref=f1e256]:
+            - button "3597 映興" [ref=f1e257] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e258]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e259]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e260]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e261]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e262]: 籌碼偏多
+          - cell [ref=f1e263]:
+            - generic "5 顆星" [ref=f1e264]: ★★★★★
+          - cell "49.3" [ref=f1e265]
+          - cell "100" [ref=f1e266]
+          - cell "42.41 ~ 49.81 ~ 61.63" [ref=f1e267]
+          - cell "—" [ref=f1e268]
+          - cell "—" [ref=f1e269]
+          - cell "—" [ref=f1e270]
+          - cell "無預估" [ref=f1e271]
+          - cell "—" [ref=f1e272]
+          - cell "+50%" [ref=f1e273]
+          - cell "營收動能" [ref=f1e274]
+        - row [ref=f1e275]:
+          - cell "3" [ref=f1e276]
+          - cell [ref=f1e277]:
+            - button "6213 聯茂" [ref=f1e278] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e279]:
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e280]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e281]: 營收動能
+          - cell [ref=f1e282]:
+            - generic "5 顆星" [ref=f1e283]: ★★★★★
+          - cell "749" [ref=f1e284]
+          - cell "99" [ref=f1e285]
+          - cell "644.29 ~ 756.79 ~ 936.32" [ref=f1e286]
+          - cell "23.5 / 30.8" [ref=f1e287]
+          - cell "980.02" [ref=f1e288]
+          - cell "+31%" [ref=f1e289]
+          - cell "合理" [ref=f1e290]
+          - cell "693.5(−7%)" [ref=f1e291]
+          - cell "+111%" [ref=f1e292]
+          - cell "營收動能" [ref=f1e293]
+        - row [ref=f1e294]:
+          - cell "4" [ref=f1e295]
+          - cell [ref=f1e296]:
+            - button "1815 富喬" [ref=f1e297] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e298]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e299]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e300]: 均線轉強
+              - generic "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%" [ref=f1e301]: 接近 52 週高
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e302]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e303]: 籌碼偏多
+          - cell [ref=f1e304]:
+            - generic "5 顆星" [ref=f1e305]: ★★★★★
+          - cell "154" [ref=f1e306]
+          - cell "99" [ref=f1e307]
+          - cell "132.47 ~ 155.6 ~ 192.52" [ref=f1e308]
+          - cell "23.4 / 19.7" [ref=f1e309]
+          - cell "129.95" [ref=f1e310]
+          - cell "−16%" [ref=f1e311]
+          - cell "合理" [ref=f1e312]
+          - cell "—" [ref=f1e313]
+          - cell "+82%" [ref=f1e314]
+          - cell "營收動能" [ref=f1e315]
+        - row [ref=f1e316]:
+          - cell "5" [ref=f1e317]
+          - cell [ref=f1e318]:
+            - button "6209 今國光" [ref=f1e319] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e320]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e321]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e322]: 均線轉強
+              - generic "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%" [ref=f1e323]: 接近 52 週高
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e324]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e325]: 籌碼偏多
+          - cell [ref=f1e326]:
+            - generic "5 顆星" [ref=f1e327]: ★★★★★
+          - cell "112" [ref=f1e328]
+          - cell "98" [ref=f1e329]
+          - cell "96.34 ~ 113.16 ~ 140.01" [ref=f1e330]
+          - cell "—" [ref=f1e331]
+          - cell "—" [ref=f1e332]
+          - cell "—" [ref=f1e333]
+          - cell "無預估" [ref=f1e334]
+          - cell "—" [ref=f1e335]
+          - cell "+82%" [ref=f1e336]
+          - cell "營收動能" [ref=f1e337]
+        - row [ref=f1e338]:
+          - cell "6" [ref=f1e339]
+          - cell [ref=f1e340]:
+            - button "4927 泰鼎-KY" [ref=f1e341] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e342]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e343]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e344]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e345]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e346]: 籌碼偏多
+          - cell [ref=f1e347]:
+            - generic "5 顆星" [ref=f1e348]: ★★★★★
+          - cell "56.5" [ref=f1e349]
+          - cell "98" [ref=f1e350]
+          - cell "48.6 ~ 57.09 ~ 70.63" [ref=f1e351]
+          - cell "—" [ref=f1e352]
+          - cell "—" [ref=f1e353]
+          - cell "—" [ref=f1e354]
+          - cell "無預估" [ref=f1e355]
+          - cell "—" [ref=f1e356]
+          - cell "+73%" [ref=f1e357]
+          - cell "營收動能" [ref=f1e358]
+        - row [ref=f1e359]:
+          - cell "7" [ref=f1e360]
+          - cell [ref=f1e361]:
+            - button "3167 大量" [ref=f1e362] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e363]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e364]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e365]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e366]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e367]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e368]:
+            - generic "4 顆星" [ref=f1e369]: ★★★★★
+          - cell "971" [ref=f1e370]
+          - cell "97" [ref=f1e371]
+          - cell "835.25 ~ 981.1 ~ 1213.85" [ref=f1e372]
+          - cell "24.1 / 16.4" [ref=f1e373]
+          - cell "660.78" [ref=f1e374]
+          - cell "−32%" [ref=f1e375]
+          - cell "合理" [ref=f1e376]
+          - cell "1045(+8%)" [ref=f1e377]
+          - cell "+172%" [ref=f1e378]
+          - cell "營收動能" [ref=f1e379]
+        - row [ref=f1e380]:
+          - cell "8" [ref=f1e381]
+          - cell [ref=f1e382]:
+            - button "3693 營邦" [ref=f1e383] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e384]:
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e385]: 均線轉強
+              - generic "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%" [ref=f1e386]: 接近 52 週高
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e387]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e388]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e389]:
+            - generic "4 顆星" [ref=f1e390]: ★★★★★
+          - cell "721" [ref=f1e391]
+          - cell "97" [ref=f1e392]
+          - cell "620.2 ~ 728.5 ~ 901.32" [ref=f1e393]
+          - cell "—" [ref=f1e394]
+          - cell "—" [ref=f1e395]
+          - cell "—" [ref=f1e396]
+          - cell "無預估" [ref=f1e397]
+          - cell "600(−17%)" [ref=f1e398]
+          - cell "+139%" [ref=f1e399]
+          - cell "營收動能" [ref=f1e400]
+        - row [ref=f1e401]:
+          - cell "9" [ref=f1e402]
+          - cell [ref=f1e403]:
+            - button "3443 創意" [ref=f1e404] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e405]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e406]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e407]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e408]:
+            - generic "4 顆星" [ref=f1e409]: ★★★★★
+          - cell "7745" [ref=f1e410]
+          - cell "97" [ref=f1e411]
+          - cell "6662.25 ~ 7825.55 ~ 9682.02" [ref=f1e412]
+          - cell "72.8 / 47.6" [ref=f1e413]
+          - cell "5061.45" [ref=f1e414]
+          - cell "−35%" [ref=f1e415]
+          - cell "高估" [ref=f1e416]
+          - cell "6922.37(−11%)" [ref=f1e417]
+          - cell "+98%" [ref=f1e418]
+          - cell "營收動能" [ref=f1e419]
+        - row [ref=f1e420]:
+          - cell "10" [ref=f1e421]
+          - cell [ref=f1e422]:
+            - button "4566 時碩工業" [ref=f1e423] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e424]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e425]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e426]: 均線轉強
+              - generic "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%" [ref=f1e427]: 接近 52 週高
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e428]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e429]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e430]:
+            - generic "4 顆星" [ref=f1e431]: ★★★★★
+          - cell "85.8" [ref=f1e432]
+          - cell "96" [ref=f1e433]
+          - cell "73.81 ~ 86.69 ~ 107.26" [ref=f1e434]
+          - cell "103.7 / 18" [ref=f1e435]
+          - cell "14.87" [ref=f1e436]
+          - cell "−83%" [ref=f1e437]
+          - cell "高估" [ref=f1e438]
+          - cell "85.08(−1%)" [ref=f1e439]
+          - cell "+45%" [ref=f1e440]
+          - cell "營收動能" [ref=f1e441]
+        - row [ref=f1e442]:
+          - cell "11" [ref=f1e443]
+          - cell [ref=f1e444]:
+            - button "5230 雷笛克光學" [ref=f1e445] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e446]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e447]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e448]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e449]: 營收動能
+          - cell [ref=f1e450]:
+            - generic "5 顆星" [ref=f1e451]: ★★★★★
+          - cell "26.1" [ref=f1e452]
+          - cell "95" [ref=f1e453]
+          - cell "22.45 ~ 26.37 ~ 32.63" [ref=f1e454]
+          - cell "—" [ref=f1e455]
+          - cell "—" [ref=f1e456]
+          - cell "—" [ref=f1e457]
+          - cell "無預估" [ref=f1e458]
+          - cell "—" [ref=f1e459]
+          - cell "+23%" [ref=f1e460]
+          - cell "營收動能" [ref=f1e461]
+        - row [ref=f1e462]:
+          - cell "12" [ref=f1e463]
+          - cell [ref=f1e464]:
+            - button "3287 廣寰科" [ref=f1e465] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e466]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e467]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e468]: 均線轉強
+              - generic "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%" [ref=f1e469]: 接近 52 週高
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e470]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e471]:
+            - generic "4 顆星" [ref=f1e472]: ★★★★★
+          - cell "70.3" [ref=f1e473]
+          - cell "95" [ref=f1e474]
+          - cell "60.47 ~ 71.03 ~ 87.88" [ref=f1e475]
+          - cell "—" [ref=f1e476]
+          - cell "—" [ref=f1e477]
+          - cell "—" [ref=f1e478]
+          - cell "無預估" [ref=f1e479]
+          - cell "—" [ref=f1e480]
+          - cell "+35%" [ref=f1e481]
+          - cell "營收動能" [ref=f1e482]
+        - row [ref=f1e483]:
+          - cell "13" [ref=f1e484]
+          - cell [ref=f1e485]:
+            - button "3234 光環" [ref=f1e486] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e487]:
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e488]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e489]: 營收動能
+          - cell "4 顆星" [ref=f1e490]:
+            - generic "4 顆星" [ref=f1e491]: ★★★★★
+          - cell "185.5" [ref=f1e492]
+          - cell "94" [ref=f1e493]
+          - cell "159.57 ~ 187.43 ~ 231.89" [ref=f1e494]
+          - cell "—" [ref=f1e495]
+          - cell "—" [ref=f1e496]
+          - cell "—" [ref=f1e497]
+          - cell "無預估" [ref=f1e498]
+          - cell "—" [ref=f1e499]
+          - cell "+140%" [ref=f1e500]
+          - cell "營收動能、法人大賣" [ref=f1e501]
+        - row [ref=f1e502]:
+          - cell "14" [ref=f1e503]
+          - cell [ref=f1e504]:
+            - button "6756 威鋒電子" [ref=f1e505] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e506]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e507]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e508]: 均線轉強
+              - generic "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%" [ref=f1e509]: 接近 52 週高
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e510]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e511]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e512]:
+            - generic "4 顆星" [ref=f1e513]: ★★★★★
+          - cell "124.5" [ref=f1e514]
+          - cell "94" [ref=f1e515]
+          - cell "107.09 ~ 125.79 ~ 155.64" [ref=f1e516]
+          - cell "—" [ref=f1e517]
+          - cell "—" [ref=f1e518]
+          - cell "—" [ref=f1e519]
+          - cell "無預估" [ref=f1e520]
+          - cell "—" [ref=f1e521]
+          - cell "+66%" [ref=f1e522]
+          - cell "營收動能、爆量突破" [ref=f1e523]
+        - row [ref=f1e524]:
+          - cell "15" [ref=f1e525]
+          - cell [ref=f1e526]:
+            - button "6834 天二科技" [ref=f1e527] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e528]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e529]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e530]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e531]: 營收動能
+          - cell [ref=f1e532]:
+            - generic "5 顆星" [ref=f1e533]: ★★★★★
+          - cell "131" [ref=f1e534]
+          - cell "93" [ref=f1e535]
+          - cell "112.69 ~ 132.36 ~ 163.76" [ref=f1e536]
+          - cell "—" [ref=f1e537]
+          - cell "—" [ref=f1e538]
+          - cell "—" [ref=f1e539]
+          - cell "無預估" [ref=f1e540]
+          - cell "—" [ref=f1e541]
+          - cell "+132%" [ref=f1e542]
+          - cell "營收動能" [ref=f1e543]
+        - row [ref=f1e544]:
+          - cell "16" [ref=f1e545]
+          - cell [ref=f1e546]:
+            - button "2615 萬海" [ref=f1e547] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e548]:
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e549]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e550]: 營收動能
+          - cell "4 顆星" [ref=f1e551]:
+            - generic "4 顆星" [ref=f1e552]: ★★★★★
+          - cell "117" [ref=f1e553]
+          - cell "93" [ref=f1e554]
+          - cell "100.64 ~ 118.22 ~ 146.26" [ref=f1e555]
+          - cell "8.9 / 5.7" [ref=f1e556]
+          - cell "74.77" [ref=f1e557]
+          - cell "−36%" [ref=f1e558]
+          - cell "高估" [ref=f1e559]
+          - cell "128.8(+10%)" [ref=f1e560]
+          - cell "+98%" [ref=f1e561]
+          - cell "營收動能" [ref=f1e562]
+        - row [ref=f1e563]:
+          - cell "17" [ref=f1e564]
+          - cell [ref=f1e565]:
+            - button "3016 嘉晶" [ref=f1e566] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e567]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e568]: 營收動能
+          - cell "4 顆星" [ref=f1e569]:
+            - generic "4 顆星" [ref=f1e570]: ★★★★★
+          - cell "151" [ref=f1e571]
+          - cell "93" [ref=f1e572]
+          - cell "129.89 ~ 152.57 ~ 188.77" [ref=f1e573]
+          - cell "35.7 / 45.3" [ref=f1e574]
+          - cell "191.82" [ref=f1e575]
+          - cell "+27%" [ref=f1e576]
+          - cell "合理" [ref=f1e577]
+          - cell "188(+25%)" [ref=f1e578]
+          - cell "+53%" [ref=f1e579]
+          - cell "營收動能" [ref=f1e580]
+        - row [ref=f1e581]:
+          - cell "18" [ref=f1e582]
+          - cell [ref=f1e583]:
+            - button "3219 倚強科" [ref=f1e584] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e585]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e586]: 營收動能
+          - cell "4 顆星" [ref=f1e587]:
+            - generic "4 顆星" [ref=f1e588]: ★★★★★
+          - cell "110" [ref=f1e589]
+          - cell "92" [ref=f1e590]
+          - cell "94.62 ~ 111.14 ~ 137.51" [ref=f1e591]
+          - cell "16.9 / 40.8" [ref=f1e592]
+          - cell "265.15" [ref=f1e593]
+          - cell "+141%" [ref=f1e594]
+          - cell "低估" [ref=f1e595]
+          - cell "150(+36%)" [ref=f1e596]
+          - cell "+151%" [ref=f1e597]
+          - cell "營收動能" [ref=f1e598]
+        - row [ref=f1e599]:
+          - cell "19" [ref=f1e600]
+          - cell [ref=f1e601]:
+            - button "3044 健鼎" [ref=f1e602] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e603]:
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e604]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e605]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e606]: 籌碼偏多
+          - cell [ref=f1e607]:
+            - generic "5 顆星" [ref=f1e608]: ★★★★★
+          - cell "567" [ref=f1e609]
+          - cell "92" [ref=f1e610]
+          - cell "487.73 ~ 572.9 ~ 708.81" [ref=f1e611]
+          - cell "14.9 / 13.6" [ref=f1e612]
+          - cell "517.81" [ref=f1e613]
+          - cell "−9%" [ref=f1e614]
+          - cell "合理" [ref=f1e615]
+          - cell "687.14(+21%)" [ref=f1e616]
+          - cell "+54%" [ref=f1e617]
+          - cell "營收動能" [ref=f1e618]
+        - row [ref=f1e619]:
+          - cell "20" [ref=f1e620]
+          - cell [ref=f1e621]:
+            - button "1303 南亞" [ref=f1e622] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e623]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e624]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e625]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e626]: 營收動能
+          - cell "4 顆星" [ref=f1e627]:
+            - generic "4 顆星" [ref=f1e628]: ★★★★★
+          - cell "296" [ref=f1e629]
+          - cell "91" [ref=f1e630]
+          - cell "254.62 ~ 299.08 ~ 370.03" [ref=f1e631]
+          - cell "14.4 / 41.2" [ref=f1e632]
+          - cell "845.22" [ref=f1e633]
+          - cell "+186%" [ref=f1e634]
+          - cell "合理" [ref=f1e635]
+          - cell "323.88(+9%)" [ref=f1e636]
+          - cell "+55%" [ref=f1e637]
+          - cell "營收動能" [ref=f1e638]
+        - row [ref=f1e639]:
+          - cell "21" [ref=f1e640]
+          - cell [ref=f1e641]:
+            - button "1569 濱川" [ref=f1e642] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e643]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e644]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e645]: 均線轉強
+              - generic "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%" [ref=f1e646]: 接近 52 週高
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e647]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e648]:
+            - generic "4 顆星" [ref=f1e649]: ★★★★★
+          - cell "79.7" [ref=f1e650]
+          - cell "91" [ref=f1e651]
+          - cell "68.56 ~ 80.53 ~ 99.63" [ref=f1e652]
+          - cell "—" [ref=f1e653]
+          - cell "—" [ref=f1e654]
+          - cell "—" [ref=f1e655]
+          - cell "無預估" [ref=f1e656]
+          - cell "75(−6%)" [ref=f1e657]
+          - cell "+39%" [ref=f1e658]
+          - cell "營收動能" [ref=f1e659]
+        - row [ref=f1e660]:
+          - cell "22" [ref=f1e661]
+          - cell [ref=f1e662]:
+            - button "2305 全友" [ref=f1e663] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e664]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e665]: 營收動能
+          - cell "4 顆星" [ref=f1e666]:
+            - generic "4 顆星" [ref=f1e667]: ★★★★★
+          - cell "54.7" [ref=f1e668]
+          - cell "90" [ref=f1e669]
+          - cell "47.05 ~ 55.27 ~ 68.38" [ref=f1e670]
+          - cell "—" [ref=f1e671]
+          - cell "—" [ref=f1e672]
+          - cell "—" [ref=f1e673]
+          - cell "無預估" [ref=f1e674]
+          - cell "—" [ref=f1e675]
+          - cell "+213%" [ref=f1e676]
+          - cell "營收動能" [ref=f1e677]
+        - row [ref=f1e678]:
+          - cell "23" [ref=f1e679]
+          - cell [ref=f1e680]:
+            - button "3624 光頡" [ref=f1e681] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e682]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e683]: 營收動能
+          - cell [ref=f1e684]:
+            - generic "5 顆星" [ref=f1e685]: ★★★★★
+          - cell "136.5" [ref=f1e686]
+          - cell "90" [ref=f1e687]
+          - cell "117.42 ~ 137.92 ~ 170.64" [ref=f1e688]
+          - cell "—" [ref=f1e689]
+          - cell "—" [ref=f1e690]
+          - cell "—" [ref=f1e691]
+          - cell "無預估" [ref=f1e692]
+          - cell "—" [ref=f1e693]
+          - cell "+67%" [ref=f1e694]
+          - cell "營收動能" [ref=f1e695]
+        - row [ref=f1e696]:
+          - cell "24" [ref=f1e697]
+          - cell [ref=f1e698]:
+            - button "1802 台玻" [ref=f1e699] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e700]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e701]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e702]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e703]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e704]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e705]:
+            - generic "4 顆星" [ref=f1e706]: ★★★★★
+          - cell "67.4" [ref=f1e707]
+          - cell "90" [ref=f1e708]
+          - cell "57.98 ~ 68.1 ~ 84.26" [ref=f1e709]
+          - cell "—" [ref=f1e710]
+          - cell "—" [ref=f1e711]
+          - cell "—" [ref=f1e712]
+          - cell "無預估" [ref=f1e713]
+          - cell "81(+20%)" [ref=f1e714]
+          - cell "+34%" [ref=f1e715]
+          - cell "營收動能" [ref=f1e716]
+        - row [ref=f1e717]:
+          - cell "25" [ref=f1e718]
+          - cell [ref=f1e719]:
+            - button "4903 聯光通" [ref=f1e720] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e721]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e722]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e723]: 均線轉強
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e724]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e725]:
+            - generic "4 顆星" [ref=f1e726]: ★★★★★
+          - cell "54.2" [ref=f1e727]
+          - cell "89" [ref=f1e728]
+          - cell "46.62 ~ 54.76 ~ 67.76" [ref=f1e729]
+          - cell "—" [ref=f1e730]
+          - cell "—" [ref=f1e731]
+          - cell "—" [ref=f1e732]
+          - cell "無預估" [ref=f1e733]
+          - cell "—" [ref=f1e734]
+          - cell "+94%" [ref=f1e735]
+          - cell "營收動能" [ref=f1e736]
+        - row [ref=f1e737]:
+          - cell "26" [ref=f1e738]
+          - cell [ref=f1e739]:
+            - button "3580 友威科" [ref=f1e740] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e741]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e742]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e743]: 均線轉強
+              - generic "收盤 ≥ 近 250 個交易日(含今天)最高收盤的 95%" [ref=f1e744]: 接近 52 週高
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e745]: 營收動能
+          - cell "4 顆星" [ref=f1e746]:
+            - generic "4 顆星" [ref=f1e747]: ★★★★★
+          - cell "115.5" [ref=f1e748]
+          - cell "88" [ref=f1e749]
+          - cell "99.35 ~ 116.7 ~ 144.39" [ref=f1e750]
+          - cell "—" [ref=f1e751]
+          - cell "—" [ref=f1e752]
+          - cell "—" [ref=f1e753]
+          - cell "無預估" [ref=f1e754]
+          - cell "—" [ref=f1e755]
+          - cell "+110%" [ref=f1e756]
+          - cell "營收動能" [ref=f1e757]
+        - row [ref=f1e758]:
+          - cell "27" [ref=f1e759]
+          - cell [ref=f1e760]:
+            - button "8021 尖點" [ref=f1e761] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e762]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e763]: 營收動能
+          - cell "4 顆星" [ref=f1e764]:
+            - generic "4 顆星" [ref=f1e765]: ★★★★★
+          - cell "489" [ref=f1e766]
+          - cell "87" [ref=f1e767]
+          - cell "420.64 ~ 494.09 ~ 611.3" [ref=f1e768]
+          - cell "30.3 / 17.6" [ref=f1e769]
+          - cell "283.71" [ref=f1e770]
+          - cell "−42%" [ref=f1e771]
+          - cell "合理" [ref=f1e772]
+          - cell "—" [ref=f1e773]
+          - cell "+98%" [ref=f1e774]
+          - cell "營收動能" [ref=f1e775]
+        - row [ref=f1e776]:
+          - cell "28" [ref=f1e777]
+          - cell [ref=f1e778]:
+            - button "5498 凱崴" [ref=f1e779] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e780]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e781]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e782]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e783]: 營收動能
+          - cell [ref=f1e784]:
+            - generic "5 顆星" [ref=f1e785]: ★★★★★
+          - cell "62.1" [ref=f1e786]
+          - cell "87" [ref=f1e787]
+          - cell "53.42 ~ 62.75 ~ 77.63" [ref=f1e788]
+          - cell "—" [ref=f1e789]
+          - cell "—" [ref=f1e790]
+          - cell "—" [ref=f1e791]
+          - cell "無預估" [ref=f1e792]
+          - cell "—" [ref=f1e793]
+          - cell "+79%" [ref=f1e794]
+          - cell "營收動能" [ref=f1e795]
+        - row [ref=f1e796]:
+          - cell "29" [ref=f1e797]
+          - cell [ref=f1e798]:
+            - button "6505 台塑化" [ref=f1e799] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e800]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e801]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e802]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e803]: 營收動能
+          - cell "3 顆星" [ref=f1e804]:
+            - generic "3 顆星" [ref=f1e805]: ★★★★★
+          - cell "106.5" [ref=f1e806]
+          - cell "87" [ref=f1e807]
+          - cell "91.61 ~ 107.61 ~ 133.14" [ref=f1e808]
+          - cell "15.9 / 27.5" [ref=f1e809]
+          - cell "184.19" [ref=f1e810]
+          - cell "+73%" [ref=f1e811]
+          - cell "低估" [ref=f1e812]
+          - cell "108.17(+2%)" [ref=f1e813]
+          - cell "+66%" [ref=f1e814]
+          - cell "營收動能" [ref=f1e815]
+        - row [ref=f1e816]:
+          - cell "30" [ref=f1e817]
+          - cell [ref=f1e818]:
+            - button "2468 華經" [ref=f1e819] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e820]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e821]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e822]: 均線轉強
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e823]: 籌碼偏多
+          - cell [ref=f1e824]:
+            - generic "5 顆星" [ref=f1e825]: ★★★★★
+          - cell "48.75" [ref=f1e826]
+          - cell "86" [ref=f1e827]
+          - cell "41.93 ~ 49.26 ~ 60.94" [ref=f1e828]
+          - cell "—" [ref=f1e829]
+          - cell "—" [ref=f1e830]
+          - cell "—" [ref=f1e831]
+          - cell "無預估" [ref=f1e832]
+          - cell "—" [ref=f1e833]
+          - cell "+69%" [ref=f1e834]
+          - cell "營收動能" [ref=f1e835]
+        - row [ref=f1e836]:
+          - cell "31" [ref=f1e837]
+          - cell [ref=f1e838]:
+            - button "3311 閎暉" [ref=f1e839] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e840]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e841]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e842]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e843]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e844]: 籌碼偏多
+          - cell [ref=f1e845]:
+            - generic "5 顆星" [ref=f1e846]: ★★★★★
+          - cell "46.75" [ref=f1e847]
+          - cell "85" [ref=f1e848]
+          - cell "40.21 ~ 47.24 ~ 58.44" [ref=f1e849]
+          - cell "—" [ref=f1e850]
+          - cell "—" [ref=f1e851]
+          - cell "—" [ref=f1e852]
+          - cell "無預估" [ref=f1e853]
+          - cell "—" [ref=f1e854]
+          - cell "+447%" [ref=f1e855]
+          - cell "營收動能" [ref=f1e856]
+        - row [ref=f1e857]:
+          - cell "32" [ref=f1e858]
+          - cell [ref=f1e859]:
+            - button "5340 建榮" [ref=f1e860] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e861]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e862]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e863]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e864]: 營收動能
+          - cell [ref=f1e865]:
+            - generic "5 顆星" [ref=f1e866]: ★★★★★
+          - cell "95.7" [ref=f1e867]
+          - cell "85" [ref=f1e868]
+          - cell "82.32 ~ 96.7 ~ 119.63" [ref=f1e869]
+          - cell "—" [ref=f1e870]
+          - cell "—" [ref=f1e871]
+          - cell "—" [ref=f1e872]
+          - cell "無預估" [ref=f1e873]
+          - cell "—" [ref=f1e874]
+          - cell "+47%" [ref=f1e875]
+          - cell "營收動能" [ref=f1e876]
+        - row [ref=f1e877]:
+          - cell "33" [ref=f1e878]
+          - cell [ref=f1e879]:
+            - button "3189 景碩" [ref=f1e880] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e881]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e882]: 營收動能
+          - cell "4 顆星" [ref=f1e883]:
+            - generic "4 顆星" [ref=f1e884]: ★★★★★
+          - cell "945" [ref=f1e885]
+          - cell "84" [ref=f1e886]
+          - cell "812.89 ~ 954.83 ~ 1181.34" [ref=f1e887]
+          - cell "36.7 / 15.2" [ref=f1e888]
+          - cell "392.12" [ref=f1e889]
+          - cell "−59%" [ref=f1e890]
+          - cell "合理" [ref=f1e891]
+          - cell "1114.08(+18%)" [ref=f1e892]
+          - cell "+45%" [ref=f1e893]
+          - cell "營收動能" [ref=f1e894]
+        - row [ref=f1e895]:
+          - cell "34" [ref=f1e896]
+          - cell [ref=f1e897]:
+            - button "6654 天正國際" [ref=f1e898] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e899]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e900]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e901]: 籌碼偏多
+          - cell "3 顆星" [ref=f1e902]:
+            - generic "3 顆星" [ref=f1e903]: ★★★★★
+          - cell "204.5" [ref=f1e904]
+          - cell "83" [ref=f1e905]
+          - cell "175.91 ~ 206.63 ~ 255.65" [ref=f1e906]
+          - cell "—" [ref=f1e907]
+          - cell "—" [ref=f1e908]
+          - cell "—" [ref=f1e909]
+          - cell "無預估" [ref=f1e910]
+          - cell "—" [ref=f1e911]
+          - cell "+132%" [ref=f1e912]
+          - cell "營收動能" [ref=f1e913]
+        - row [ref=f1e914]:
+          - cell "35" [ref=f1e915]
+          - cell [ref=f1e916]:
+            - button "2340 台亞" [ref=f1e917] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e918]:
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e919]: 均線轉強
+          - cell "4 顆星" [ref=f1e920]:
+            - generic "4 顆星" [ref=f1e921]: ★★★★★
+          - cell "47.5" [ref=f1e922]
+          - cell "83" [ref=f1e923]
+          - cell "40.86 ~ 47.99 ~ 59.38" [ref=f1e924]
+          - cell "—" [ref=f1e925]
+          - cell "—" [ref=f1e926]
+          - cell "—" [ref=f1e927]
+          - cell "無預估" [ref=f1e928]
+          - cell "—" [ref=f1e929]
+          - cell "+34%" [ref=f1e930]
+          - cell "營收動能" [ref=f1e931]
+        - row [ref=f1e932]:
+          - cell "36" [ref=f1e933]
+          - cell [ref=f1e934]:
+            - button "6234 高僑" [ref=f1e935] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e936]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e937]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e938]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e939]: 營收動能
+          - cell [ref=f1e940]:
+            - generic "5 顆星" [ref=f1e941]: ★★★★★
+          - cell "47.95" [ref=f1e942]
+          - cell "82" [ref=f1e943]
+          - cell "41.25 ~ 48.45 ~ 59.94" [ref=f1e944]
+          - cell "—" [ref=f1e945]
+          - cell "—" [ref=f1e946]
+          - cell "—" [ref=f1e947]
+          - cell "無預估" [ref=f1e948]
+          - cell "—" [ref=f1e949]
+          - cell "+134%" [ref=f1e950]
+          - cell "營收動能" [ref=f1e951]
+        - row [ref=f1e952]:
+          - cell "37" [ref=f1e953]
+          - cell [ref=f1e954]:
+            - button "3017 奇鋐" [ref=f1e955] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e956]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e957]: 營收動能
+          - cell "4 顆星" [ref=f1e958]:
+            - generic "4 顆星" [ref=f1e959]: ★★★★★
+          - cell "3325" [ref=f1e960]
+          - cell "82" [ref=f1e961]
+          - cell "2860.16 ~ 3359.58 ~ 4156.58" [ref=f1e962]
+          - cell "22.6 / 28.6" [ref=f1e963]
+          - cell "4215.62" [ref=f1e964]
+          - cell "+27%" [ref=f1e965]
+          - cell "合理" [ref=f1e966]
+          - cell "4213.47(+27%)" [ref=f1e967]
+          - cell "+45%" [ref=f1e968]
+          - cell "營收動能" [ref=f1e969]
+        - row [ref=f1e970]:
+          - cell "38" [ref=f1e971]
+          - cell [ref=f1e972]:
+            - button "4720 德淵" [ref=f1e973] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e974]:
+              - generic "近 5 日平均成交金額 ≥ 再往前 20 日(t-24～t-5)平均成交金額的 1.5 倍" [ref=f1e975]: 量能放大
+              - generic "收盤 > 20 日均線 > 60 日均線,且 20 日均線高於 5 個交易日前的 20 日均線" [ref=f1e976]: 均線轉強
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e977]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e978]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e979]:
+            - generic "4 顆星" [ref=f1e980]: ★★★★★
+          - cell "26.6" [ref=f1e981]
+          - cell "81" [ref=f1e982]
+          - cell "22.88 ~ 26.88 ~ 33.25" [ref=f1e983]
+          - cell "—" [ref=f1e984]
+          - cell "—" [ref=f1e985]
+          - cell "—" [ref=f1e986]
+          - cell "無預估" [ref=f1e987]
+          - cell "—" [ref=f1e988]
+          - cell "+33%" [ref=f1e989]
+          - cell "營收動能" [ref=f1e990]
+        - row [ref=f1e991]:
+          - cell "39" [ref=f1e992]
+          - cell [ref=f1e993]:
+            - button "8996 高力" [ref=f1e994] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e995]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e996]: 營收動能
+              - generic "三大法人買賣超近 20 日累計 > 0,且近 5 日累計 > 0" [ref=f1e997]: 籌碼偏多
+          - cell "4 顆星" [ref=f1e998]:
+            - generic "4 顆星" [ref=f1e999]: ★★★★★
+          - cell "1545" [ref=f1e1000]
+          - cell "80" [ref=f1e1001]
+          - cell "1358.52 ~ 1543.92 ~ 1822.64" [ref=f1e1002]
+          - cell "43 / 54.3" [ref=f1e1003]
+          - cell "1950.45" [ref=f1e1004]
+          - cell "+26%" [ref=f1e1005]
+          - cell "合理" [ref=f1e1006]
+          - cell "1881.43(+22%)" [ref=f1e1007]
+          - cell "+154%" [ref=f1e1008]
+          - cell "營收動能" [ref=f1e1009]
+        - row [ref=f1e1010]:
+          - cell "40" [ref=f1e1011]
+          - cell [ref=f1e1012]:
+            - button "3105 穩懋" [ref=f1e1013] [cursor=pointer]
+            - generic "條件標籤" [ref=f1e1014]:
+              - generic "已公告最新月營收年增 ≥ 20%,且近 3 個月平均年增 ≥ 20%" [ref=f1e1015]: 營收動能
+          - cell "4 顆星" [ref=f1e1016]:
+            - generic "4 顆星" [ref=f1e1017]: ★★★★★
+          - cell "475" [ref=f1e1018]
+          - cell "80" [ref=f1e1019]
+          - cell "417.67 ~ 474.67 ~ 560.36" [ref=f1e1020]
+          - cell "49.4 / 31.7" [ref=f1e1021]
+          - cell "305.27" [ref=f1e1022]
+          - cell "−36%" [ref=f1e1023]
+          - cell "合理" [ref=f1e1024]
+          - cell "432.73(−9%)" [ref=f1e1025]
+          - cell "+30%" [ref=f1e1026]
+          - cell "營收動能" [ref=f1e1027]
+    - button "顯示全部 182 檔" [ref=f1e1028] [cursor=pointer]
+  - contentinfo [ref=f1e1029]:
+    - text: 名單依公開的月營收、股價與成交資料,用固定規則篩出;每個交易日收盤後自動更新,開啟頁面時若證交所已公布更新的收盤資料,上市股會直接用官方資料即時更新。 不是買賣建議,也不代表會漲。回測期間是 AI 多頭行情,空頭時表現可能差很多。
+    - group [ref=f1e1031]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-21 07:59" [ref=f1e1032] [cursor=pointer]

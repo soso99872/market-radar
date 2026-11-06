@@ -1,0 +1,727 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e12]: 盤前雷達
+    - generic [ref=e13]: 營收 · 動能 · 題材 ── 每個交易日 06:00 更新
+  - banner [ref=e16]:
+    - generic [ref=e17]:
+      - link [ref=e18] [cursor=pointer]:
+        - /url: ./
+        - generic [ref=e26]: 盤前雷達台美股 · 每個交易日 06:00
+      - searchbox "查詢個股" [ref=e28]
+      - navigation "頁面" [ref=e29]:
+        - link "晨報" [ref=e30] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=e31] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=e32] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=e33] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=e34] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=e35] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=e36] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=e37]:
+        - button "紅漲綠跌" [pressed] [ref=e38] [cursor=pointer]
+        - button "綠漲紅跌" [ref=e39] [cursor=pointer]
+  - main [ref=e40]:
+    - generic [ref=e41]:
+      - generic [ref=e42]: 大盤 −1.81%
+      - generic [ref=e44]: 資料日期 2026-10-22
+      - generic [ref=e46]: 每個交易日約 18:00 更新
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - group [ref=e49]:
+          - button "板塊排行" [pressed] [ref=e50] [cursor=pointer]
+          - button "逆勢買超" [ref=e51] [cursor=pointer]
+        - generic [ref=e52]:
+          - group [ref=e53]:
+            - button "買超" [pressed] [ref=e54] [cursor=pointer]
+            - button "賣超" [ref=e55] [cursor=pointer]
+            - button "漲幅" [ref=e56] [cursor=pointer]
+            - button "跌幅" [ref=e57] [cursor=pointer]
+          - group [ref=e58]:
+            - button "當日" [ref=e59] [cursor=pointer]
+            - button "5 日" [pressed] [ref=e60] [cursor=pointer]
+            - button "20 日" [ref=e61] [cursor=pointer]
+        - generic [ref=e62]: 近 5 日法人買最多的板塊(近 5 個交易日累計),只呈現事實、不構成投資建議。
+        - generic [ref=e63]:
+          - generic [ref=e64]: 5日漲跌
+          - generic [ref=e65]: 5日淨買超
+        - list [ref=e66]:
+          - listitem [ref=e67]:
+            - button "1 AI 伺服器代工 +0.92% +338.8 億 今日 +24.4億·9/9 檔在買·主力 緯創" [ref=e68] [cursor=pointer]:
+              - generic [ref=e69]: "1"
+              - generic [ref=e71]: AI 伺服器代工
+              - generic [ref=e72]: +0.92%
+              - generic [ref=e73]: +338.8 億
+              - generic [ref=e74]: 今日 +24.4億·9/9 檔在買·主力 緯創
+          - listitem [ref=e77]:
+            - button "2 金融 +1.30% +136.7 億 今日 +49.6億·11/12 檔在買·主力 兆豐金" [ref=e78] [cursor=pointer]:
+              - generic [ref=e79]: "2"
+              - generic [ref=e81]: 金融
+              - generic [ref=e82]: +1.30%
+              - generic [ref=e83]: +136.7 億
+              - generic [ref=e84]: 今日 +49.6億·11/12 檔在買·主力 兆豐金
+          - listitem [ref=e87]:
+            - button "3 電信 +2.30% +49.02 億 今日 +16.3億·3/3 檔在買·主力 中華電" [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]: "3"
+              - generic [ref=e91]: 電信
+              - generic [ref=e92]: +2.30%
+              - generic [ref=e93]: +49.02 億
+              - generic [ref=e94]: 今日 +16.3億·3/3 檔在買·主力 中華電
+          - listitem [ref=e97]:
+            - button "4 航運 −0.66% +46.93 億 今日 +15.4億·6/6 檔在買·主力 長榮" [ref=e98] [cursor=pointer]:
+              - generic [ref=e99]: "4"
+              - generic [ref=e101]: 航運
+              - generic [ref=e102]: −0.66%
+              - generic [ref=e103]: +46.93 億
+              - generic [ref=e104]: 今日 +15.4億·6/6 檔在買·主力 長榮
+          - listitem [ref=e107]:
+            - button "5 鋼鐵 +2.33% +36.33 億 今日 +9.0億·6/6 檔在買·主力 中鋼" [ref=e108] [cursor=pointer]:
+              - generic [ref=e109]: "5"
+              - generic [ref=e111]: 鋼鐵
+              - generic [ref=e112]: +2.33%
+              - generic [ref=e113]: +36.33 億
+              - generic [ref=e114]: 今日 +9.0億·6/6 檔在買·主力 中鋼
+          - listitem [ref=e117]:
+            - button "6 ASIC 與矽智財 −3.56% +23.46 億 今日 +1.2億·2/6 檔在買·主力 創意" [ref=e118] [cursor=pointer]:
+              - generic [ref=e119]: "6"
+              - generic [ref=e121]: ASIC 與矽智財
+              - generic [ref=e122]: −3.56%
+              - generic [ref=e123]: +23.46 億
+              - generic [ref=e124]: 今日 +1.2億·2/6 檔在買·主力 創意
+          - listitem [ref=e127]:
+            - button "7 面板 −1.05% +13.29 億 今日 −12.3億·1/3 檔在買·主力 群創" [ref=e128] [cursor=pointer]:
+              - generic [ref=e129]: "7"
+              - generic [ref=e131]: 面板
+              - generic [ref=e132]: −1.05%
+              - generic [ref=e133]: +13.29 億
+              - generic [ref=e134]: 今日 −12.3億·1/3 檔在買·主力 群創
+          - listitem [ref=e137]:
+            - button "8 國防與無人機 −0.26% +12.69 億 今日 +2.7億·4/6 檔在買·主力 神基" [ref=e138] [cursor=pointer]:
+              - generic [ref=e139]: "8"
+              - generic [ref=e141]: 國防與無人機
+              - generic [ref=e142]: −0.26%
+              - generic [ref=e143]: +12.69 億
+              - generic [ref=e144]: 今日 +2.7億·4/6 檔在買·主力 神基
+          - listitem [ref=e147]:
+            - button "9 營建 +0.09% +8.93 億 今日 +2.8億·6/6 檔在買·主力 興富發" [ref=e148] [cursor=pointer]:
+              - generic [ref=e149]: "9"
+              - generic [ref=e151]: 營建
+              - generic [ref=e152]: +0.09%
+              - generic [ref=e153]: +8.93 億
+              - generic [ref=e154]: 今日 +2.8億·6/6 檔在買·主力 興富發
+          - listitem [ref=e157]:
+            - button "10 PCB 製造 −0.35% +8.28 億 今日 −19.4億·4/8 檔在買·主力 金像電" [ref=e158] [cursor=pointer]:
+              - generic [ref=e159]: "10"
+              - generic [ref=e161]: PCB 製造
+              - generic [ref=e162]: −0.35%
+              - generic [ref=e163]: +8.28 億
+              - generic [ref=e164]: 今日 −19.4億·4/8 檔在買·主力 金像電
+          - listitem [ref=e167]:
+            - button "11 散熱 −3.03% +0.98 億 今日 +25.8億·4/7 檔在買·主力 高力" [ref=e168] [cursor=pointer]:
+              - generic [ref=e169]: "11"
+              - generic [ref=e171]: 散熱
+              - generic [ref=e172]: −3.03%
+              - generic [ref=e173]: +0.98 億
+              - generic [ref=e174]: 今日 +25.8億·4/7 檔在買·主力 高力
+          - listitem [ref=e177]:
+            - button "12 機器人與自動化 −2.74% −1.23 億 今日 −1.7億·1/6 檔在買·主力 上銀" [ref=e178] [cursor=pointer]:
+              - generic [ref=e179]: "12"
+              - generic [ref=e181]: 機器人與自動化
+              - generic [ref=e182]: −2.74%
+              - generic [ref=e183]: −1.23 億
+              - generic [ref=e184]: 今日 −1.7億·1/6 檔在買·主力 上銀
+          - listitem [ref=e187]:
+            - button "13 生技醫療 −4.12% −2.59 億 今日 −0.6億·2/7 檔在買·主力 藥華藥" [ref=e188] [cursor=pointer]:
+              - generic [ref=e189]: "13"
+              - generic [ref=e191]: 生技醫療
+              - generic [ref=e192]: −4.12%
+              - generic [ref=e193]: −2.59 億
+              - generic [ref=e194]: 今日 −0.6億·2/7 檔在買·主力 藥華藥
+          - listitem [ref=e197]:
+            - button "14 測試介面 −2.89% −3.27 億 今日 −2.0億·2/4 檔在買·主力 旺矽" [ref=e198] [cursor=pointer]:
+              - generic [ref=e199]: "14"
+              - generic [ref=e201]: 測試介面
+              - generic [ref=e202]: −2.89%
+              - generic [ref=e203]: −3.27 億
+              - generic [ref=e204]: 今日 −2.0億·2/4 檔在買·主力 旺矽
+          - listitem [ref=e207]:
+            - button "15 重電與電網 −3.07% −5.77 億 今日 +1.0億·5/6 檔在買·主力 華城" [ref=e208] [cursor=pointer]:
+              - generic [ref=e209]: "15"
+              - generic [ref=e211]: 重電與電網
+              - generic [ref=e212]: −3.07%
+              - generic [ref=e213]: −5.77 億
+              - generic [ref=e214]: 今日 +1.0億·5/6 檔在買·主力 華城
+          - listitem [ref=e217]:
+            - button "16 網通設備 −2.24% −13.07 億 今日 −7.1億·4/6 檔在買·主力 啟碁" [ref=e218] [cursor=pointer]:
+              - generic [ref=e219]: "16"
+              - generic [ref=e221]: 網通設備
+              - generic [ref=e222]: −2.24%
+              - generic [ref=e223]: −13.07 億
+              - generic [ref=e224]: 今日 −7.1億·4/6 檔在買·主力 啟碁
+          - listitem [ref=e227]:
+            - button "17 化合物半導體 −5.62% −21.78 億 今日 −5.3億·1/4 檔在買·主力 全新" [ref=e228] [cursor=pointer]:
+              - generic [ref=e229]: "17"
+              - generic [ref=e231]: 化合物半導體
+              - generic [ref=e232]: −5.62%
+              - generic [ref=e233]: −21.78 億
+              - generic [ref=e234]: 今日 −5.3億·1/4 檔在買·主力 全新
+          - listitem [ref=e237]:
+            - button "18 記憶體 −1.73% −25.15 億 今日 −18.4億·3/10 檔在買·主力 南亞科" [ref=e238] [cursor=pointer]:
+              - generic [ref=e239]: "18"
+              - generic [ref=e241]: 記憶體
+              - generic [ref=e242]: −1.73%
+              - generic [ref=e243]: −25.15 億
+              - generic [ref=e244]: 今日 −18.4億·3/10 檔在買·主力 南亞科
+          - listitem [ref=e247]:
+            - button "19 半導體廠務與設備 −3.85% −37.54 億 今日 −4.4億·1/6 檔在買·主力 亞翔" [ref=e248] [cursor=pointer]:
+              - generic [ref=e249]: "19"
+              - generic [ref=e251]: 半導體廠務與設備
+              - generic [ref=e252]: −3.85%
+              - generic [ref=e253]: −37.54 億
+              - generic [ref=e254]: 今日 −4.4億·1/6 檔在買·主力 亞翔
+          - listitem [ref=e257]:
+            - button "20 連接器與線材 −4.50% −40.76 億 今日 −4.9億·1/7 檔在買·主力 貿聯-KY" [ref=e258] [cursor=pointer]:
+              - generic [ref=e259]: "20"
+              - generic [ref=e261]: 連接器與線材
+              - generic [ref=e262]: −4.50%
+              - generic [ref=e263]: −40.76 億
+              - generic [ref=e264]: 今日 −4.9億·1/7 檔在買·主力 貿聯-KY
+          - listitem [ref=e267]:
+            - button "21 光學鏡頭 −1.70% −44.49 億 今日 −6.5億·1/3 檔在買·主力 大立光" [ref=e268] [cursor=pointer]:
+              - generic [ref=e269]: "21"
+              - generic [ref=e271]: 光學鏡頭
+              - generic [ref=e272]: −1.70%
+              - generic [ref=e273]: −44.49 億
+              - generic [ref=e274]: 今日 −6.5億·1/3 檔在買·主力 大立光
+          - listitem [ref=e277]:
+            - button "22 光通訊 −9.69% −46.02 億 今日 −14.7億·0/8 檔在買·主力 華星光" [ref=e278] [cursor=pointer]:
+              - generic [ref=e279]: "22"
+              - generic [ref=e281]: 光通訊
+              - generic [ref=e282]: −9.69%
+              - generic [ref=e283]: −46.02 億
+              - generic [ref=e284]: 今日 −14.7億·0/8 檔在買·主力 華星光
+          - listitem [ref=e287]:
+            - button "23 塑化 −5.66% −75.50 億 今日 −75.9億·1/6 檔在買·主力 南亞" [ref=e288] [cursor=pointer]:
+              - generic [ref=e289]: "23"
+              - generic [ref=e291]: 塑化
+              - generic [ref=e292]: −5.66%
+              - generic [ref=e293]: −75.50 億
+              - generic [ref=e294]: 今日 −75.9億·1/6 檔在買·主力 南亞
+          - listitem [ref=e297]:
+            - button "24 AI 先進封裝 −6.34% −93.84 億 今日 −48.2億·2/10 檔在買·主力 日月光投控" [ref=e298] [cursor=pointer]:
+              - generic [ref=e299]: "24"
+              - generic [ref=e301]: AI 先進封裝
+              - generic [ref=e302]: −6.34%
+              - generic [ref=e303]: −93.84 億
+              - generic [ref=e304]: 今日 −48.2億·2/10 檔在買·主力 日月光投控
+          - listitem [ref=e307]:
+            - button "25 IC 載板 −1.43% −98.41 億 今日 +17.9億·2/3 檔在買·主力 欣興" [ref=e308] [cursor=pointer]:
+              - generic [ref=e309]: "25"
+              - generic [ref=e311]: IC 載板
+              - generic [ref=e312]: −1.43%
+              - generic [ref=e313]: −98.41 億
+              - generic [ref=e314]: 今日 +17.9億·2/3 檔在買·主力 欣興
+          - listitem [ref=e317]:
+            - button "26 矽晶圓 −4.72% −106.0 億 今日 −36.8億·0/4 檔在買·主力 環球晶" [ref=e318] [cursor=pointer]:
+              - generic [ref=e319]: "26"
+              - generic [ref=e321]: 矽晶圓
+              - generic [ref=e322]: −4.72%
+              - generic [ref=e323]: −106.0 億
+              - generic [ref=e324]: 今日 −36.8億·0/4 檔在買·主力 環球晶
+          - listitem [ref=e327]:
+            - button "27 銅箔基板 −5.33% −175.5 億 今日 −24.7億·2/4 檔在買·主力 台燿" [ref=e328] [cursor=pointer]:
+              - generic [ref=e329]: "27"
+              - generic [ref=e331]: 銅箔基板
+              - generic [ref=e332]: −5.33%
+              - generic [ref=e333]: −175.5 億
+              - generic [ref=e334]: 今日 −24.7億·2/4 檔在買·主力 台燿
+          - listitem [ref=e337]:
+            - button "28 被動元件 −10.55% −176.6 億 今日 −110.3億·1/6 檔在買·主力 國巨*" [ref=e338] [cursor=pointer]:
+              - generic [ref=e339]: "28"
+              - generic [ref=e341]: 被動元件
+              - generic [ref=e342]: −10.55%
+              - generic [ref=e343]: −176.6 億
+              - generic [ref=e344]: 今日 −110.3億·1/6 檔在買·主力 國巨*
+          - listitem [ref=e347]:
+            - button "29 電源供應 −2.54% −196.1 億 今日 −50.8億·1/5 檔在買·主力 台達電" [ref=e348] [cursor=pointer]:
+              - generic [ref=e349]: "29"
+              - generic [ref=e351]: 電源供應
+              - generic [ref=e352]: −2.54%
+              - generic [ref=e353]: −196.1 億
+              - generic [ref=e354]: 今日 −50.8億·1/5 檔在買·主力 台達電
+          - listitem [ref=e357]:
+            - button "30 IC 設計 −1.44% −214.0 億 今日 −29.2億·6/14 檔在買·主力 聯發科" [ref=e358] [cursor=pointer]:
+              - generic [ref=e359]: "30"
+              - generic [ref=e361]: IC 設計
+              - generic [ref=e362]: −1.44%
+              - generic [ref=e363]: −214.0 億
+              - generic [ref=e364]: 今日 −29.2億·6/14 檔在買·主力 聯發科
+          - listitem [ref=e367]:
+            - button "31 晶圓代工 −2.06% −1371.3 億 今日 −264.9億·1/4 檔在買·主力 台積電" [ref=e368] [cursor=pointer]:
+              - generic [ref=e369]: "31"
+              - generic [ref=e371]: 晶圓代工
+              - generic [ref=e372]: −2.06%
+              - generic [ref=e373]: −1371.3 億
+              - generic [ref=e374]: 今日 −264.9億·1/4 檔在買·主力 台積電
+      - generic [ref=e377]:
+        - heading "資金輪動 · 近 10 個交易日" [level=2] [ref=e378]
+        - table [ref=e380]:
+          - rowgroup [ref=e381]:
+            - row [ref=e382]:
+              - columnheader [ref=e383]
+              - columnheader "10/08 ↕" [ref=e384] [cursor=pointer]
+              - columnheader "10/12 ↕" [ref=e385] [cursor=pointer]
+              - columnheader "10/13 ↕" [ref=e386] [cursor=pointer]
+              - columnheader "10/14 ↕" [ref=e387] [cursor=pointer]
+              - columnheader "10/15 ↕" [ref=e388] [cursor=pointer]
+              - columnheader "10/16 ↕" [ref=e389] [cursor=pointer]
+              - columnheader "10/19 ↕" [ref=e390] [cursor=pointer]
+              - columnheader "10/20 ↕" [ref=e391] [cursor=pointer]
+              - columnheader "10/21 ↕" [ref=e392] [cursor=pointer]
+              - columnheader "10/22 ↕" [ref=e393] [cursor=pointer]
+              - columnheader "10 日合計 ↕" [ref=e394] [cursor=pointer]
+          - rowgroup [ref=e395]:
+            - row [ref=e396]:
+              - cell [ref=e397]:
+                - button "AI 伺服器代工" [ref=e398] [cursor=pointer]
+              - cell "−73" [ref=e399]
+              - cell "−75" [ref=e400]
+              - cell "−45" [ref=e401]
+              - cell "+1" [ref=e402]
+              - cell "−170" [ref=e403]
+              - cell "+114" [ref=e404]
+              - cell "−63" [ref=e405]
+              - cell "+128" [ref=e406]
+              - cell "+135" [ref=e407]
+              - cell "+24" [ref=e408]
+              - cell "−24" [ref=e409]
+            - row [ref=e410]:
+              - cell [ref=e411]:
+                - button "金融" [ref=e412] [cursor=pointer]
+              - cell "−31" [ref=e413]
+              - cell "+87" [ref=e414]
+              - cell "+98" [ref=e415]
+              - cell "+17" [ref=e416]
+              - cell "+87" [ref=e417]
+              - cell "+56" [ref=e418]
+              - cell "+11" [ref=e419]
+              - cell "−40" [ref=e420]
+              - cell "+61" [ref=e421]
+              - cell "+50" [ref=e422]
+              - cell "+394" [ref=e423]
+            - row [ref=e424]:
+              - cell [ref=e425]:
+                - button "電信" [ref=e426] [cursor=pointer]
+              - cell "+7" [ref=e427]
+              - cell "+3" [ref=e428]
+              - cell "+14" [ref=e429]
+              - cell "+9" [ref=e430]
+              - cell "+45" [ref=e431]
+              - cell "+8" [ref=e432]
+              - cell "+14" [ref=e433]
+              - cell "+5" [ref=e434]
+              - cell "+5" [ref=e435]
+              - cell "+16" [ref=e436]
+              - cell "+126" [ref=e437]
+            - row [ref=e438]:
+              - cell [ref=e439]:
+                - button "航運" [ref=e440] [cursor=pointer]
+              - cell "−1" [ref=e441]
+              - cell "+51" [ref=e442]
+              - cell "+86" [ref=e443]
+              - cell "+24" [ref=e444]
+              - cell "+11" [ref=e445]
+              - cell "+32" [ref=e446]
+              - cell "+1" [ref=e447]
+              - cell "−0" [ref=e448]
+              - cell "−2" [ref=e449]
+              - cell "+15" [ref=e450]
+              - cell "+218" [ref=e451]
+            - row [ref=e452]:
+              - cell [ref=e453]:
+                - button "鋼鐵" [ref=e454] [cursor=pointer]
+              - cell "+4" [ref=e455]
+              - cell "+6" [ref=e456]
+              - cell "+5" [ref=e457]
+              - cell "+21" [ref=e458]
+              - cell "+3" [ref=e459]
+              - cell "+16" [ref=e460]
+              - cell "+4" [ref=e461]
+              - cell "+5" [ref=e462]
+              - cell "+3" [ref=e463]
+              - cell "+9" [ref=e464]
+              - cell "+76" [ref=e465]
+            - row [ref=e466]:
+              - cell [ref=e467]:
+                - button "ASIC 與矽智財" [ref=e468] [cursor=pointer]
+              - cell "+36" [ref=e469]
+              - cell "+29" [ref=e470]
+              - cell "−14" [ref=e471]
+              - cell "+3" [ref=e472]
+              - cell "+7" [ref=e473]
+              - cell "−12" [ref=e474]
+              - cell "+18" [ref=e475]
+              - cell "+12" [ref=e476]
+              - cell "+5" [ref=e477]
+              - cell "+1" [ref=e478]
+              - cell "+84" [ref=e479]
+            - row [ref=e480]:
+              - cell [ref=e481]:
+                - button "面板" [ref=e482] [cursor=pointer]
+              - cell "−36" [ref=e483]
+              - cell "−1" [ref=e484]
+              - cell "−17" [ref=e485]
+              - cell "+12" [ref=e486]
+              - cell "−27" [ref=e487]
+              - cell "+2" [ref=e488]
+              - cell "+4" [ref=e489]
+              - cell "−12" [ref=e490]
+              - cell "+32" [ref=e491]
+              - cell "−12" [ref=e492]
+              - cell "−56" [ref=e493]
+            - row [ref=e494]:
+              - cell [ref=e495]:
+                - button "國防與無人機" [ref=e496] [cursor=pointer]
+              - cell "−1" [ref=e497]
+              - cell "−1" [ref=e498]
+              - cell "+0" [ref=e499]
+              - cell "+3" [ref=e500]
+              - cell "+1" [ref=e501]
+              - cell "+4" [ref=e502]
+              - cell "−0" [ref=e503]
+              - cell "+3" [ref=e504]
+              - cell "+3" [ref=e505]
+              - cell "+3" [ref=e506]
+              - cell "+16" [ref=e507]
+            - row [ref=e508]:
+              - cell [ref=e509]:
+                - button "營建" [ref=e510] [cursor=pointer]
+              - cell "+2" [ref=e511]
+              - cell "+4" [ref=e512]
+              - cell "−0" [ref=e513]
+              - cell "+0" [ref=e514]
+              - cell "+3" [ref=e515]
+              - cell "+1" [ref=e516]
+              - cell "+2" [ref=e517]
+              - cell "+2" [ref=e518]
+              - cell "+1" [ref=e519]
+              - cell "+3" [ref=e520]
+              - cell "+18" [ref=e521]
+            - row [ref=e522]:
+              - cell [ref=e523]:
+                - button "PCB 製造" [ref=e524] [cursor=pointer]
+              - cell "+41" [ref=e525]
+              - cell "−24" [ref=e526]
+              - cell "−4" [ref=e527]
+              - cell "+74" [ref=e528]
+              - cell "−76" [ref=e529]
+              - cell "+95" [ref=e530]
+              - cell "−20" [ref=e531]
+              - cell "−21" [ref=e532]
+              - cell "−26" [ref=e533]
+              - cell "−19" [ref=e534]
+              - cell "+19" [ref=e535]
+            - row [ref=e536]:
+              - cell [ref=e537]:
+                - button "散熱" [ref=e538] [cursor=pointer]
+              - cell "−2" [ref=e539]
+              - cell "−5" [ref=e540]
+              - cell "−9" [ref=e541]
+              - cell "−35" [ref=e542]
+              - cell "−40" [ref=e543]
+              - cell "−4" [ref=e544]
+              - cell "+8" [ref=e545]
+              - cell "+15" [ref=e546]
+              - cell "−44" [ref=e547]
+              - cell "+26" [ref=e548]
+              - cell "−91" [ref=e549]
+            - row [ref=e550]:
+              - cell [ref=e551]:
+                - button "機器人與自動化" [ref=e552] [cursor=pointer]
+              - cell "−20" [ref=e553]
+              - cell "−2" [ref=e554]
+              - cell "−7" [ref=e555]
+              - cell "−5" [ref=e556]
+              - cell "−9" [ref=e557]
+              - cell "−2" [ref=e558]
+              - cell "−1" [ref=e559]
+              - cell "+2" [ref=e560]
+              - cell "+1" [ref=e561]
+              - cell "−2" [ref=e562]
+              - cell "−44" [ref=e563]
+            - row [ref=e564]:
+              - cell [ref=e565]:
+                - button "生技醫療" [ref=e566] [cursor=pointer]
+              - cell "−2" [ref=e567]
+              - cell "−1" [ref=e568]
+              - cell "+0" [ref=e569]
+              - cell "+2" [ref=e570]
+              - cell "+14" [ref=e571]
+              - cell "+2" [ref=e572]
+              - cell "−8" [ref=e573]
+              - cell "−1" [ref=e574]
+              - cell "+4" [ref=e575]
+              - cell "−1" [ref=e576]
+              - cell "+10" [ref=e577]
+            - row [ref=e578]:
+              - cell [ref=e579]:
+                - button "測試介面" [ref=e580] [cursor=pointer]
+              - cell "+24" [ref=e581]
+              - cell "+39" [ref=e582]
+              - cell "+4" [ref=e583]
+              - cell "−14" [ref=e584]
+              - cell "−31" [ref=e585]
+              - cell "−6" [ref=e586]
+              - cell "+12" [ref=e587]
+              - cell "−12" [ref=e588]
+              - cell "+5" [ref=e589]
+              - cell "−2" [ref=e590]
+              - cell "+19" [ref=e591]
+            - row [ref=e592]:
+              - cell [ref=e593]:
+                - button "重電與電網" [ref=e594] [cursor=pointer]
+              - cell "−7" [ref=e595]
+              - cell "+21" [ref=e596]
+              - cell "−23" [ref=e597]
+              - cell "+22" [ref=e598]
+              - cell "−21" [ref=e599]
+              - cell "+5" [ref=e600]
+              - cell "−7" [ref=e601]
+              - cell "−5" [ref=e602]
+              - cell "−1" [ref=e603]
+              - cell "+1" [ref=e604]
+              - cell "−15" [ref=e605]
+            - row [ref=e606]:
+              - cell [ref=e607]:
+                - button "網通設備" [ref=e608] [cursor=pointer]
+              - cell "+13" [ref=e609]
+              - cell "−14" [ref=e610]
+              - cell "−23" [ref=e611]
+              - cell "+1" [ref=e612]
+              - cell "−12" [ref=e613]
+              - cell "+23" [ref=e614]
+              - cell "+12" [ref=e615]
+              - cell "+9" [ref=e616]
+              - cell "−49" [ref=e617]
+              - cell "−7" [ref=e618]
+              - cell "−47" [ref=e619]
+            - row [ref=e620]:
+              - cell [ref=e621]:
+                - button "化合物半導體" [ref=e622] [cursor=pointer]
+              - cell "+4" [ref=e623]
+              - cell "−12" [ref=e624]
+              - cell "−7" [ref=e625]
+              - cell "−5" [ref=e626]
+              - cell "−18" [ref=e627]
+              - cell "−7" [ref=e628]
+              - cell "−2" [ref=e629]
+              - cell "−19" [ref=e630]
+              - cell "+12" [ref=e631]
+              - cell "−5" [ref=e632]
+              - cell "−60" [ref=e633]
+            - row [ref=e634]:
+              - cell [ref=e635]:
+                - button "記憶體" [ref=e636] [cursor=pointer]
+              - cell "+52" [ref=e637]
+              - cell "−29" [ref=e638]
+              - cell "−359" [ref=e639]
+              - cell "−96" [ref=e640]
+              - cell "−171" [ref=e641]
+              - cell "+23" [ref=e642]
+              - cell "−71" [ref=e643]
+              - cell "−16" [ref=e644]
+              - cell "+58" [ref=e645]
+              - cell "−18" [ref=e646]
+              - cell "−629" [ref=e647]
+            - row [ref=e648]:
+              - cell [ref=e649]:
+                - button "半導體廠務與設備" [ref=e650] [cursor=pointer]
+              - cell "+3" [ref=e651]
+              - cell "−22" [ref=e652]
+              - cell "−17" [ref=e653]
+              - cell "−16" [ref=e654]
+              - cell "−22" [ref=e655]
+              - cell "−15" [ref=e656]
+              - cell "−6" [ref=e657]
+              - cell "−9" [ref=e658]
+              - cell "−3" [ref=e659]
+              - cell "−4" [ref=e660]
+              - cell "−112" [ref=e661]
+            - row [ref=e662]:
+              - cell [ref=e663]:
+                - button "連接器與線材" [ref=e664] [cursor=pointer]
+              - cell "+14" [ref=e665]
+              - cell "+1" [ref=e666]
+              - cell "+1" [ref=e667]
+              - cell "+2" [ref=e668]
+              - cell "−18" [ref=e669]
+              - cell "−6" [ref=e670]
+              - cell "−3" [ref=e671]
+              - cell "−16" [ref=e672]
+              - cell "−10" [ref=e673]
+              - cell "−5" [ref=e674]
+              - cell "−41" [ref=e675]
+            - row [ref=e676]:
+              - cell [ref=e677]:
+                - button "光學鏡頭" [ref=e678] [cursor=pointer]
+              - cell "−20" [ref=e679]
+              - cell "−8" [ref=e680]
+              - cell "+23" [ref=e681]
+              - cell "−63" [ref=e682]
+              - cell "+1" [ref=e683]
+              - cell "−18" [ref=e684]
+              - cell "+6" [ref=e685]
+              - cell "−39" [ref=e686]
+              - cell "+13" [ref=e687]
+              - cell "−7" [ref=e688]
+              - cell "−112" [ref=e689]
+            - row [ref=e690]:
+              - cell [ref=e691]:
+                - button "光通訊" [ref=e692] [cursor=pointer]
+              - cell "−28" [ref=e693]
+              - cell "−20" [ref=e694]
+              - cell "−45" [ref=e695]
+              - cell "+44" [ref=e696]
+              - cell "−25" [ref=e697]
+              - cell "−38" [ref=e698]
+              - cell "+10" [ref=e699]
+              - cell "−8" [ref=e700]
+              - cell "+6" [ref=e701]
+              - cell "−15" [ref=e702]
+              - cell "−119" [ref=e703]
+            - row [ref=e704]:
+              - cell [ref=e705]:
+                - button "塑化" [ref=e706] [cursor=pointer]
+              - cell "−13" [ref=e707]
+              - cell "−46" [ref=e708]
+              - cell "+49" [ref=e709]
+              - cell "+134" [ref=e710]
+              - cell "−170" [ref=e711]
+              - cell "−42" [ref=e712]
+              - cell "−39" [ref=e713]
+              - cell "−24" [ref=e714]
+              - cell "+106" [ref=e715]
+              - cell "−76" [ref=e716]
+              - cell "−122" [ref=e717]
+            - row [ref=e718]:
+              - cell [ref=e719]:
+                - button "AI 先進封裝" [ref=e720] [cursor=pointer]
+              - cell "−34" [ref=e721]
+              - cell "+3" [ref=e722]
+              - cell "−3" [ref=e723]
+              - cell "−54" [ref=e724]
+              - cell "−254" [ref=e725]
+              - cell "−54" [ref=e726]
+              - cell "−0" [ref=e727]
+              - cell "−27" [ref=e728]
+              - cell "+36" [ref=e729]
+              - cell "−48" [ref=e730]
+              - cell "−436" [ref=e731]
+            - row [ref=e732]:
+              - cell [ref=e733]:
+                - button "IC 載板" [ref=e734] [cursor=pointer]
+              - cell "+19" [ref=e735]
+              - cell "+1" [ref=e736]
+              - cell "−4" [ref=e737]
+              - cell "+13" [ref=e738]
+              - cell "−95" [ref=e739]
+              - cell "−30" [ref=e740]
+              - cell "−35" [ref=e741]
+              - cell "−39" [ref=e742]
+              - cell "−12" [ref=e743]
+              - cell "+18" [ref=e744]
+              - cell "−163" [ref=e745]
+            - row [ref=e746]:
+              - cell [ref=e747]:
+                - button "矽晶圓" [ref=e748] [cursor=pointer]
+              - cell "−51" [ref=e749]
+              - cell "−14" [ref=e750]
+              - cell "−29" [ref=e751]
+              - cell "−19" [ref=e752]
+              - cell "−28" [ref=e753]
+              - cell "−43" [ref=e754]
+              - cell "−0" [ref=e755]
+              - cell "−35" [ref=e756]
+              - cell "+8" [ref=e757]
+              - cell "−37" [ref=e758]
+              - cell "−247" [ref=e759]
+            - row [ref=e760]:
+              - cell [ref=e761]:
+                - button "銅箔基板" [ref=e762] [cursor=pointer]
+              - cell "+34" [ref=e763]
+              - cell "+7" [ref=e764]
+              - cell "−64" [ref=e765]
+              - cell "+34" [ref=e766]
+              - cell "−34" [ref=e767]
+              - cell "−26" [ref=e768]
+              - cell "−8" [ref=e769]
+              - cell "−37" [ref=e770]
+              - cell "−79" [ref=e771]
+              - cell "−25" [ref=e772]
+              - cell "−199" [ref=e773]
+            - row [ref=e774]:
+              - cell [ref=e775]:
+                - button "被動元件" [ref=e776] [cursor=pointer]
+              - cell "−49" [ref=e777]
+              - cell "−19" [ref=e778]
+              - cell "−86" [ref=e779]
+              - cell "+76" [ref=e780]
+              - cell "−152" [ref=e781]
+              - cell "−45" [ref=e782]
+              - cell "−33" [ref=e783]
+              - cell "−25" [ref=e784]
+              - cell "+37" [ref=e785]
+              - cell "−110" [ref=e786]
+              - cell "−407" [ref=e787]
+            - row [ref=e788]:
+              - cell [ref=e789]:
+                - button "電源供應" [ref=e790] [cursor=pointer]
+              - cell "−24" [ref=e791]
+              - cell "−72" [ref=e792]
+              - cell "−145" [ref=e793]
+              - cell "−18" [ref=e794]
+              - cell "−190" [ref=e795]
+              - cell "−44" [ref=e796]
+              - cell "−7" [ref=e797]
+              - cell "−56" [ref=e798]
+              - cell "−39" [ref=e799]
+              - cell "−51" [ref=e800]
+              - cell "−646" [ref=e801]
+            - row [ref=e802]:
+              - cell [ref=e803]:
+                - button "IC 設計" [ref=e804] [cursor=pointer]
+              - cell "−180" [ref=e805]
+              - cell "−97" [ref=e806]
+              - cell "−109" [ref=e807]
+              - cell "−115" [ref=e808]
+              - cell "−270" [ref=e809]
+              - cell "−40" [ref=e810]
+              - cell "−46" [ref=e811]
+              - cell "−62" [ref=e812]
+              - cell "−37" [ref=e813]
+              - cell "−29" [ref=e814]
+              - cell "−985" [ref=e815]
+            - row [ref=e816]:
+              - cell [ref=e817]:
+                - button "晶圓代工" [ref=e818] [cursor=pointer]
+              - cell "−326" [ref=e819]
+              - cell "−232" [ref=e820]
+              - cell "−581" [ref=e821]
+              - cell "−155" [ref=e822]
+              - cell "−698" [ref=e823]
+              - cell "−560" [ref=e824]
+              - cell "−144" [ref=e825]
+              - cell "−254" [ref=e826]
+              - cell "−149" [ref=e827]
+              - cell "−265" [ref=e828]
+              - cell "−3363" [ref=e829]
+        - generic [ref=e830]: 每日三大法人淨買賣超(億)賣超 ← → 買超 · 依 5 日淨買超排序 · 滑過格子看數字
+  - contentinfo [ref=e838]:
+    - text: 資料來源:臺灣證券交易所、證券櫃檯買賣中心公開資料,每個交易日約 18:00 更新。板塊為本站自訂的題材分類;法人買賣超金額以收盤價 × 買賣超股數估算,可能與實際成交金額有差異。本頁只呈現事實,不構成任何投資建議。
+    - group [ref=e840]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-23 23:29" [ref=e841] [cursor=pointer]

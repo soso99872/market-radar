@@ -1,0 +1,108 @@
+- generic [active] [ref=f8e1]:
+  - banner [ref=f8e2]:
+    - generic [ref=f8e3]:
+      - link "盤前雷達" [ref=f8e4] [cursor=pointer]:
+        - /url: ./
+      - searchbox "查詢個股" [ref=f8e14]
+      - navigation "頁面" [ref=f8e15]:
+        - link "晨報" [ref=f8e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f8e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f8e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f8e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f8e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f8e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f8e22] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=f8e23]:
+        - button "紅漲綠跌" [pressed] [ref=f8e24] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f8e25] [cursor=pointer]
+  - main [ref=f8e26]:
+    - generic [ref=f8e27]:
+      - heading "我的自選" [level=1] [ref=f8e28]
+      - paragraph [ref=f8e29]: 在任何個股面板按「☆ 加入自選」就會出現在這裡。每次打開,會列出從你上次按「已看過」之後的變化:評級升降、新營收公布、跌破 / 站上季線、出現陷阱,以及你設定的到價。資料日 2026-10-22。
+    - generic [ref=f8e30]: 還沒有自選股。用上方的搜尋框查一檔股票,在健檢面板按「☆ 加入自選」;或從下面今天先看的 10 檔開始。
+    - generic [ref=f8e31]:
+      - generic [ref=f8e32]:
+        - heading [level=2] [ref=f8e33]:
+          - text: 今天先看這 10 檔
+          - button "說明:今天先看這 10 檔:怎麼選、有多準" [ref=f8e34] [cursor=pointer]: "?"
+        - generic [ref=f8e35]: 起漲雷達 4★ 以上共 93 檔
+      - generic [ref=f8e36]:
+        - button "5 顆星 581 −7.34% 6672騰輝電子-KY電子零組件 9 月營收年增 +202% · 60 日 +163% · 新公告" [ref=f8e37] [cursor=pointer]:
+          - generic [ref=f8e38]:
+            - generic "5 顆星" [ref=f8e39]: ★★★★★
+            - generic [ref=f8e40]: 581 −7.34%
+          - generic [ref=f8e41]: 6672騰輝電子-KY電子零組件
+          - generic [ref=f8e42]: 9 月營收年增 +202% · 60 日 +163% · 新公告
+        - button "5 顆星 130 −9.72% 6834天二科技電子零組件 9 月營收年增 +132% · 60 日 +42% · 新公告" [ref=f8e43] [cursor=pointer]:
+          - generic [ref=f8e44]:
+            - generic "5 顆星" [ref=f8e45]: ★★★★★
+            - generic [ref=f8e46]: 130 −9.72%
+          - generic [ref=f8e47]: 6834天二科技電子零組件
+          - generic [ref=f8e48]: 9 月營收年增 +132% · 60 日 +42% · 新公告
+        - button "5 顆星 777 −5.59% 6213聯茂電子零組件 9 月營收年增 +111% · 60 日 +153% · 新公告" [ref=f8e49] [cursor=pointer]:
+          - generic [ref=f8e50]:
+            - generic "5 顆星" [ref=f8e51]: ★★★★★
+            - generic [ref=f8e52]: 777 −5.59%
+          - generic [ref=f8e53]: 6213聯茂電子零組件
+          - generic [ref=f8e54]: 9 月營收年增 +111% · 60 日 +153% · 新公告
+        - button "5 顆星 81 −5.59% 4949有成精密光電 9 月營收年增 +93% · 60 日 +22% · 新公告" [ref=f8e55] [cursor=pointer]:
+          - generic [ref=f8e56]:
+            - generic "5 顆星" [ref=f8e57]: ★★★★★
+            - generic [ref=f8e58]: 81 −5.59%
+          - generic [ref=f8e59]: 4949有成精密光電
+          - generic [ref=f8e60]: 9 月營收年增 +93% · 60 日 +22% · 新公告
+        - button "5 顆星 99 −10.00% 6209今國光光電 9 月營收年增 +82% · 60 日 +43% · 新公告" [ref=f8e61] [cursor=pointer]:
+          - generic [ref=f8e62]:
+            - generic "5 顆星" [ref=f8e63]: ★★★★★
+            - generic [ref=f8e64]: 99 −10.00%
+          - generic [ref=f8e65]: 6209今國光光電
+          - generic [ref=f8e66]: 9 月營收年增 +82% · 60 日 +43% · 新公告
+        - button "5 顆星 284.5 +0.71% 6811宏碁資訊數位雲端 9 月營收年增 +97% · 60 日 +22% · 新公告" [ref=f8e67] [cursor=pointer]:
+          - generic [ref=f8e68]:
+            - generic "5 顆星" [ref=f8e69]: ★★★★★
+            - generic [ref=f8e70]: 284.5 +0.71%
+          - generic [ref=f8e71]: 6811宏碁資訊數位雲端
+          - generic [ref=f8e72]: 9 月營收年增 +97% · 60 日 +22% · 新公告
+        - button "5 顆星 301 −6.08% 1303南亞塑膠 9 月營收年增 +55% · 60 日 +73% · 新公告" [ref=f8e73] [cursor=pointer]:
+          - generic [ref=f8e74]:
+            - generic "5 顆星" [ref=f8e75]: ★★★★★
+            - generic [ref=f8e76]: 301 −6.08%
+          - generic [ref=f8e77]: 1303南亞塑膠
+          - generic [ref=f8e78]: 9 月營收年增 +55% · 60 日 +73% · 新公告
+        - button "5 顆星 39.15 −6.12% 2489瑞軒光電 9 月營收年增 +33% · 60 日 +30% · 新公告" [ref=f8e79] [cursor=pointer]:
+          - generic [ref=f8e80]:
+            - generic "5 顆星" [ref=f8e81]: ★★★★★
+            - generic [ref=f8e82]: 39.15 −6.12%
+          - generic [ref=f8e83]: 2489瑞軒光電
+          - generic [ref=f8e84]: 9 月營收年增 +33% · 60 日 +30% · 新公告
+        - button "5 顆星 55 +10.00% 2468華經資訊服務 9 月營收年增 +69% · 60 日 +59% · 新公告" [ref=f8e85] [cursor=pointer]:
+          - generic [ref=f8e86]:
+            - generic "5 顆星" [ref=f8e87]: ★★★★★
+            - generic [ref=f8e88]: 55 +10.00%
+          - generic [ref=f8e89]: 2468華經資訊服務
+          - generic [ref=f8e90]: 9 月營收年增 +69% · 60 日 +59% · 新公告
+        - button "5 顆星 36.4 +9.97% 6221晉泰資訊服務 9 月營收年增 +47% · 60 日 +69% · 新公告 · 成交偏少" [ref=f8e91] [cursor=pointer]:
+          - generic [ref=f8e92]:
+            - generic "5 顆星" [ref=f8e93]: ★★★★★
+            - generic [ref=f8e94]: 36.4 +9.97%
+          - generic [ref=f8e95]: 6221晉泰資訊服務
+          - generic [ref=f8e96]: 9 月營收年增 +47% · 60 日 +69% · 新公告 · 成交偏少
+      - group [ref=f8e97]:
+        - generic "其餘 83 檔 4★ 以上" [ref=f8e98] [cursor=pointer]
+      - paragraph [ref=f8e99]:
+        - text: 分散買、單檔不超過可投入金額的 1/10。
+        - link "看起漲雷達 →" [ref=f8e100] [cursor=pointer]:
+          - /url: radar.html
+    - group [ref=f8e101]:
+      - generic "匯出 / 匯入(換手機或電腦時用)" [ref=f8e102] [cursor=pointer]
+  - contentinfo [ref=f8e103]:
+    - text: 自選股只存在這個瀏覽器裡(不會上傳),換手機或電腦請用「匯出 / 匯入」。評級與健檢是依固定規則整理的統計結果,不構成任何投資建議。
+    - group [ref=f8e105]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-24 10:21" [ref=f8e106] [cursor=pointer]

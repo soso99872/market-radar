@@ -1,0 +1,483 @@
+- generic [active] [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - generic [ref=f5e3]:
+      - link "盤前雷達" [ref=f5e4] [cursor=pointer]:
+        - /url: ./
+      - searchbox "查詢個股" [ref=f5e14]
+      - navigation "頁面" [ref=f5e15]:
+        - link "晨報" [ref=f5e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f5e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f5e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f5e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f5e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f5e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f5e22] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=f5e23]:
+        - button "紅漲綠跌" [pressed] [ref=f5e24] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f5e25] [cursor=pointer]
+  - main [ref=f5e26]:
+    - generic [ref=f5e27]:
+      - generic [ref=f5e28]: 資料日 2026-10-19
+      - generic [ref=f5e30]: 最新營收月份 2026-09
+      - generic [ref=f5e32]: 已是最新資料
+    - generic [ref=f5e33]:
+      - generic [ref=f5e34]:
+        - heading [level=2] [ref=f5e35]:
+          - text: 今天先看這 10 檔
+          - button "說明:今天先看這 10 檔:怎麼選、有多準" [ref=f5e36] [cursor=pointer]: "?"
+        - generic [ref=f5e37]: 起漲雷達 4★ 以上共 85 檔
+      - generic [ref=f5e38]:
+        - button "5 顆星 47.15 −2.58% 3311閎暉通信網路 9 月營收年增 +447% · 60 日 +38% · 新公告" [ref=f5e39] [cursor=pointer]:
+          - generic [ref=f5e40]:
+            - generic "5 顆星" [ref=f5e41]: ★★★★★
+            - generic [ref=f5e42]: 47.15 −2.58%
+          - generic [ref=f5e43]: 3311閎暉通信網路
+          - generic [ref=f5e44]: 9 月營收年增 +447% · 60 日 +38% · 新公告
+        - button "5 顆星 2570 +0.98% 3081聯亞通信網路 9 月營收年增 +190% · 60 日 +54% · 新公告" [ref=f5e45] [cursor=pointer]:
+          - generic [ref=f5e46]:
+            - generic "5 顆星" [ref=f5e47]: ★★★★★
+            - generic [ref=f5e48]: 2570 +0.98%
+          - generic [ref=f5e49]: 3081聯亞通信網路
+          - generic [ref=f5e50]: 9 月營收年增 +190% · 60 日 +54% · 新公告
+        - button "5 顆星 562 −4.91% 6672騰輝電子-KY電子零組件 9 月營收年增 +202% · 60 日 +139% · 新公告" [ref=f5e51] [cursor=pointer]:
+          - generic [ref=f5e52]:
+            - generic "5 顆星" [ref=f5e53]: ★★★★★
+            - generic [ref=f5e54]: 562 −4.91%
+          - generic [ref=f5e55]: 6672騰輝電子-KY電子零組件
+          - generic [ref=f5e56]: 9 月營收年增 +202% · 60 日 +139% · 新公告
+        - button "5 顆星 175 −4.89% 4977眾達-KY通信網路 9 月營收年增 +126% · 60 日 +31% · 新公告" [ref=f5e57] [cursor=pointer]:
+          - generic [ref=f5e58]:
+            - generic "5 顆星" [ref=f5e59]: ★★★★★
+            - generic [ref=f5e60]: 175 −4.89%
+          - generic [ref=f5e61]: 4977眾達-KY通信網路
+          - generic [ref=f5e62]: 9 月營收年增 +126% · 60 日 +31% · 新公告
+        - button "5 顆星 1630 +0.93% 6274台燿電子零組件 9 月營收年增 +115% · 60 日 +20% · 新公告" [ref=f5e63] [cursor=pointer]:
+          - generic [ref=f5e64]:
+            - generic "5 顆星" [ref=f5e65]: ★★★★★
+            - generic [ref=f5e66]: 1630 +0.93%
+          - generic [ref=f5e67]: 6274台燿電子零組件
+          - generic [ref=f5e68]: 9 月營收年增 +115% · 60 日 +20% · 新公告
+        - button "5 顆星 133.5 −6.32% 6834天二科技電子零組件 9 月營收年增 +132% · 60 日 +33% · 新公告" [ref=f5e69] [cursor=pointer]:
+          - generic [ref=f5e70]:
+            - generic "5 顆星" [ref=f5e71]: ★★★★★
+            - generic [ref=f5e72]: 133.5 −6.32%
+          - generic [ref=f5e73]: 6834天二科技電子零組件
+          - generic [ref=f5e74]: 9 月營收年增 +132% · 60 日 +33% · 新公告
+        - button "5 顆星 102 +1.49% 6209今國光光電 9 月營收年增 +82% · 60 日 +46% · 新公告" [ref=f5e75] [cursor=pointer]:
+          - generic [ref=f5e76]:
+            - generic "5 顆星" [ref=f5e77]: ★★★★★
+            - generic [ref=f5e78]: 102 +1.49%
+          - generic [ref=f5e79]: 6209今國光光電
+          - generic [ref=f5e80]: 9 月營收年增 +82% · 60 日 +46% · 新公告
+        - button "5 顆星 40.3 −1.35% 2489瑞軒光電 9 月營收年增 +33% · 60 日 +28% · 新公告" [ref=f5e81] [cursor=pointer]:
+          - generic [ref=f5e82]:
+            - generic "5 顆星" [ref=f5e83]: ★★★★★
+            - generic [ref=f5e84]: 40.3 −1.35%
+          - generic [ref=f5e85]: 2489瑞軒光電
+          - generic [ref=f5e86]: 9 月營收年增 +33% · 60 日 +28% · 新公告
+        - button "5 顆星 49.3 −3.52% 2468華經資訊服務 9 月營收年增 +69% · 60 日 +39% · 新公告" [ref=f5e87] [cursor=pointer]:
+          - generic [ref=f5e88]:
+            - generic "5 顆星" [ref=f5e89]: ★★★★★
+            - generic [ref=f5e90]: 49.3 −3.52%
+          - generic [ref=f5e91]: 2468華經資訊服務
+          - generic [ref=f5e92]: 9 月營收年增 +69% · 60 日 +39% · 新公告
+        - button "5 顆星 256 −7.58% 3455由田光電 9 月營收年增 +23% · 60 日 +27% · 新公告" [ref=f5e93] [cursor=pointer]:
+          - generic [ref=f5e94]:
+            - generic "5 顆星" [ref=f5e95]: ★★★★★
+            - generic [ref=f5e96]: 256 −7.58%
+          - generic [ref=f5e97]: 3455由田光電
+          - generic [ref=f5e98]: 9 月營收年增 +23% · 60 日 +27% · 新公告
+      - group [ref=f5e99]:
+        - generic "其餘 75 檔 4★ 以上" [ref=f5e100] [cursor=pointer]
+      - paragraph [ref=f5e101]: 分散買、單檔不超過可投入金額的 1/10。
+    - paragraph [ref=f5e102]:
+      - text: 這頁在找什麼、有多準
+      - button "說明:這頁在找什麼、有多準" [ref=f5e103] [cursor=pointer]: "?"
+    - tablist "檢視" [ref=f5e105]:
+      - tab "潛在排行" [ref=f5e106] [cursor=pointer]
+      - tab "營收動能 · 爆發前" [ref=f5e107] [cursor=pointer]
+      - tab "產業循環" [ref=f5e108] [cursor=pointer]
+      - tab "爆量突破 · 剛爆發" [ref=f5e109] [cursor=pointer]
+      - tab "落後補漲" [selected] [ref=f5e110] [cursor=pointer]
+      - tab "驗證與實績" [ref=f5e111] [cursor=pointer]
+    - generic [ref=f5e112]:
+      - heading "落後補漲 僅供參考 說明:落後補漲:怎麼選、報酬怎麼算" [level=2] [ref=f5e113]:
+        - text: 落後補漲
+        - generic [ref=f5e114]: 僅供參考
+        - button "說明:落後補漲:怎麼選、報酬怎麼算" [ref=f5e115] [cursor=pointer]: "?"
+      - paragraph [ref=f5e116]: 題材有人發動、營收跟上但股價還沒漲。
+    - table [ref=f5e118]:
+      - text: ↕ ↕ ↕ ↕ ↕
+      - rowgroup [ref=f5e119]:
+        - row [ref=f5e120]:
+          - cell [ref=f5e121]:
+            - button "3000 測試股0" [ref=f5e122] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e123]
+          - cell "已發動的同題材個股 甲" [ref=f5e124]
+          - cell "營收年增 +33.4% 中位 +29.9%" [ref=f5e125]:
+            - text: 營收年增 +33.4%
+            - generic [ref=f5e126]: 中位 +29.9%
+          - cell "近 20 日漲幅 −19.1% 中位 +6.5%" [ref=f5e127]:
+            - text: 近 20 日漲幅 −19.1%
+            - generic [ref=f5e128]: 中位 +6.5%
+        - row [ref=f5e129]:
+          - cell [ref=f5e130]:
+            - button "3001 測試股1" [ref=f5e131] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e132]
+          - cell "已發動的同題材個股 甲" [ref=f5e133]
+          - cell "營收年增 +32.4% 中位 +29.9%" [ref=f5e134]:
+            - text: 營收年增 +32.4%
+            - generic [ref=f5e135]: 中位 +29.9%
+          - cell "近 20 日漲幅 −18.1% 中位 +6.5%" [ref=f5e136]:
+            - text: 近 20 日漲幅 −18.1%
+            - generic [ref=f5e137]: 中位 +6.5%
+        - row [ref=f5e138]:
+          - cell [ref=f5e139]:
+            - button "3002 測試股2" [ref=f5e140] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e141]
+          - cell "已發動的同題材個股 甲" [ref=f5e142]
+          - cell "營收年增 +31.4% 中位 +29.9%" [ref=f5e143]:
+            - text: 營收年增 +31.4%
+            - generic [ref=f5e144]: 中位 +29.9%
+          - cell "近 20 日漲幅 −17.1% 中位 +6.5%" [ref=f5e145]:
+            - text: 近 20 日漲幅 −17.1%
+            - generic [ref=f5e146]: 中位 +6.5%
+        - row [ref=f5e147]:
+          - cell [ref=f5e148]:
+            - button "3003 測試股3" [ref=f5e149] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e150]
+          - cell "已發動的同題材個股 甲" [ref=f5e151]
+          - cell "營收年增 +30.4% 中位 +29.9%" [ref=f5e152]:
+            - text: 營收年增 +30.4%
+            - generic [ref=f5e153]: 中位 +29.9%
+          - cell "近 20 日漲幅 −16.1% 中位 +6.5%" [ref=f5e154]:
+            - text: 近 20 日漲幅 −16.1%
+            - generic [ref=f5e155]: 中位 +6.5%
+        - row [ref=f5e156]:
+          - cell [ref=f5e157]:
+            - button "3004 測試股4" [ref=f5e158] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e159]
+          - cell "已發動的同題材個股 甲" [ref=f5e160]
+          - cell "營收年增 +29.4% 中位 +29.9%" [ref=f5e161]:
+            - text: 營收年增 +29.4%
+            - generic [ref=f5e162]: 中位 +29.9%
+          - cell "近 20 日漲幅 −15.1% 中位 +6.5%" [ref=f5e163]:
+            - text: 近 20 日漲幅 −15.1%
+            - generic [ref=f5e164]: 中位 +6.5%
+        - row [ref=f5e165]:
+          - cell [ref=f5e166]:
+            - button "3005 測試股5" [ref=f5e167] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e168]
+          - cell "已發動的同題材個股 甲" [ref=f5e169]
+          - cell "營收年增 +28.4% 中位 +29.9%" [ref=f5e170]:
+            - text: 營收年增 +28.4%
+            - generic [ref=f5e171]: 中位 +29.9%
+          - cell "近 20 日漲幅 −14.1% 中位 +6.5%" [ref=f5e172]:
+            - text: 近 20 日漲幅 −14.1%
+            - generic [ref=f5e173]: 中位 +6.5%
+        - row [ref=f5e174]:
+          - cell [ref=f5e175]:
+            - button "3006 測試股6" [ref=f5e176] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e177]
+          - cell "已發動的同題材個股 甲" [ref=f5e178]
+          - cell "營收年增 +27.4% 中位 +29.9%" [ref=f5e179]:
+            - text: 營收年增 +27.4%
+            - generic [ref=f5e180]: 中位 +29.9%
+          - cell "近 20 日漲幅 −13.1% 中位 +6.5%" [ref=f5e181]:
+            - text: 近 20 日漲幅 −13.1%
+            - generic [ref=f5e182]: 中位 +6.5%
+        - row [ref=f5e183]:
+          - cell [ref=f5e184]:
+            - button "3007 測試股7" [ref=f5e185] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e186]
+          - cell "已發動的同題材個股 甲" [ref=f5e187]
+          - cell "營收年增 +26.4% 中位 +29.9%" [ref=f5e188]:
+            - text: 營收年增 +26.4%
+            - generic [ref=f5e189]: 中位 +29.9%
+          - cell "近 20 日漲幅 −12.1% 中位 +6.5%" [ref=f5e190]:
+            - text: 近 20 日漲幅 −12.1%
+            - generic [ref=f5e191]: 中位 +6.5%
+        - row [ref=f5e192]:
+          - cell [ref=f5e193]:
+            - button "3008 測試股8" [ref=f5e194] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e195]
+          - cell "已發動的同題材個股 甲" [ref=f5e196]
+          - cell "營收年增 +25.4% 中位 +29.9%" [ref=f5e197]:
+            - text: 營收年增 +25.4%
+            - generic [ref=f5e198]: 中位 +29.9%
+          - cell "近 20 日漲幅 −11.1% 中位 +6.5%" [ref=f5e199]:
+            - text: 近 20 日漲幅 −11.1%
+            - generic [ref=f5e200]: 中位 +6.5%
+        - row [ref=f5e201]:
+          - cell [ref=f5e202]:
+            - button "3009 測試股9" [ref=f5e203] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e204]
+          - cell "已發動的同題材個股 甲" [ref=f5e205]
+          - cell "營收年增 +24.4% 中位 +29.9%" [ref=f5e206]:
+            - text: 營收年增 +24.4%
+            - generic [ref=f5e207]: 中位 +29.9%
+          - cell "近 20 日漲幅 −10.1% 中位 +6.5%" [ref=f5e208]:
+            - text: 近 20 日漲幅 −10.1%
+            - generic [ref=f5e209]: 中位 +6.5%
+        - row [ref=f5e210]:
+          - cell [ref=f5e211]:
+            - button "3010 測試股10" [ref=f5e212] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e213]
+          - cell "已發動的同題材個股 甲" [ref=f5e214]
+          - cell "營收年增 +23.4% 中位 +29.9%" [ref=f5e215]:
+            - text: 營收年增 +23.4%
+            - generic [ref=f5e216]: 中位 +29.9%
+          - cell "近 20 日漲幅 −9.1% 中位 +6.5%" [ref=f5e217]:
+            - text: 近 20 日漲幅 −9.1%
+            - generic [ref=f5e218]: 中位 +6.5%
+        - row [ref=f5e219]:
+          - cell [ref=f5e220]:
+            - button "3011 測試股11" [ref=f5e221] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e222]
+          - cell "已發動的同題材個股 甲" [ref=f5e223]
+          - cell "營收年增 +22.4% 中位 +29.9%" [ref=f5e224]:
+            - text: 營收年增 +22.4%
+            - generic [ref=f5e225]: 中位 +29.9%
+          - cell "近 20 日漲幅 −8.1% 中位 +6.5%" [ref=f5e226]:
+            - text: 近 20 日漲幅 −8.1%
+            - generic [ref=f5e227]: 中位 +6.5%
+        - row [ref=f5e228]:
+          - cell [ref=f5e229]:
+            - button "3012 測試股12" [ref=f5e230] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e231]
+          - cell "已發動的同題材個股 甲" [ref=f5e232]
+          - cell "營收年增 +21.4% 中位 +29.9%" [ref=f5e233]:
+            - text: 營收年增 +21.4%
+            - generic [ref=f5e234]: 中位 +29.9%
+          - cell "近 20 日漲幅 −7.1% 中位 +6.5%" [ref=f5e235]:
+            - text: 近 20 日漲幅 −7.1%
+            - generic [ref=f5e236]: 中位 +6.5%
+        - row [ref=f5e237]:
+          - cell [ref=f5e238]:
+            - button "3013 測試股13" [ref=f5e239] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e240]
+          - cell "已發動的同題材個股 甲" [ref=f5e241]
+          - cell "營收年增 +20.4% 中位 +29.9%" [ref=f5e242]:
+            - text: 營收年增 +20.4%
+            - generic [ref=f5e243]: 中位 +29.9%
+          - cell "近 20 日漲幅 −6.1% 中位 +6.5%" [ref=f5e244]:
+            - text: 近 20 日漲幅 −6.1%
+            - generic [ref=f5e245]: 中位 +6.5%
+        - row [ref=f5e246]:
+          - cell [ref=f5e247]:
+            - button "3014 測試股14" [ref=f5e248] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e249]
+          - cell "已發動的同題材個股 甲" [ref=f5e250]
+          - cell "營收年增 +19.4% 中位 +29.9%" [ref=f5e251]:
+            - text: 營收年增 +19.4%
+            - generic [ref=f5e252]: 中位 +29.9%
+          - cell "近 20 日漲幅 −5.1% 中位 +6.5%" [ref=f5e253]:
+            - text: 近 20 日漲幅 −5.1%
+            - generic [ref=f5e254]: 中位 +6.5%
+        - row [ref=f5e255]:
+          - cell [ref=f5e256]:
+            - button "3015 測試股15" [ref=f5e257] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e258]
+          - cell "已發動的同題材個股 甲" [ref=f5e259]
+          - cell "營收年增 +18.4% 中位 +29.9%" [ref=f5e260]:
+            - text: 營收年增 +18.4%
+            - generic [ref=f5e261]: 中位 +29.9%
+          - cell "近 20 日漲幅 −4.1% 中位 +6.5%" [ref=f5e262]:
+            - text: 近 20 日漲幅 −4.1%
+            - generic [ref=f5e263]: 中位 +6.5%
+        - row [ref=f5e264]:
+          - cell [ref=f5e265]:
+            - button "3016 測試股16" [ref=f5e266] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e267]
+          - cell "已發動的同題材個股 甲" [ref=f5e268]
+          - cell "營收年增 +17.4% 中位 +29.9%" [ref=f5e269]:
+            - text: 營收年增 +17.4%
+            - generic [ref=f5e270]: 中位 +29.9%
+          - cell "近 20 日漲幅 −3.1% 中位 +6.5%" [ref=f5e271]:
+            - text: 近 20 日漲幅 −3.1%
+            - generic [ref=f5e272]: 中位 +6.5%
+        - row [ref=f5e273]:
+          - cell [ref=f5e274]:
+            - button "3017 測試股17" [ref=f5e275] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e276]
+          - cell "已發動的同題材個股 甲" [ref=f5e277]
+          - cell "營收年增 +16.4% 中位 +29.9%" [ref=f5e278]:
+            - text: 營收年增 +16.4%
+            - generic [ref=f5e279]: 中位 +29.9%
+          - cell "近 20 日漲幅 −2.1% 中位 +6.5%" [ref=f5e280]:
+            - text: 近 20 日漲幅 −2.1%
+            - generic [ref=f5e281]: 中位 +6.5%
+        - row [ref=f5e282]:
+          - cell [ref=f5e283]:
+            - button "3018 測試股18" [ref=f5e284] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e285]
+          - cell "已發動的同題材個股 甲" [ref=f5e286]
+          - cell "營收年增 +15.4% 中位 +29.9%" [ref=f5e287]:
+            - text: 營收年增 +15.4%
+            - generic [ref=f5e288]: 中位 +29.9%
+          - cell "近 20 日漲幅 −1.1% 中位 +6.5%" [ref=f5e289]:
+            - text: 近 20 日漲幅 −1.1%
+            - generic [ref=f5e290]: 中位 +6.5%
+        - row [ref=f5e291]:
+          - cell [ref=f5e292]:
+            - button "3019 測試股19" [ref=f5e293] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e294]
+          - cell "已發動的同題材個股 甲" [ref=f5e295]
+          - cell "營收年增 +14.4% 中位 +29.9%" [ref=f5e296]:
+            - text: 營收年增 +14.4%
+            - generic [ref=f5e297]: 中位 +29.9%
+          - cell "近 20 日漲幅 −0.1% 中位 +6.5%" [ref=f5e298]:
+            - text: 近 20 日漲幅 −0.1%
+            - generic [ref=f5e299]: 中位 +6.5%
+        - row [ref=f5e300]:
+          - cell [ref=f5e301]:
+            - button "3020 測試股20" [ref=f5e302] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e303]
+          - cell "已發動的同題材個股 甲" [ref=f5e304]
+          - cell "營收年增 +13.4% 中位 +29.9%" [ref=f5e305]:
+            - text: 營收年增 +13.4%
+            - generic [ref=f5e306]: 中位 +29.9%
+          - cell "近 20 日漲幅 +0.9% 中位 +6.5%" [ref=f5e307]:
+            - text: 近 20 日漲幅 +0.9%
+            - generic [ref=f5e308]: 中位 +6.5%
+        - row [ref=f5e309]:
+          - cell [ref=f5e310]:
+            - button "3021 測試股21" [ref=f5e311] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e312]
+          - cell "已發動的同題材個股 甲" [ref=f5e313]
+          - cell "營收年增 +12.4% 中位 +29.9%" [ref=f5e314]:
+            - text: 營收年增 +12.4%
+            - generic [ref=f5e315]: 中位 +29.9%
+          - cell "近 20 日漲幅 +1.9% 中位 +6.5%" [ref=f5e316]:
+            - text: 近 20 日漲幅 +1.9%
+            - generic [ref=f5e317]: 中位 +6.5%
+        - row [ref=f5e318]:
+          - cell [ref=f5e319]:
+            - button "3022 測試股22" [ref=f5e320] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e321]
+          - cell "已發動的同題材個股 甲" [ref=f5e322]
+          - cell "營收年增 +11.4% 中位 +29.9%" [ref=f5e323]:
+            - text: 營收年增 +11.4%
+            - generic [ref=f5e324]: 中位 +29.9%
+          - cell "近 20 日漲幅 +2.9% 中位 +6.5%" [ref=f5e325]:
+            - text: 近 20 日漲幅 +2.9%
+            - generic [ref=f5e326]: 中位 +6.5%
+        - row [ref=f5e327]:
+          - cell [ref=f5e328]:
+            - button "3023 測試股23" [ref=f5e329] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e330]
+          - cell "已發動的同題材個股 甲" [ref=f5e331]
+          - cell "營收年增 +10.4% 中位 +29.9%" [ref=f5e332]:
+            - text: 營收年增 +10.4%
+            - generic [ref=f5e333]: 中位 +29.9%
+          - cell "近 20 日漲幅 +3.9% 中位 +6.5%" [ref=f5e334]:
+            - text: 近 20 日漲幅 +3.9%
+            - generic [ref=f5e335]: 中位 +6.5%
+        - row [ref=f5e336]:
+          - cell [ref=f5e337]:
+            - button "3024 測試股24" [ref=f5e338] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e339]
+          - cell "已發動的同題材個股 甲" [ref=f5e340]
+          - cell "營收年增 +9.4% 中位 +29.9%" [ref=f5e341]:
+            - text: 營收年增 +9.4%
+            - generic [ref=f5e342]: 中位 +29.9%
+          - cell "近 20 日漲幅 +4.9% 中位 +6.5%" [ref=f5e343]:
+            - text: 近 20 日漲幅 +4.9%
+            - generic [ref=f5e344]: 中位 +6.5%
+        - row [ref=f5e345]:
+          - cell [ref=f5e346]:
+            - button "3025 測試股25" [ref=f5e347] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e348]
+          - cell "已發動的同題材個股 甲" [ref=f5e349]
+          - cell "營收年增 +8.4% 中位 +29.9%" [ref=f5e350]:
+            - text: 營收年增 +8.4%
+            - generic [ref=f5e351]: 中位 +29.9%
+          - cell "近 20 日漲幅 +5.9% 中位 +6.5%" [ref=f5e352]:
+            - text: 近 20 日漲幅 +5.9%
+            - generic [ref=f5e353]: 中位 +6.5%
+        - row [ref=f5e354]:
+          - cell [ref=f5e355]:
+            - button "3026 測試股26" [ref=f5e356] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e357]
+          - cell "已發動的同題材個股 甲" [ref=f5e358]
+          - cell "營收年增 +7.4% 中位 +29.9%" [ref=f5e359]:
+            - text: 營收年增 +7.4%
+            - generic [ref=f5e360]: 中位 +29.9%
+          - cell "近 20 日漲幅 +6.9% 中位 +6.5%" [ref=f5e361]:
+            - text: 近 20 日漲幅 +6.9%
+            - generic [ref=f5e362]: 中位 +6.5%
+        - row [ref=f5e363]:
+          - cell [ref=f5e364]:
+            - button "3027 測試股27" [ref=f5e365] [cursor=pointer]
+          - cell "題材 題材0" [ref=f5e366]
+          - cell "已發動的同題材個股 甲" [ref=f5e367]
+          - cell "營收年增 +6.4% 中位 +29.9%" [ref=f5e368]:
+            - text: 營收年增 +6.4%
+            - generic [ref=f5e369]: 中位 +29.9%
+          - cell "近 20 日漲幅 +7.9% 中位 +6.5%" [ref=f5e370]:
+            - text: 近 20 日漲幅 +7.9%
+            - generic [ref=f5e371]: 中位 +6.5%
+        - row [ref=f5e372]:
+          - cell [ref=f5e373]:
+            - button "3028 測試股28" [ref=f5e374] [cursor=pointer]
+          - cell "題材 題材1" [ref=f5e375]
+          - cell "已發動的同題材個股 甲" [ref=f5e376]
+          - cell "營收年增 +5.4% 中位 +29.9%" [ref=f5e377]:
+            - text: 營收年增 +5.4%
+            - generic [ref=f5e378]: 中位 +29.9%
+          - cell "近 20 日漲幅 +8.9% 中位 +6.5%" [ref=f5e379]:
+            - text: 近 20 日漲幅 +8.9%
+            - generic [ref=f5e380]: 中位 +6.5%
+        - row [ref=f5e381]:
+          - cell [ref=f5e382]:
+            - button "3029 測試股29" [ref=f5e383] [cursor=pointer]
+          - cell "題材 題材2" [ref=f5e384]
+          - cell "已發動的同題材個股 甲" [ref=f5e385]
+          - cell "營收年增 +4.4% 中位 +29.9%" [ref=f5e386]:
+            - text: 營收年增 +4.4%
+            - generic [ref=f5e387]: 中位 +29.9%
+          - cell "近 20 日漲幅 +9.9% 中位 +6.5%" [ref=f5e388]:
+            - text: 近 20 日漲幅 +9.9%
+            - generic [ref=f5e389]: 中位 +6.5%
+    - generic [ref=f5e390]:
+      - heading "歷史回測" [level=2] [ref=f5e391]
+      - paragraph [ref=f5e392]: 期間 2019-01-02 ~ 2026-10-19 · 觸發 1,491 次 · 超額報酬已扣成本 0.5425%
+    - table [ref=f5e394]:
+      - rowgroup [ref=f5e395]:
+        - row [ref=f5e396]:
+          - columnheader "持有 ↕" [ref=f5e397] [cursor=pointer]
+          - columnheader "樣本 ↕" [ref=f5e398] [cursor=pointer]
+          - columnheader "勝率 ↕" [ref=f5e399] [cursor=pointer]
+          - columnheader "平均超額 ↕" [ref=f5e400] [cursor=pointer]
+          - columnheader "中位數 ↕" [ref=f5e401] [cursor=pointer]
+          - columnheader "虧損率 ↕" [ref=f5e402] [cursor=pointer]
+      - rowgroup [ref=f5e403]:
+        - row [ref=f5e404]:
+          - cell "20 日" [ref=f5e405]
+          - cell "127檔 n 1,044" [ref=f5e406]:
+            - text: 127檔
+            - generic [ref=f5e407]: n 1,044
+          - cell "40.5%" [ref=f5e408]
+          - cell "+0.33%" [ref=f5e409]
+          - cell "−2.49%" [ref=f5e410]
+          - cell "50.4%" [ref=f5e411]
+        - row [ref=f5e412]:
+          - cell "60 日" [ref=f5e413]
+          - cell "127檔 n 1,025" [ref=f5e414]:
+            - text: 127檔
+            - generic [ref=f5e415]: n 1,025
+          - cell "43.4%" [ref=f5e416]
+          - cell "+2.26%" [ref=f5e417]
+          - cell "−4.94%" [ref=f5e418]
+          - cell "50.1%" [ref=f5e419]
+  - contentinfo [ref=f5e420]:
+    - text: 名單依公開的月營收、股價與成交資料,用固定規則篩出;每個交易日收盤後自動更新,開啟頁面時若證交所已公布更新的收盤資料,上市股會直接用官方資料即時更新。 不是買賣建議,也不代表會漲。回測期間是 AI 多頭行情,空頭時表現可能差很多。
+    - group [ref=f5e422]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-20 08:24" [ref=f5e423] [cursor=pointer]

@@ -1,0 +1,202 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e12]: 盤前雷達
+    - generic [ref=e13]: 營收 · 動能 · 題材 ── 每個交易日 06:00 更新
+  - banner [ref=e16]:
+    - generic [ref=e17]:
+      - link [ref=e18] [cursor=pointer]:
+        - /url: ./
+        - generic [ref=e26]: 盤前雷達台美股 · 每個交易日 06:00
+      - searchbox "查詢個股" [ref=e28]
+      - navigation "頁面" [ref=e29]:
+        - link "晨報" [ref=e30] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=e31] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=e32] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=e33] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=e34] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=e35] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=e36] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=e37]:
+        - button "紅漲綠跌" [pressed] [ref=e38] [cursor=pointer]
+        - button "綠漲紅跌" [ref=e39] [cursor=pointer]
+  - main [ref=e40]:
+    - generic [ref=e41]:
+      - heading [level=1] [ref=e42]:
+        - text: 策略績效
+        - button "說明:策略績效:怎麼回測、為什麼偏樂觀" [ref=e43] [cursor=pointer]: "?"
+      - paragraph [ref=e44]: 每月買進全部 4★ 以上、約一個月換股的回測,共 74 個月。
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e47]: 年化報酬
+        - generic [ref=e48]: +51%
+        - generic [ref=e49]: 加權指數 +20% · 全部股票 +5%
+      - generic [ref=e50]:
+        - generic [ref=e51]: 最大回撤
+        - generic [ref=e52]: "-24.4%"
+        - generic [ref=e53]: 加權指數 -28.4%
+      - generic [ref=e54]:
+        - generic [ref=e55]: 夏普值(月報酬年化)
+        - generic [ref=e56]: "1.48"
+        - generic [ref=e57]: 加權指數 1.09
+      - generic [ref=e58]:
+        - generic [ref=e59]: 月勝率
+        - generic [ref=e60]: 66%
+        - generic [ref=e61]: 74 個月 · 加權指數 69%
+    - generic [ref=e62]:
+      - heading [level=2] [ref=e63]:
+        - text: 權益曲線(1 元變成多少)
+        - button "說明:權益曲線怎麼看" [ref=e64] [cursor=pointer]: "?"
+      - generic [ref=e65]:
+        - generic [ref=e66]: 每月買全部 4★ 以上
+        - generic [ref=e68]: 每月只買 5★
+        - generic [ref=e70]: 加權指數(不含股利)
+        - generic [ref=e72]: 全部股票等權
+      - img "權益曲線" [ref=e75]:
+        - generic [ref=e76]: 1x
+        - generic [ref=e77]: 2x
+        - generic [ref=e78]: 3x
+        - generic [ref=e79]: 5x
+        - generic [ref=e80]: 10x
+        - generic [ref=e81]: 20x
+        - generic [ref=e82]: "2021"
+        - generic [ref=e83]: "2022"
+        - generic [ref=e84]: "2023"
+        - generic [ref=e85]: "2024"
+        - generic [ref=e86]: "2025"
+        - generic [ref=e87]: "2026"
+        - generic [ref=e92]: 4★ 以上 12.76x
+        - generic [ref=e93]: 加權指數 3.04x
+      - group [ref=e95]:
+        - generic "表格檢視" [ref=e96] [cursor=pointer]
+        - text: ↕ ↕ ↕ ↕ ↕
+    - generic [ref=e97]:
+      - heading "回撤(離前高跌了多少)" [level=2] [ref=e98]
+      - paragraph [ref=e99]: 4★ 以上最大回撤 -24.4%,加權指數 -28.4%。要能接受帳面上虧掉四分之一,才適合照這個方法操作。
+      - generic [ref=e100]:
+        - generic [ref=e101]: 每月買全部 4★ 以上
+        - generic [ref=e103]: 每月只買 5★
+        - generic [ref=e105]: 加權指數(不含股利)
+        - generic [ref=e107]: 全部股票等權
+      - img "回撤" [ref=e110]:
+        - generic [ref=e111]: 0%
+        - generic [ref=e112]: "-10%"
+        - generic [ref=e113]: "-20%"
+        - generic [ref=e114]: "-30%"
+        - generic [ref=e115]: "2021"
+        - generic [ref=e116]: "2022"
+        - generic [ref=e117]: "2023"
+        - generic [ref=e118]: "2024"
+        - generic [ref=e119]: "2025"
+        - generic [ref=e120]: "2026"
+        - generic [ref=e125]: 4★ 以上 0.0%
+        - generic [ref=e127]: 加權指數 0.0%
+    - generic [ref=e129]:
+      - heading "逐年報酬" [level=2] [ref=e130]
+      - paragraph [ref=e131]: 每一年都有比較嗎?還是只靠一兩年大賺?
+      - table [ref=e133]:
+        - rowgroup [ref=e134]:
+          - row [ref=e135]:
+            - columnheader "年度 ↕" [ref=e136] [cursor=pointer]
+            - columnheader "每月買全部 4★ 以上 ↕" [ref=e137] [cursor=pointer]
+            - columnheader "每月只買 5★ ↕" [ref=e138] [cursor=pointer]
+            - columnheader "加權指數(不含股利) ↕" [ref=e139] [cursor=pointer]
+            - columnheader "全部股票等權 ↕" [ref=e140] [cursor=pointer]
+            - columnheader "4★ 以上 − 加權指數 ↕" [ref=e141] [cursor=pointer]
+        - rowgroup [ref=e142]:
+          - row [ref=e143]:
+            - cell "2020(2 月起)" [ref=e144]
+            - cell "+153.9%" [ref=e145]
+            - cell "+126.9%" [ref=e146]
+            - cell "+33.4%" [ref=e147]
+            - cell "+30.1%" [ref=e148]
+            - cell "+120.5%" [ref=e149]
+          - row [ref=e150]:
+            - cell "2021" [ref=e151]
+            - cell "+31.6%" [ref=e152]
+            - cell "+95.0%" [ref=e153]
+            - cell "+17.5%" [ref=e154]
+            - cell "+7.0%" [ref=e155]
+            - cell "+14.0%" [ref=e156]
+          - row [ref=e157]:
+            - cell "2022" [ref=e158]
+            - cell "−3.2%" [ref=e159]
+            - cell "−9.7%" [ref=e160]
+            - cell "−19.3%" [ref=e161]
+            - cell "−20.8%" [ref=e162]
+            - cell "+16.1%" [ref=e163]
+          - row [ref=e164]:
+            - cell "2023" [ref=e165]
+            - cell "+64.0%" [ref=e166]
+            - cell "+58.5%" [ref=e167]
+            - cell "+18.9%" [ref=e168]
+            - cell "+16.8%" [ref=e169]
+            - cell "+45.1%" [ref=e170]
+          - row [ref=e171]:
+            - cell "2024" [ref=e172]
+            - cell "+35.0%" [ref=e173]
+            - cell "−2.4%" [ref=e174]
+            - cell "+28.2%" [ref=e175]
+            - cell "−3.4%" [ref=e176]
+            - cell "+6.8%" [ref=e177]
+          - row [ref=e178]:
+            - cell "2025" [ref=e179]
+            - cell "+42.2%" [ref=e180]
+            - cell "+154.1%" [ref=e181]
+            - cell "+35.9%" [ref=e182]
+            - cell "−1.4%" [ref=e183]
+            - cell "+6.2%" [ref=e184]
+          - row [ref=e185]:
+            - cell "2026(至今)" [ref=e186]
+            - cell "+25.4%" [ref=e187]
+            - cell "+34.3%" [ref=e188]
+            - cell "+16.0%" [ref=e189]
+            - cell "+9.5%" [ref=e190]
+            - cell "+9.4%" [ref=e191]
+    - generic [ref=e192]:
+      - heading [level=2] [ref=e193]:
+        - text: 實盤追蹤:真正的檢驗
+        - button "說明:實盤追蹤:怎麼記錄、怎麼判定" [ref=e194] [cursor=pointer]: "?"
+      - generic "實盤樣本進度" [ref=e195]
+      - paragraph [ref=e196]: 第三方稽核:實盤 0 / 10 籃(約每月 1 籃,樣本不足前不判定);回測 75 籃 ✅ 具統計優勢:在現有樣本下,你的正期望值通過了顯著性檢定。
+      - table [ref=e198]:
+        - rowgroup [ref=e199]:
+          - row [ref=e200]:
+            - columnheader "名單 ↕" [ref=e201] [cursor=pointer]
+            - columnheader "開始記錄 ↕" [ref=e202] [cursor=pointer]
+            - columnheader "已記錄 ↕" [ref=e203] [cursor=pointer]
+            - columnheader "5 日後比一般股 ↕" [ref=e204] [cursor=pointer]
+            - columnheader "20 日後比一般股 ↕" [ref=e205] [cursor=pointer]
+            - columnheader "60 日後比一般股 ↕" [ref=e206] [cursor=pointer]
+        - rowgroup [ref=e207]:
+          - row [ref=e208]:
+            - cell "評級 4★ 以上" [ref=e209]
+            - cell "2026-10-08" [ref=e210]
+            - cell "9 天" [ref=e211]
+            - cell "−0.51% 5 天" [ref=e212]: −0.51%5 天
+            - cell "累積中 0 天" [ref=e213]: 累積中0 天
+            - cell "累積中 0 天" [ref=e214]: 累積中0 天
+          - row [ref=e215]:
+            - cell "評級 5★" [ref=e216]
+            - cell "2026-10-08" [ref=e217]
+            - cell "9 天" [ref=e218]
+            - cell "−1.69% 5 天" [ref=e219]: −1.69%5 天
+            - cell "累積中 0 天" [ref=e220]: 累積中0 天
+            - cell "累積中 0 天" [ref=e221]: 累積中0 天
+          - row [ref=e222]:
+            - cell "營收動能名單(全部)" [ref=e223]
+            - cell "2026-10-06" [ref=e224]
+            - cell "11 天" [ref=e225]
+            - cell "−1.38% 7 天" [ref=e226]: −1.38%7 天
+            - cell "累積中 0 天" [ref=e227]: 累積中0 天
+            - cell "累積中 0 天" [ref=e228]: 累積中0 天
+  - contentinfo [ref=e229]:
+    - text: 回測使用證交所、櫃買中心與公開資訊觀測站的公開資料,已扣交易成本、未含股利;不含已下市股票,規則是看過歷史資料後才定的,結果偏樂觀。歷史績效不代表未來,本頁只呈現事實,不構成任何投資建議。
+    - group [ref=e231]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-23 23:29" [ref=e232] [cursor=pointer]

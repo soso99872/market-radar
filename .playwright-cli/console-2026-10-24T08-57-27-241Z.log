@@ -1,0 +1,5 @@
+[     180ms] missing ) after argument list
+[     219ms] TypeError: Cannot set properties of undefined (setting 'fetchLive')
+    at http://localhost:8000/assets/live.js:54:16
+    at http://localhost:8000/assets/live.js:190:3
+[     220ms] Unexpected identifier 'advice'

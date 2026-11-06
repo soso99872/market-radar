@@ -1,0 +1,198 @@
+- generic [active] [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - generic [ref=f7e3]:
+      - link "盤前雷達" [ref=f7e4] [cursor=pointer]:
+        - /url: ./
+      - searchbox "查詢個股" [ref=f7e14]
+      - navigation "頁面" [ref=f7e15]:
+        - link "晨報" [ref=f7e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f7e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f7e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f7e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f7e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f7e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f7e22] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=f7e23]:
+        - button "紅漲綠跌" [pressed] [ref=f7e24] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f7e25] [cursor=pointer]
+  - main [ref=f7e26]:
+    - generic [ref=f7e27]:
+      - heading [level=1] [ref=f7e28]:
+        - text: 策略績效
+        - button "說明:策略績效:怎麼回測、為什麼偏樂觀" [ref=f7e29] [cursor=pointer]: "?"
+      - paragraph [ref=f7e30]: 每月買進全部 4★ 以上、約一個月換股的回測,共 74 個月。
+    - generic [ref=f7e31]:
+      - generic [ref=f7e32]:
+        - generic [ref=f7e33]: 年化報酬
+        - generic [ref=f7e34]: +51%
+        - generic [ref=f7e35]: 加權指數 +20% · 全部股票 +5%
+      - generic [ref=f7e36]:
+        - generic [ref=f7e37]: 最大回撤
+        - generic [ref=f7e38]: "-24.4%"
+        - generic [ref=f7e39]: 加權指數 -28.4%
+      - generic [ref=f7e40]:
+        - generic [ref=f7e41]: 夏普值(月報酬年化)
+        - generic [ref=f7e42]: "1.48"
+        - generic [ref=f7e43]: 加權指數 1.09
+      - generic [ref=f7e44]:
+        - generic [ref=f7e45]: 月勝率
+        - generic [ref=f7e46]: 66%
+        - generic [ref=f7e47]: 74 個月 · 加權指數 69%
+    - generic [ref=f7e48]:
+      - heading [level=2] [ref=f7e49]:
+        - text: 權益曲線(1 元變成多少)
+        - button "說明:權益曲線怎麼看" [ref=f7e50] [cursor=pointer]: "?"
+      - generic [ref=f7e51]:
+        - generic [ref=f7e52]: 每月買全部 4★ 以上
+        - generic [ref=f7e54]: 每月只買 5★
+        - generic [ref=f7e56]: 加權指數(不含股利)
+        - generic [ref=f7e58]: 全部股票等權
+      - img "權益曲線" [ref=f7e61]:
+        - generic [ref=f7e62]: 1x
+        - generic [ref=f7e63]: 2x
+        - generic [ref=f7e64]: 3x
+        - generic [ref=f7e65]: 5x
+        - generic [ref=f7e66]: 10x
+        - generic [ref=f7e67]: 20x
+        - generic [ref=f7e68]: "2021"
+        - generic [ref=f7e69]: "2022"
+        - generic [ref=f7e70]: "2023"
+        - generic [ref=f7e71]: "2024"
+        - generic [ref=f7e72]: "2025"
+        - generic [ref=f7e73]: "2026"
+        - generic [ref=f7e78]: 4★ 以上 12.76x
+        - generic [ref=f7e79]: 加權指數 3.04x
+      - group [ref=f7e81]:
+        - generic "表格檢視" [ref=f7e82] [cursor=pointer]
+        - text: ↕ ↕ ↕ ↕ ↕
+    - generic [ref=f7e83]:
+      - heading "回撤(離前高跌了多少)" [level=2] [ref=f7e84]
+      - paragraph [ref=f7e85]: 4★ 以上最大回撤 -24.4%,加權指數 -28.4%。要能接受帳面上虧掉四分之一,才適合照這個方法操作。
+      - generic [ref=f7e86]:
+        - generic [ref=f7e87]: 每月買全部 4★ 以上
+        - generic [ref=f7e89]: 每月只買 5★
+        - generic [ref=f7e91]: 加權指數(不含股利)
+        - generic [ref=f7e93]: 全部股票等權
+      - img "回撤" [ref=f7e96]:
+        - generic [ref=f7e97]: 0%
+        - generic [ref=f7e98]: "-10%"
+        - generic [ref=f7e99]: "-20%"
+        - generic [ref=f7e100]: "-30%"
+        - generic [ref=f7e101]: "2021"
+        - generic [ref=f7e102]: "2022"
+        - generic [ref=f7e103]: "2023"
+        - generic [ref=f7e104]: "2024"
+        - generic [ref=f7e105]: "2025"
+        - generic [ref=f7e106]: "2026"
+        - generic [ref=f7e111]: 4★ 以上 0.0%
+        - generic [ref=f7e113]: 加權指數 0.0%
+    - generic [ref=f7e115]:
+      - heading "逐年報酬" [level=2] [ref=f7e116]
+      - paragraph [ref=f7e117]: 每一年都有比較嗎?還是只靠一兩年大賺?
+      - table [ref=f7e119]:
+        - rowgroup [ref=f7e120]:
+          - row [ref=f7e121]:
+            - columnheader "年度 ↕" [ref=f7e122] [cursor=pointer]
+            - columnheader "每月買全部 4★ 以上 ↕" [ref=f7e123] [cursor=pointer]
+            - columnheader "每月只買 5★ ↕" [ref=f7e124] [cursor=pointer]
+            - columnheader "加權指數(不含股利) ↕" [ref=f7e125] [cursor=pointer]
+            - columnheader "全部股票等權 ↕" [ref=f7e126] [cursor=pointer]
+            - columnheader "4★ 以上 − 加權指數 ↕" [ref=f7e127] [cursor=pointer]
+        - rowgroup [ref=f7e128]:
+          - row [ref=f7e129]:
+            - cell "2020(2 月起)" [ref=f7e130]
+            - cell "+153.9%" [ref=f7e131]
+            - cell "+126.9%" [ref=f7e132]
+            - cell "+33.4%" [ref=f7e133]
+            - cell "+30.1%" [ref=f7e134]
+            - cell "+120.5%" [ref=f7e135]
+          - row [ref=f7e136]:
+            - cell "2021" [ref=f7e137]
+            - cell "+31.6%" [ref=f7e138]
+            - cell "+95.0%" [ref=f7e139]
+            - cell "+17.5%" [ref=f7e140]
+            - cell "+7.0%" [ref=f7e141]
+            - cell "+14.0%" [ref=f7e142]
+          - row [ref=f7e143]:
+            - cell "2022" [ref=f7e144]
+            - cell "−3.2%" [ref=f7e145]
+            - cell "−9.7%" [ref=f7e146]
+            - cell "−19.3%" [ref=f7e147]
+            - cell "−20.8%" [ref=f7e148]
+            - cell "+16.1%" [ref=f7e149]
+          - row [ref=f7e150]:
+            - cell "2023" [ref=f7e151]
+            - cell "+64.0%" [ref=f7e152]
+            - cell "+58.5%" [ref=f7e153]
+            - cell "+18.9%" [ref=f7e154]
+            - cell "+16.8%" [ref=f7e155]
+            - cell "+45.1%" [ref=f7e156]
+          - row [ref=f7e157]:
+            - cell "2024" [ref=f7e158]
+            - cell "+35.0%" [ref=f7e159]
+            - cell "−2.4%" [ref=f7e160]
+            - cell "+28.2%" [ref=f7e161]
+            - cell "−3.4%" [ref=f7e162]
+            - cell "+6.8%" [ref=f7e163]
+          - row [ref=f7e164]:
+            - cell "2025" [ref=f7e165]
+            - cell "+42.2%" [ref=f7e166]
+            - cell "+154.1%" [ref=f7e167]
+            - cell "+35.9%" [ref=f7e168]
+            - cell "−1.4%" [ref=f7e169]
+            - cell "+6.2%" [ref=f7e170]
+          - row [ref=f7e171]:
+            - cell "2026(至今)" [ref=f7e172]
+            - cell "+25.4%" [ref=f7e173]
+            - cell "+34.3%" [ref=f7e174]
+            - cell "+16.0%" [ref=f7e175]
+            - cell "+9.5%" [ref=f7e176]
+            - cell "+9.4%" [ref=f7e177]
+    - generic [ref=f7e178]:
+      - heading [level=2] [ref=f7e179]:
+        - text: 實盤追蹤:真正的檢驗
+        - button "說明:實盤追蹤:怎麼記錄、怎麼判定" [ref=f7e180] [cursor=pointer]: "?"
+      - generic "實盤樣本進度" [ref=f7e181]
+      - paragraph [ref=f7e182]: 第三方稽核:實盤 0 / 10 籃(約每月 1 籃,樣本不足前不判定);回測 75 籃 ✅ 具統計優勢:在現有樣本下,你的正期望值通過了顯著性檢定。
+      - table [ref=f7e184]:
+        - rowgroup [ref=f7e185]:
+          - row [ref=f7e186]:
+            - columnheader "名單 ↕" [ref=f7e187] [cursor=pointer]
+            - columnheader "開始記錄 ↕" [ref=f7e188] [cursor=pointer]
+            - columnheader "已記錄 ↕" [ref=f7e189] [cursor=pointer]
+            - columnheader "5 日後比一般股 ↕" [ref=f7e190] [cursor=pointer]
+            - columnheader "20 日後比一般股 ↕" [ref=f7e191] [cursor=pointer]
+            - columnheader "60 日後比一般股 ↕" [ref=f7e192] [cursor=pointer]
+        - rowgroup [ref=f7e193]:
+          - row [ref=f7e194]:
+            - cell "評級 4★ 以上" [ref=f7e195]
+            - cell "2026-10-08" [ref=f7e196]
+            - cell "9 天" [ref=f7e197]
+            - cell "−0.51% 5 天" [ref=f7e198]: −0.51%5 天
+            - cell "累積中 0 天" [ref=f7e199]: 累積中0 天
+            - cell "累積中 0 天" [ref=f7e200]: 累積中0 天
+          - row [ref=f7e201]:
+            - cell "評級 5★" [ref=f7e202]
+            - cell "2026-10-08" [ref=f7e203]
+            - cell "9 天" [ref=f7e204]
+            - cell "−1.69% 5 天" [ref=f7e205]: −1.69%5 天
+            - cell "累積中 0 天" [ref=f7e206]: 累積中0 天
+            - cell "累積中 0 天" [ref=f7e207]: 累積中0 天
+          - row [ref=f7e208]:
+            - cell "營收動能名單(全部)" [ref=f7e209]
+            - cell "2026-10-06" [ref=f7e210]
+            - cell "11 天" [ref=f7e211]
+            - cell "−1.38% 7 天" [ref=f7e212]: −1.38%7 天
+            - cell "累積中 0 天" [ref=f7e213]: 累積中0 天
+            - cell "累積中 0 天" [ref=f7e214]: 累積中0 天
+  - contentinfo [ref=f7e215]:
+    - text: 回測使用證交所、櫃買中心與公開資訊觀測站的公開資料,已扣交易成本、未含股利;不含已下市股票,規則是看過歷史資料後才定的,結果偏樂觀。歷史績效不代表未來,本頁只呈現事實,不構成任何投資建議。
+    - group [ref=f7e217]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-24 10:21" [ref=f7e218] [cursor=pointer]

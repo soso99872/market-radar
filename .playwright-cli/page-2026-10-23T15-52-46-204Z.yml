@@ -1,0 +1,1182 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e12]: 盤前雷達
+    - generic [ref=e13]: 營收 · 動能 · 題材 ── 每個交易日 06:00 更新
+  - banner [ref=e16]:
+    - generic [ref=e17]:
+      - link [ref=e18] [cursor=pointer]:
+        - /url: ./
+        - generic [ref=e26]: 盤前雷達台美股 · 每個交易日 06:00
+      - searchbox "查詢個股" [ref=e28]
+      - navigation "頁面" [ref=e29]:
+        - link "晨報" [ref=e30] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=e31] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=e32] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=e33] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=e34] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=e35] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=e36] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=e37]:
+        - button "紅漲綠跌" [pressed] [ref=e38] [cursor=pointer]
+        - button "綠漲紅跌" [ref=e39] [cursor=pointer]
+  - main [ref=e40]:
+    - generic [ref=e41]:
+      - generic [ref=e42]: 回測期間 2019-01-02 ～ 2026-10-22(1895 個交易日)
+      - generic [ref=e44]: 目前大盤 空頭(加權指數在 60 日均線之下)
+      - generic [ref=e46]: 今日訊號 2026-10-22
+      - group "持有天數" [ref=e47]:
+        - button "持有 5 日" [ref=e48] [cursor=pointer]
+        - button "持有 10 日" [pressed] [ref=e49] [cursor=pointer]
+        - button "持有 20 日" [ref=e50] [cursor=pointer]
+    - group [ref=e51]:
+      - generic "怎麼讀這頁" [ref=e52] [cursor=pointer]
+    - generic [ref=e53]:
+      - text: 基準(任一流動股,持有 10 日):勝過一般個股
+      - generic [ref=e54]: 43.2%
+      - text: · 跑贏大盤
+      - generic [ref=e55]: 37.7%
+      - text: · 樣本
+      - generic [ref=e56]: 781,541
+    - heading "事件訊號觸發當天記一次" [level=2] [ref=e57]
+    - generic [ref=e58]:
+      - generic [ref=e59]:
+        - heading "短線過熱 證據強" [level=2] [ref=e60]:
+          - text: 短線過熱
+          - generic "證據強度" [ref=e61]: 證據強
+        - paragraph [ref=e62]: 股價高於 60 日均線 30% 以上,且 20 日漲幅 ≥ 25%(20 日內只計一次)
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - generic [ref=e65]: 10 日勝過一般個股
+            - text: 44.0%
+            - generic [ref=e66]: 基準 43.2%
+          - generic [ref=e67]:
+            - generic [ref=e68]: 平均相對報酬
+            - text: +0.98%
+            - generic [ref=e69]: 中位數 −1.80%
+          - generic [ref=e70]:
+            - generic [ref=e71]: 樣本數
+            - text: 3,839
+            - generic [ref=e72]: t = 3.5
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e73]
+        - table [ref=e76]:
+          - rowgroup [ref=e77]:
+            - row [ref=e78]:
+              - columnheader [ref=e79]
+              - columnheader "勝過一般股 ↕" [ref=e80] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e81] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e82] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e83] [cursor=pointer]
+          - rowgroup [ref=e84]:
+            - row [ref=e85]:
+              - cell "全期間" [ref=e86]
+              - cell "44.0%" [ref=e87]
+              - cell "+0.98%" [ref=e88]
+              - cell "40.6%" [ref=e89]
+              - cell "3,839" [ref=e90]
+            - row [ref=e91]:
+              - cell "樣本外(近一年)" [ref=e92]
+              - cell "44.4%" [ref=e93]
+              - cell "+1.34%" [ref=e94]
+              - cell "40.0%" [ref=e95]
+              - cell "901" [ref=e96]
+            - row [ref=e97]:
+              - cell "大盤多頭時" [ref=e98]
+              - cell "44.3%" [ref=e99]
+              - cell "+1.07%" [ref=e100]
+              - cell "40.7%" [ref=e101]
+              - cell "3,383" [ref=e102]
+            - row [ref=e103]:
+              - cell "大盤空頭時" [ref=e104]
+              - cell "42.1%" [ref=e105]
+              - cell "+0.33%" [ref=e106]
+              - cell "39.9%" [ref=e107]
+              - cell "456" [ref=e108]
+        - generic [ref=e109]:
+          - heading "今日觸發 · 1 檔" [level=3] [ref=e110]
+          - button "4526東台 +7.88% +4.26 億" [ref=e111] [cursor=pointer]:
+            - generic [ref=e112]: 4526東台
+            - generic [ref=e113]: +7.88%
+            - generic [ref=e114]: +4.26 億
+      - generic [ref=e115]:
+        - heading "創 52 週新高且量增 證據中" [level=2] [ref=e116]:
+          - text: 創 52 週新高且量增
+          - generic "證據強度" [ref=e117]: 證據中
+        - paragraph [ref=e118]: 收盤創近 250 日新高,成交金額 ≥ 20 日均量 2 倍(20 日內只計一次)
+        - generic [ref=e119]:
+          - generic [ref=e120]:
+            - generic [ref=e121]: 10 日勝過一般個股
+            - text: 44.1%
+            - generic [ref=e122]: 基準 43.2%
+          - generic [ref=e123]:
+            - generic [ref=e124]: 平均相對報酬
+            - text: +0.76%
+            - generic [ref=e125]: 中位數 −1.43%
+          - generic [ref=e126]:
+            - generic [ref=e127]: 樣本數
+            - text: 6,181
+            - generic [ref=e128]: t = 3.4
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e129]
+        - table [ref=e132]:
+          - rowgroup [ref=e133]:
+            - row [ref=e134]:
+              - columnheader [ref=e135]
+              - columnheader "勝過一般股 ↕" [ref=e136] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e137] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e138] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e139] [cursor=pointer]
+          - rowgroup [ref=e140]:
+            - row [ref=e141]:
+              - cell "全期間" [ref=e142]
+              - cell "44.1%" [ref=e143]
+              - cell "+0.76%" [ref=e144]
+              - cell "40.2%" [ref=e145]
+              - cell "6,181" [ref=e146]
+            - row [ref=e147]:
+              - cell "樣本外(近一年)" [ref=e148]
+              - cell "44.1%" [ref=e149]
+              - cell "+0.83%" [ref=e150]
+              - cell "40.8%" [ref=e151]
+              - cell "1,175" [ref=e152]
+            - row [ref=e153]:
+              - cell "大盤多頭時" [ref=e154]
+              - cell "44.3%" [ref=e155]
+              - cell "+0.88%" [ref=e156]
+              - cell "40.3%" [ref=e157]
+              - cell "5,349" [ref=e158]
+            - row [ref=e159]:
+              - cell "大盤空頭時" [ref=e160]
+              - cell "43.1%" [ref=e161]
+              - cell "0.00%" [ref=e162]
+              - cell "39.9%" [ref=e163]
+              - cell "832" [ref=e164]
+        - generic [ref=e165]:
+          - heading "今日觸發 · 3 檔" [level=3] [ref=e166]
+          - button "2468華經 +10.00% +1.11 億" [ref=e167] [cursor=pointer]:
+            - generic [ref=e168]: 2468華經
+            - generic [ref=e169]: +10.00%
+            - generic [ref=e170]: +1.11 億
+          - button "4720德淵 +5.81% +0.47 億" [ref=e171] [cursor=pointer]:
+            - generic [ref=e172]: 4720德淵
+            - generic [ref=e173]: +5.81%
+            - generic [ref=e174]: +0.47 億
+          - button "6782視陽 +0.37% +0.12 億" [ref=e175] [cursor=pointer]:
+            - generic [ref=e176]: 6782視陽
+            - generic [ref=e177]: +0.37%
+            - generic [ref=e178]: +0.12 億
+      - generic [ref=e179]:
+        - heading "投信連買 3 天 證據中" [level=2] [ref=e180]:
+          - text: 投信連買 3 天
+          - generic "證據強度" [ref=e181]: 證據中
+        - paragraph [ref=e182]: 投信連續第 3 天買超,且 3 日累計 ≥ 0.5 億(只計第 3 天)
+        - generic [ref=e183]:
+          - generic [ref=e184]:
+            - generic [ref=e185]: 10 日勝過一般個股
+            - text: 45.8%
+            - generic [ref=e186]: 基準 43.2%
+          - generic [ref=e187]:
+            - generic [ref=e188]: 平均相對報酬
+            - text: +0.29%
+            - generic [ref=e189]: 中位數 −0.70%
+          - generic [ref=e190]:
+            - generic [ref=e191]: 樣本數
+            - text: 12,567
+            - generic [ref=e192]: t = 3.3
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e193]
+        - table [ref=e196]:
+          - rowgroup [ref=e197]:
+            - row [ref=e198]:
+              - columnheader [ref=e199]
+              - columnheader "勝過一般股 ↕" [ref=e200] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e201] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e202] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e203] [cursor=pointer]
+          - rowgroup [ref=e204]:
+            - row [ref=e205]:
+              - cell "全期間" [ref=e206]
+              - cell "45.8%" [ref=e207]
+              - cell "+0.29%" [ref=e208]
+              - cell "40.6%" [ref=e209]
+              - cell "12,567" [ref=e210]
+            - row [ref=e211]:
+              - cell "樣本外(近一年)" [ref=e212]
+              - cell "44.2%" [ref=e213]
+              - cell "+0.72%" [ref=e214]
+              - cell "39.2%" [ref=e215]
+              - cell "2,010" [ref=e216]
+            - row [ref=e217]:
+              - cell "大盤多頭時" [ref=e218]
+              - cell "44.9%" [ref=e219]
+              - cell "+0.30%" [ref=e220]
+              - cell "39.5%" [ref=e221]
+              - cell "9,038" [ref=e222]
+            - row [ref=e223]:
+              - cell "大盤空頭時" [ref=e224]
+              - cell "48.0%" [ref=e225]
+              - cell "+0.26%" [ref=e226]
+              - cell "43.6%" [ref=e227]
+              - cell "3,529" [ref=e228]
+        - generic [ref=e229]:
+          - heading "今日觸發 · 3 檔" [level=3] [ref=e230]
+          - button "3036文曄 +0.24% −0.61 億" [ref=e231] [cursor=pointer]:
+            - generic [ref=e232]: 3036文曄
+            - generic [ref=e233]: +0.24%
+            - generic [ref=e234]: −0.61 億
+          - button "2492華新科 −9.25% −33.19 億" [ref=e235] [cursor=pointer]:
+            - generic [ref=e236]: 2492華新科
+            - generic [ref=e237]: −9.25%
+            - generic [ref=e238]: −33.19 億
+          - button "5483中美晶 −6.53% −8.73 億" [ref=e239] [cursor=pointer]:
+            - generic [ref=e240]: 5483中美晶
+            - generic [ref=e241]: −6.53%
+            - generic [ref=e242]: −8.73 億
+      - generic [ref=e243]:
+        - heading "當日逆勢買超 證據弱" [level=2] [ref=e244]:
+          - text: 當日逆勢買超
+          - generic "證據強度" [ref=e245]: 證據弱
+        - paragraph [ref=e246]: 股價收跌,但三大法人當日淨買超 ≥ 0.3 億
+        - generic [ref=e247]:
+          - generic [ref=e248]:
+            - generic [ref=e249]: 10 日勝過一般個股
+            - text: 44.7%
+            - generic [ref=e250]: 基準 43.2%
+          - generic [ref=e251]:
+            - generic [ref=e252]: 平均相對報酬
+            - text: +0.21%
+            - generic [ref=e253]: 中位數 −0.90%
+          - generic [ref=e254]:
+            - generic [ref=e255]: 樣本數
+            - text: 37,005
+            - generic [ref=e256]: t = -0.5
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e257]
+        - table [ref=e260]:
+          - rowgroup [ref=e261]:
+            - row [ref=e262]:
+              - columnheader [ref=e263]
+              - columnheader "勝過一般股 ↕" [ref=e264] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e265] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e266] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e267] [cursor=pointer]
+          - rowgroup [ref=e268]:
+            - row [ref=e269]:
+              - cell "全期間" [ref=e270]
+              - cell "44.7%" [ref=e271]
+              - cell "+0.21%" [ref=e272]
+              - cell "39.3%" [ref=e273]
+              - cell "37,005" [ref=e274]
+            - row [ref=e275]:
+              - cell "樣本外(近一年)" [ref=e276]
+              - cell "43.8%" [ref=e277]
+              - cell "+0.50%" [ref=e278]
+              - cell "38.9%" [ref=e279]
+              - cell "8,195" [ref=e280]
+            - row [ref=e281]:
+              - cell "大盤多頭時" [ref=e282]
+              - cell "43.9%" [ref=e283]
+              - cell "+0.24%" [ref=e284]
+              - cell "37.8%" [ref=e285]
+              - cell "25,651" [ref=e286]
+            - row [ref=e287]:
+              - cell "大盤空頭時" [ref=e288]
+              - cell "46.6%" [ref=e289]
+              - cell "+0.14%" [ref=e290]
+              - cell "42.6%" [ref=e291]
+              - cell "11,354" [ref=e292]
+        - generic [ref=e293]:
+          - heading "今日觸發 · 89 檔" [level=3] [ref=e294]
+          - button "2542興富發 −0.25% +2.27 億" [ref=e295] [cursor=pointer]:
+            - generic [ref=e296]: 2542興富發
+            - generic [ref=e297]: −0.25%
+            - generic [ref=e298]: +2.27 億
+          - button "2393億光 −0.15% +0.45 億" [ref=e299] [cursor=pointer]:
+            - generic [ref=e300]: 2393億光
+            - generic [ref=e301]: −0.15%
+            - generic [ref=e302]: +0.45 億
+          - button "2352佳世達 −0.17% +0.78 億" [ref=e303] [cursor=pointer]:
+            - generic [ref=e304]: 2352佳世達
+            - generic [ref=e305]: −0.17%
+            - generic [ref=e306]: +0.78 億
+          - button "3010華立 −2.52% +1.15 億" [ref=e307] [cursor=pointer]:
+            - generic [ref=e308]: 3010華立
+            - generic [ref=e309]: −2.52%
+            - generic [ref=e310]: +1.15 億
+          - button "2002中鋼 −0.26% +4.87 億" [ref=e311] [cursor=pointer]:
+            - generic [ref=e312]: 2002中鋼
+            - generic [ref=e313]: −0.26%
+            - generic [ref=e314]: +4.87 億
+          - button "2645長榮航太 −0.88% +0.61 億" [ref=e315] [cursor=pointer]:
+            - generic [ref=e316]: 2645長榮航太
+            - generic [ref=e317]: −0.88%
+            - generic [ref=e318]: +0.61 億
+          - button "5904寶雅* −0.14% +1.42 億" [ref=e319] [cursor=pointer]:
+            - generic [ref=e320]: 5904寶雅*
+            - generic [ref=e321]: −0.14%
+            - generic [ref=e322]: +1.42 億
+          - button "1476儒鴻 −0.15% +1.00 億" [ref=e323] [cursor=pointer]:
+            - generic [ref=e324]: 1476儒鴻
+            - generic [ref=e325]: −0.15%
+            - generic [ref=e326]: +1.00 億
+          - button "顯示全部 89 檔" [ref=e327] [cursor=pointer]
+      - generic [ref=e328]:
+        - heading "外資連買 5 天 證據弱" [level=2] [ref=e329]:
+          - text: 外資連買 5 天
+          - generic "證據強度" [ref=e330]: 證據弱
+        - paragraph [ref=e331]: 外資連續第 5 天買超,且 5 日累計 ≥ 2 億(只計第 5 天)
+        - generic [ref=e332]:
+          - generic [ref=e333]:
+            - generic [ref=e334]: 10 日勝過一般個股
+            - text: 45.5%
+            - generic [ref=e335]: 基準 43.2%
+          - generic [ref=e336]:
+            - generic [ref=e337]: 平均相對報酬
+            - text: +0.16%
+            - generic [ref=e338]: 中位數 −0.70%
+          - generic [ref=e339]:
+            - generic [ref=e340]: 樣本數
+            - text: 8,035
+            - generic [ref=e341]: t = 0.7
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e342]
+        - table [ref=e345]:
+          - rowgroup [ref=e346]:
+            - row [ref=e347]:
+              - columnheader [ref=e348]
+              - columnheader "勝過一般股 ↕" [ref=e349] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e350] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e351] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e352] [cursor=pointer]
+          - rowgroup [ref=e353]:
+            - row [ref=e354]:
+              - cell "全期間" [ref=e355]
+              - cell "45.5%" [ref=e356]
+              - cell "+0.16%" [ref=e357]
+              - cell "38.9%" [ref=e358]
+              - cell "8,035" [ref=e359]
+            - row [ref=e360]:
+              - cell "樣本外(近一年)" [ref=e361]
+              - cell "42.8%" [ref=e362]
+              - cell "+0.02%" [ref=e363]
+              - cell "38.7%" [ref=e364]
+              - cell "1,763" [ref=e365]
+            - row [ref=e366]:
+              - cell "大盤多頭時" [ref=e367]
+              - cell "45.8%" [ref=e368]
+              - cell "+0.29%" [ref=e369]
+              - cell "38.7%" [ref=e370]
+              - cell "6,199" [ref=e371]
+            - row [ref=e372]:
+              - cell "大盤空頭時" [ref=e373]
+              - cell "44.5%" [ref=e374]
+              - cell "−0.29%" [ref=e375]
+              - cell "39.8%" [ref=e376]
+              - cell "1,836" [ref=e377]
+        - generic [ref=e378]:
+          - heading "今日觸發 · 8 檔" [level=3] [ref=e379]
+          - button "3714富采 −1.44% +0.85 億" [ref=e380] [cursor=pointer]:
+            - generic [ref=e381]: 3714富采
+            - generic [ref=e382]: −1.44%
+            - generic [ref=e383]: +0.85 億
+          - button "2634漢翔 −1.94% +0.34 億" [ref=e384] [cursor=pointer]:
+            - generic [ref=e385]: 2634漢翔
+            - generic [ref=e386]: −1.94%
+            - generic [ref=e387]: +0.34 億
+          - button "2328廣宇 −1.29% +2.29 億" [ref=e388] [cursor=pointer]:
+            - generic [ref=e389]: 2328廣宇
+            - generic [ref=e390]: −1.29%
+            - generic [ref=e391]: +2.29 億
+          - button "2324仁寶 −1.06% +1.58 億" [ref=e392] [cursor=pointer]:
+            - generic [ref=e393]: 2324仁寶
+            - generic [ref=e394]: −1.06%
+            - generic [ref=e395]: +1.58 億
+          - button "4938和碩 −1.43% +1.73 億" [ref=e396] [cursor=pointer]:
+            - generic [ref=e397]: 4938和碩
+            - generic [ref=e398]: −1.43%
+            - generic [ref=e399]: +1.73 億
+          - button "6538倉和 −4.83% +0.48 億" [ref=e400] [cursor=pointer]:
+            - generic [ref=e401]: 6538倉和
+            - generic [ref=e402]: −4.83%
+            - generic [ref=e403]: +0.48 億
+          - button "6438迅得 −4.65% +0.20 億" [ref=e404] [cursor=pointer]:
+            - generic [ref=e405]: 6438迅得
+            - generic [ref=e406]: −4.65%
+            - generic [ref=e407]: +0.20 億
+          - button "3105穩懋 −5.08% −7.10 億" [ref=e408] [cursor=pointer]:
+            - generic [ref=e409]: 3105穩懋
+            - generic [ref=e410]: −5.08%
+            - generic [ref=e411]: −7.10 億
+      - generic [ref=e412]:
+        - heading "當日逆勢買超(強) 證據弱" [level=2] [ref=e413]:
+          - text: 當日逆勢買超(強)
+          - generic "證據強度" [ref=e414]: 證據弱
+        - paragraph [ref=e415]: 同上,且法人買超佔當日成交金額 ≥ 10%
+        - generic [ref=e416]:
+          - generic [ref=e417]:
+            - generic [ref=e418]: 10 日勝過一般個股
+            - text: 44.5%
+            - generic [ref=e419]: 基準 43.2%
+          - generic [ref=e420]:
+            - generic [ref=e421]: 平均相對報酬
+            - text: +0.15%
+            - generic [ref=e422]: 中位數 −0.86%
+          - generic [ref=e423]:
+            - generic [ref=e424]: 樣本數
+            - text: 23,084
+            - generic [ref=e425]: t = -0.9
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e426]
+        - table [ref=e429]:
+          - rowgroup [ref=e430]:
+            - row [ref=e431]:
+              - columnheader [ref=e432]
+              - columnheader "勝過一般股 ↕" [ref=e433] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e434] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e435] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e436] [cursor=pointer]
+          - rowgroup [ref=e437]:
+            - row [ref=e438]:
+              - cell "全期間" [ref=e439]
+              - cell "44.5%" [ref=e440]
+              - cell "+0.15%" [ref=e441]
+              - cell "38.7%" [ref=e442]
+              - cell "23,084" [ref=e443]
+            - row [ref=e444]:
+              - cell "樣本外(近一年)" [ref=e445]
+              - cell "43.0%" [ref=e446]
+              - cell "+0.27%" [ref=e447]
+              - cell "37.5%" [ref=e448]
+              - cell "4,902" [ref=e449]
+            - row [ref=e450]:
+              - cell "大盤多頭時" [ref=e451]
+              - cell "43.7%" [ref=e452]
+              - cell "+0.19%" [ref=e453]
+              - cell "37.1%" [ref=e454]
+              - cell "15,649" [ref=e455]
+            - row [ref=e456]:
+              - cell "大盤空頭時" [ref=e457]
+              - cell "46.3%" [ref=e458]
+              - cell "+0.05%" [ref=e459]
+              - cell "42.2%" [ref=e460]
+              - cell "7,435" [ref=e461]
+        - generic [ref=e462]:
+          - heading "今日觸發 · 59 檔" [level=3] [ref=e463]
+          - button "2542興富發 −0.25% +2.27 億" [ref=e464] [cursor=pointer]:
+            - generic [ref=e465]: 2542興富發
+            - generic [ref=e466]: −0.25%
+            - generic [ref=e467]: +2.27 億
+          - button "2393億光 −0.15% +0.45 億" [ref=e468] [cursor=pointer]:
+            - generic [ref=e469]: 2393億光
+            - generic [ref=e470]: −0.15%
+            - generic [ref=e471]: +0.45 億
+          - button "2352佳世達 −0.17% +0.78 億" [ref=e472] [cursor=pointer]:
+            - generic [ref=e473]: 2352佳世達
+            - generic [ref=e474]: −0.17%
+            - generic [ref=e475]: +0.78 億
+          - button "3010華立 −2.52% +1.15 億" [ref=e476] [cursor=pointer]:
+            - generic [ref=e477]: 3010華立
+            - generic [ref=e478]: −2.52%
+            - generic [ref=e479]: +1.15 億
+          - button "2002中鋼 −0.26% +4.87 億" [ref=e480] [cursor=pointer]:
+            - generic [ref=e481]: 2002中鋼
+            - generic [ref=e482]: −0.26%
+            - generic [ref=e483]: +4.87 億
+          - button "2645長榮航太 −0.88% +0.61 億" [ref=e484] [cursor=pointer]:
+            - generic [ref=e485]: 2645長榮航太
+            - generic [ref=e486]: −0.88%
+            - generic [ref=e487]: +0.61 億
+          - button "5904寶雅* −0.14% +1.42 億" [ref=e488] [cursor=pointer]:
+            - generic [ref=e489]: 5904寶雅*
+            - generic [ref=e490]: −0.14%
+            - generic [ref=e491]: +1.42 億
+          - button "1476儒鴻 −0.15% +1.00 億" [ref=e492] [cursor=pointer]:
+            - generic [ref=e493]: 1476儒鴻
+            - generic [ref=e494]: −0.15%
+            - generic [ref=e495]: +1.00 億
+          - button "顯示全部 59 檔" [ref=e496] [cursor=pointer]
+      - generic [ref=e497]:
+        - heading "板塊資金翻正 證據弱" [level=2] [ref=e498]:
+          - text: 板塊資金翻正
+          - generic "證據強度" [ref=e499]: 證據弱
+        - paragraph [ref=e500]: 板塊成分股 5 日法人淨買賣超合計由負轉正(以成分股等權組合計算報酬,跟所有板塊成分股平均比)
+        - paragraph [ref=e501]: 比較基準:所有板塊成分股平均(扣除板塊清單的後見之明)
+        - generic [ref=e502]:
+          - generic [ref=e503]:
+            - generic [ref=e504]: 10 日勝過一般個股
+            - text: 46.1%
+            - generic [ref=e505]: 基準 43.2%
+          - generic [ref=e506]:
+            - generic [ref=e507]: 平均相對報酬
+            - text: +0.08%
+            - generic [ref=e508]: 中位數 −0.44%
+          - generic [ref=e509]:
+            - generic [ref=e510]: 樣本數
+            - text: 3,256
+            - generic [ref=e511]: t = 1.0
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e512]
+        - table [ref=e515]:
+          - rowgroup [ref=e516]:
+            - row [ref=e517]:
+              - columnheader [ref=e518]
+              - columnheader "勝過一般股 ↕" [ref=e519] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e520] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e521] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e522] [cursor=pointer]
+          - rowgroup [ref=e523]:
+            - row [ref=e524]:
+              - cell "全期間" [ref=e525]
+              - cell "46.1%" [ref=e526]
+              - cell "+0.08%" [ref=e527]
+              - cell "43.6%" [ref=e528]
+              - cell "3,256" [ref=e529]
+            - row [ref=e530]:
+              - cell "樣本外(近一年)" [ref=e531]
+              - cell "43.9%" [ref=e532]
+              - cell "+0.02%" [ref=e533]
+              - cell "43.7%" [ref=e534]
+              - cell "449" [ref=e535]
+        - generic [ref=e536]:
+          - heading "今日翻正的板塊" [level=3] [ref=e537]
+          - link "散熱 5 日 +0.98 億" [ref=e538] [cursor=pointer]:
+            - /url: sectors.html#cooling
+            - generic [ref=e539]: 散熱
+            - generic [ref=e540]: 5 日 +0.98 億
+          - link "PCB 製造 5 日 +8.28 億" [ref=e541] [cursor=pointer]:
+            - /url: sectors.html#pcb
+            - generic [ref=e542]: PCB 製造
+            - generic [ref=e543]: 5 日 +8.28 億
+          - link "面板 5 日 +13.29 億" [ref=e544] [cursor=pointer]:
+            - /url: sectors.html#panel
+            - generic [ref=e545]: 面板
+            - generic [ref=e546]: 5 日 +13.29 億
+      - generic [ref=e547]:
+        - heading "5 日逆勢買超 證據弱" [level=2] [ref=e548]:
+          - text: 5 日逆勢買超
+          - generic "證據強度" [ref=e549]: 證據弱
+        - paragraph [ref=e550]: 近 5 日股價下跌,但三大法人 5 日累計淨買超 ≥ 1 億
+        - generic [ref=e551]:
+          - generic [ref=e552]:
+            - generic [ref=e553]: 10 日勝過一般個股
+            - text: 44.2%
+            - generic [ref=e554]: 基準 43.2%
+          - generic [ref=e555]:
+            - generic [ref=e556]: 平均相對報酬
+            - text: +0.07%
+            - generic [ref=e557]: 中位數 −0.90%
+          - generic [ref=e558]:
+            - generic [ref=e559]: 樣本數
+            - text: 15,478
+            - generic [ref=e560]: t = -0.7
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e561]
+        - table [ref=e564]:
+          - rowgroup [ref=e565]:
+            - row [ref=e566]:
+              - columnheader [ref=e567]
+              - columnheader "勝過一般股 ↕" [ref=e568] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e569] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e570] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e571] [cursor=pointer]
+          - rowgroup [ref=e572]:
+            - row [ref=e573]:
+              - cell "全期間" [ref=e574]
+              - cell "44.2%" [ref=e575]
+              - cell "+0.07%" [ref=e576]
+              - cell "38.6%" [ref=e577]
+              - cell "15,478" [ref=e578]
+            - row [ref=e579]:
+              - cell "樣本外(近一年)" [ref=e580]
+              - cell "42.8%" [ref=e581]
+              - cell "+0.47%" [ref=e582]
+              - cell "38.7%" [ref=e583]
+              - cell "3,154" [ref=e584]
+            - row [ref=e585]:
+              - cell "大盤多頭時" [ref=e586]
+              - cell "43.5%" [ref=e587]
+              - cell "+0.12%" [ref=e588]
+              - cell "37.3%" [ref=e589]
+              - cell "10,848" [ref=e590]
+            - row [ref=e591]:
+              - cell "大盤空頭時" [ref=e592]
+              - cell "45.7%" [ref=e593]
+              - cell "−0.05%" [ref=e594]
+              - cell "41.6%" [ref=e595]
+              - cell "4,630" [ref=e596]
+        - generic [ref=e597]:
+          - heading "今日觸發 · 18 檔" [level=3] [ref=e598]
+          - button "3010華立 −2.52% +1.15 億" [ref=e599] [cursor=pointer]:
+            - generic [ref=e600]: 3010華立
+            - generic [ref=e601]: −2.52%
+            - generic [ref=e602]: +1.15 億
+          - button "2645長榮航太 −0.88% +0.61 億" [ref=e603] [cursor=pointer]:
+            - generic [ref=e604]: 2645長榮航太
+            - generic [ref=e605]: −0.88%
+            - generic [ref=e606]: +0.61 億
+          - button "8210勤誠 −4.74% +2.50 億" [ref=e607] [cursor=pointer]:
+            - generic [ref=e608]: 8210勤誠
+            - generic [ref=e609]: −4.74%
+            - generic [ref=e610]: +2.50 億
+          - button "5469瀚宇博 −5.09% +0.34 億" [ref=e611] [cursor=pointer]:
+            - generic [ref=e612]: 5469瀚宇博
+            - generic [ref=e613]: −5.09%
+            - generic [ref=e614]: +0.34 億
+          - button "4967十銓 +0.40% +0.25 億" [ref=e615] [cursor=pointer]:
+            - generic [ref=e616]: 4967十銓
+            - generic [ref=e617]: +0.40%
+            - generic [ref=e618]: +0.25 億
+          - button "2395研華 −1.90% +1.16 億" [ref=e619] [cursor=pointer]:
+            - generic [ref=e620]: 2395研華
+            - generic [ref=e621]: −1.90%
+            - generic [ref=e622]: +1.16 億
+          - button "6121新普 −1.49% +0.15 億" [ref=e623] [cursor=pointer]:
+            - generic [ref=e624]: 6121新普
+            - generic [ref=e625]: −1.49%
+            - generic [ref=e626]: +0.15 億
+          - button "6278台表科 −8.21% +5.86 億" [ref=e627] [cursor=pointer]:
+            - generic [ref=e628]: 6278台表科
+            - generic [ref=e629]: −8.21%
+            - generic [ref=e630]: +5.86 億
+          - button "顯示全部 18 檔" [ref=e631] [cursor=pointer]
+      - generic [ref=e632]:
+        - heading "籌碼默默累積、股價未發動 證據弱" [level=2] [ref=e633]:
+          - text: 籌碼默默累積、股價未發動
+          - generic "證據強度" [ref=e634]: 證據弱
+        - paragraph [ref=e635]: 近 20 日法人有 ≥ 12 天買超、累計買超 ≥ 同期成交金額 3%,但股價 20 日漲跌在 −5%~+10%、仍在 60 日高點 85% 以上(10 日內只計一次)
+        - generic [ref=e636]:
+          - generic [ref=e637]:
+            - generic [ref=e638]: 10 日勝過一般個股
+            - text: 44.0%
+            - generic [ref=e639]: 基準 43.2%
+          - generic [ref=e640]:
+            - generic [ref=e641]: 平均相對報酬
+            - text: +0.02%
+            - generic [ref=e642]: 中位數 −0.90%
+          - generic [ref=e643]:
+            - generic [ref=e644]: 樣本數
+            - text: 7,139
+            - generic [ref=e645]: t = -0.4
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e646]
+        - table [ref=e649]:
+          - rowgroup [ref=e650]:
+            - row [ref=e651]:
+              - columnheader [ref=e652]
+              - columnheader "勝過一般股 ↕" [ref=e653] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e654] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e655] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e656] [cursor=pointer]
+          - rowgroup [ref=e657]:
+            - row [ref=e658]:
+              - cell "全期間" [ref=e659]
+              - cell "44.0%" [ref=e660]
+              - cell "+0.02%" [ref=e661]
+              - cell "37.8%" [ref=e662]
+              - cell "7,139" [ref=e663]
+            - row [ref=e664]:
+              - cell "樣本外(近一年)" [ref=e665]
+              - cell "41.0%" [ref=e666]
+              - cell "−0.26%" [ref=e667]
+              - cell "36.4%" [ref=e668]
+              - cell "1,050" [ref=e669]
+            - row [ref=e670]:
+              - cell "大盤多頭時" [ref=e671]
+              - cell "44.6%" [ref=e672]
+              - cell "+0.14%" [ref=e673]
+              - cell "37.6%" [ref=e674]
+              - cell "5,481" [ref=e675]
+            - row [ref=e676]:
+              - cell "大盤空頭時" [ref=e677]
+              - cell "42.0%" [ref=e678]
+              - cell "−0.38%" [ref=e679]
+              - cell "38.5%" [ref=e680]
+              - cell "1,658" [ref=e681]
+        - generic [ref=e682]:
+          - heading "今日觸發 · 9 檔" [level=3] [ref=e683]
+          - button "3010華立 −2.52% +1.15 億" [ref=e684] [cursor=pointer]:
+            - generic [ref=e685]: 3010華立
+            - generic [ref=e686]: −2.52%
+            - generic [ref=e687]: +1.15 億
+          - button "3706神達 −0.98% +1.15 億" [ref=e688] [cursor=pointer]:
+            - generic [ref=e689]: 3706神達
+            - generic [ref=e690]: −0.98%
+            - generic [ref=e691]: +1.15 億
+          - button "5469瀚宇博 −5.09% +0.34 億" [ref=e692] [cursor=pointer]:
+            - generic [ref=e693]: 5469瀚宇博
+            - generic [ref=e694]: −5.09%
+            - generic [ref=e695]: +0.34 億
+          - button "2402毅嘉 −5.45% +0.23 億" [ref=e696] [cursor=pointer]:
+            - generic [ref=e697]: 2402毅嘉
+            - generic [ref=e698]: −5.45%
+            - generic [ref=e699]: +0.23 億
+          - button "6438迅得 −4.65% +0.20 億" [ref=e700] [cursor=pointer]:
+            - generic [ref=e701]: 6438迅得
+            - generic [ref=e702]: −4.65%
+            - generic [ref=e703]: +0.20 億
+          - button "6526達發 −3.47% +0.57 億" [ref=e704] [cursor=pointer]:
+            - generic [ref=e705]: 6526達發
+            - generic [ref=e706]: −3.47%
+            - generic [ref=e707]: +0.57 億
+          - button "3443創意 −5.19% +5.35 億" [ref=e708] [cursor=pointer]:
+            - generic [ref=e709]: 3443創意
+            - generic [ref=e710]: −5.19%
+            - generic [ref=e711]: +5.35 億
+          - button "3044健鼎 −4.63% −0.01 億" [ref=e712] [cursor=pointer]:
+            - generic [ref=e713]: 3044健鼎
+            - generic [ref=e714]: −4.63%
+            - generic [ref=e715]: −0.01 億
+          - button "顯示全部 9 檔" [ref=e716] [cursor=pointer]
+      - generic [ref=e717]:
+        - heading "法人轉買 證據弱" [level=2] [ref=e718]:
+          - text: 法人轉買
+          - generic "證據強度" [ref=e719]: 證據弱
+        - paragraph [ref=e720]: 三大法人連賣 5 天後,當日轉為淨買超 ≥ 0.5 億
+        - generic [ref=e721]:
+          - generic [ref=e722]:
+            - generic [ref=e723]: 10 日勝過一般個股
+            - text: 44.0%
+            - generic [ref=e724]: 基準 43.2%
+          - generic [ref=e725]:
+            - generic [ref=e726]: 平均相對報酬
+            - text: +0.01%
+            - generic [ref=e727]: 中位數 −0.87%
+          - generic [ref=e728]:
+            - generic [ref=e729]: 樣本數
+            - text: 5,499
+            - generic [ref=e730]: t = 0.4
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e731]
+        - table [ref=e734]:
+          - rowgroup [ref=e735]:
+            - row [ref=e736]:
+              - columnheader [ref=e737]
+              - columnheader "勝過一般股 ↕" [ref=e738] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e739] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e740] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e741] [cursor=pointer]
+          - rowgroup [ref=e742]:
+            - row [ref=e743]:
+              - cell "全期間" [ref=e744]
+              - cell "44.0%" [ref=e745]
+              - cell "+0.01%" [ref=e746]
+              - cell "38.2%" [ref=e747]
+              - cell "5,499" [ref=e748]
+            - row [ref=e749]:
+              - cell "樣本外(近一年)" [ref=e750]
+              - cell "42.6%" [ref=e751]
+              - cell "+0.27%" [ref=e752]
+              - cell "37.3%" [ref=e753]
+              - cell "1,210" [ref=e754]
+            - row [ref=e755]:
+              - cell "大盤多頭時" [ref=e756]
+              - cell "43.6%" [ref=e757]
+              - cell "+0.02%" [ref=e758]
+              - cell "37.1%" [ref=e759]
+              - cell "4,071" [ref=e760]
+            - row [ref=e761]:
+              - cell "大盤空頭時" [ref=e762]
+              - cell "45.0%" [ref=e763]
+              - cell "−0.01%" [ref=e764]
+              - cell "41.2%" [ref=e765]
+              - cell "1,428" [ref=e766]
+        - generic [ref=e767]:
+          - heading "今日觸發 · 3 檔" [level=3] [ref=e768]
+          - button "2059川湖 −3.22% +4.13 億" [ref=e769] [cursor=pointer]:
+            - generic [ref=e770]: 2059川湖
+            - generic [ref=e771]: −3.22%
+            - generic [ref=e772]: +4.13 億
+          - button "3037欣興 −1.36% +15.89 億" [ref=e773] [cursor=pointer]:
+            - generic [ref=e774]: 3037欣興
+            - generic [ref=e775]: −1.36%
+            - generic [ref=e776]: +15.89 億
+          - button "2383台光電 +1.60% +13.34 億" [ref=e777] [cursor=pointer]:
+            - generic [ref=e778]: 2383台光電
+            - generic [ref=e779]: +1.60%
+            - generic [ref=e780]: +13.34 億
+    - heading "觀察名單的篩選條件每天符合就記一筆,用來檢驗觀察名單有沒有根據" [level=2] [ref=e781]
+    - generic [ref=e782]:
+      - generic [ref=e783]:
+        - heading "大幅偏離季線 證據強" [level=2] [ref=e784]:
+          - text: 大幅偏離季線
+          - generic "證據強度" [ref=e785]: 證據強
+        - paragraph [ref=e786]: 股價高於 60 日均線 50% 以上
+        - generic [ref=e787]:
+          - generic [ref=e788]:
+            - generic [ref=e789]: 10 日勝過一般個股
+            - text: 45.0%
+            - generic [ref=e790]: 基準 43.2%
+          - generic [ref=e791]:
+            - generic [ref=e792]: 平均相對報酬
+            - text: +1.10%
+            - generic [ref=e793]: 中位數 −1.99%
+          - generic [ref=e794]:
+            - generic [ref=e795]: 樣本數
+            - text: 17,357
+            - generic [ref=e796]: t = 3.8
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e797]
+        - table [ref=e800]:
+          - rowgroup [ref=e801]:
+            - row [ref=e802]:
+              - columnheader [ref=e803]
+              - columnheader "勝過一般股 ↕" [ref=e804] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e805] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e806] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e807] [cursor=pointer]
+          - rowgroup [ref=e808]:
+            - row [ref=e809]:
+              - cell "全期間" [ref=e810]
+              - cell "45.0%" [ref=e811]
+              - cell "+1.10%" [ref=e812]
+              - cell "41.6%" [ref=e813]
+              - cell "17,357" [ref=e814]
+            - row [ref=e815]:
+              - cell "樣本外(近一年)" [ref=e816]
+              - cell "45.3%" [ref=e817]
+              - cell "+1.16%" [ref=e818]
+              - cell "41.9%" [ref=e819]
+              - cell "5,987" [ref=e820]
+            - row [ref=e821]:
+              - cell "大盤多頭時" [ref=e822]
+              - cell "45.1%" [ref=e823]
+              - cell "+1.17%" [ref=e824]
+              - cell "41.5%" [ref=e825]
+              - cell "15,691" [ref=e826]
+            - row [ref=e827]:
+              - cell "大盤空頭時" [ref=e828]
+              - cell "44.1%" [ref=e829]
+              - cell "+0.42%" [ref=e830]
+              - cell "41.8%" [ref=e831]
+              - cell "1,666" [ref=e832]
+        - link "到觀察名單看今日符合的個股 →" [ref=e834] [cursor=pointer]:
+          - /url: watch.html
+      - generic [ref=e835]:
+        - heading "資金持續撤出的板塊 證據反向" [level=2] [ref=e836]:
+          - text: 資金持續撤出的板塊
+          - generic "證據強度" [ref=e837]: 證據反向
+        - paragraph [ref=e838]: 所屬板塊 20 日與 5 日法人皆淨流出(且不屬於任何流入中的板塊)
+        - paragraph [ref=e839]: 比較基準:所有板塊成分股平均(扣除板塊清單的後見之明)
+        - generic [ref=e840]:
+          - generic [ref=e841]:
+            - generic [ref=e842]: 10 日勝過一般個股
+            - text: 42.5%
+            - generic [ref=e843]: 基準 43.2%
+          - generic [ref=e844]:
+            - generic [ref=e845]: 平均相對報酬
+            - text: −0.27%
+            - generic [ref=e846]: 中位數 −1.00%
+          - generic [ref=e847]:
+            - generic [ref=e848]: 樣本數
+            - text: 98,628
+            - generic [ref=e849]: t = -3.9
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e850]
+        - table [ref=e853]:
+          - rowgroup [ref=e854]:
+            - row [ref=e855]:
+              - columnheader [ref=e856]
+              - columnheader "勝過一般股 ↕" [ref=e857] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e858] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e859] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e860] [cursor=pointer]
+          - rowgroup [ref=e861]:
+            - row [ref=e862]:
+              - cell "全期間" [ref=e863]
+              - cell "42.5%" [ref=e864]
+              - cell "−0.27%" [ref=e865]
+              - cell "39.7%" [ref=e866]
+              - cell "98,628" [ref=e867]
+            - row [ref=e868]:
+              - cell "樣本外(近一年)" [ref=e869]
+              - cell "39.8%" [ref=e870]
+              - cell "−0.28%" [ref=e871]
+              - cell "38.2%" [ref=e872]
+              - cell "14,202" [ref=e873]
+            - row [ref=e874]:
+              - cell "大盤多頭時" [ref=e875]
+              - cell "41.1%" [ref=e876]
+              - cell "−0.39%" [ref=e877]
+              - cell "37.6%" [ref=e878]
+              - cell "63,154" [ref=e879]
+            - row [ref=e880]:
+              - cell "大盤空頭時" [ref=e881]
+              - cell "45.0%" [ref=e882]
+              - cell "−0.06%" [ref=e883]
+              - cell "43.4%" [ref=e884]
+              - cell "35,474" [ref=e885]
+        - link "到觀察名單看今日符合的個股 →" [ref=e887] [cursor=pointer]:
+          - /url: watch.html
+      - generic [ref=e888]:
+        - heading "資金排名墊底的板塊 證據反向" [level=2] [ref=e889]:
+          - text: 資金排名墊底的板塊
+          - generic "證據強度" [ref=e890]: 證據反向
+        - paragraph [ref=e891]: 所屬板塊 20 日法人買賣超佔成交比,排在所有板塊最後 5 名
+        - paragraph [ref=e892]: 比較基準:所有板塊成分股平均(扣除板塊清單的後見之明)
+        - generic [ref=e893]:
+          - generic [ref=e894]:
+            - generic [ref=e895]: 10 日勝過一般個股
+            - text: 41.0%
+            - generic [ref=e896]: 基準 43.2%
+          - generic [ref=e897]:
+            - generic [ref=e898]: 平均相對報酬
+            - text: −0.59%
+            - generic [ref=e899]: 中位數 −1.05%
+          - generic [ref=e900]:
+            - generic [ref=e901]: 樣本數
+            - text: 41,077
+            - generic [ref=e902]: t = -4.7
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e903]
+        - table [ref=e906]:
+          - rowgroup [ref=e907]:
+            - row [ref=e908]:
+              - columnheader [ref=e909]
+              - columnheader "勝過一般股 ↕" [ref=e910] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e911] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e912] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e913] [cursor=pointer]
+          - rowgroup [ref=e914]:
+            - row [ref=e915]:
+              - cell "全期間" [ref=e916]
+              - cell "41.0%" [ref=e917]
+              - cell "−0.59%" [ref=e918]
+              - cell "38.1%" [ref=e919]
+              - cell "41,077" [ref=e920]
+            - row [ref=e921]:
+              - cell "樣本外(近一年)" [ref=e922]
+              - cell "36.9%" [ref=e923]
+              - cell "−1.14%" [ref=e924]
+              - cell "34.5%" [ref=e925]
+              - cell "6,420" [ref=e926]
+            - row [ref=e927]:
+              - cell "大盤多頭時" [ref=e928]
+              - cell "40.0%" [ref=e929]
+              - cell "−0.70%" [ref=e930]
+              - cell "36.7%" [ref=e931]
+              - cell "28,589" [ref=e932]
+            - row [ref=e933]:
+              - cell "大盤空頭時" [ref=e934]
+              - cell "43.3%" [ref=e935]
+              - cell "−0.34%" [ref=e936]
+              - cell "41.4%" [ref=e937]
+              - cell "12,488" [ref=e938]
+        - link "到觀察名單看今日符合的個股 →" [ref=e940] [cursor=pointer]:
+          - /url: watch.html
+      - generic [ref=e941]:
+        - heading "同上,且股價已發動 證據弱" [level=2] [ref=e942]:
+          - text: 同上,且股價已發動
+          - generic "證據強度" [ref=e943]: 證據弱
+        - paragraph [ref=e944]: 符合上一項,且股價 20 日漲幅 > 10%
+        - paragraph [ref=e945]: 比較基準:所有板塊成分股平均(扣除板塊清單的後見之明)
+        - generic [ref=e946]:
+          - generic [ref=e947]:
+            - generic [ref=e948]: 10 日勝過一般個股
+            - text: 45.3%
+            - generic [ref=e949]: 基準 43.2%
+          - generic [ref=e950]:
+            - generic [ref=e951]: 平均相對報酬
+            - text: +0.72%
+            - generic [ref=e952]: 中位數 −0.88%
+          - generic [ref=e953]:
+            - generic [ref=e954]: 樣本數
+            - text: 22,514
+            - generic [ref=e955]: t = 1.6
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e956]
+        - table [ref=e959]:
+          - rowgroup [ref=e960]:
+            - row [ref=e961]:
+              - columnheader [ref=e962]
+              - columnheader "勝過一般股 ↕" [ref=e963] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e964] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e965] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e966] [cursor=pointer]
+          - rowgroup [ref=e967]:
+            - row [ref=e968]:
+              - cell "全期間" [ref=e969]
+              - cell "45.3%" [ref=e970]
+              - cell "+0.72%" [ref=e971]
+              - cell "42.9%" [ref=e972]
+              - cell "22,514" [ref=e973]
+            - row [ref=e974]:
+              - cell "樣本外(近一年)" [ref=e975]
+              - cell "44.1%" [ref=e976]
+              - cell "+0.86%" [ref=e977]
+              - cell "42.9%" [ref=e978]
+              - cell "4,571" [ref=e979]
+            - row [ref=e980]:
+              - cell "大盤多頭時" [ref=e981]
+              - cell "45.2%" [ref=e982]
+              - cell "+0.89%" [ref=e983]
+              - cell "42.9%" [ref=e984]
+              - cell "19,172" [ref=e985]
+            - row [ref=e986]:
+              - cell "大盤空頭時" [ref=e987]
+              - cell "45.8%" [ref=e988]
+              - cell "−0.29%" [ref=e989]
+              - cell "43.0%" [ref=e990]
+              - cell "3,342" [ref=e991]
+        - link "到觀察名單看今日符合的個股 →" [ref=e993] [cursor=pointer]:
+          - /url: watch.html
+      - generic [ref=e994]:
+        - heading "資金流入板塊中的法人買超股 證據弱" [level=2] [ref=e995]:
+          - text: 資金流入板塊中的法人買超股
+          - generic "證據強度" [ref=e996]: 證據弱
+        - paragraph [ref=e997]: 所屬板塊 20 日與 5 日法人皆淨流入,且個股 20 日法人買超佔成交金額在全市場前 30%
+        - paragraph [ref=e998]: 比較基準:所有板塊成分股平均(扣除板塊清單的後見之明)
+        - generic [ref=e999]:
+          - generic [ref=e1000]:
+            - generic [ref=e1001]: 10 日勝過一般個股
+            - text: 44.1%
+            - generic [ref=e1002]: 基準 43.2%
+          - generic [ref=e1003]:
+            - generic [ref=e1004]: 平均相對報酬
+            - text: +0.23%
+            - generic [ref=e1005]: 中位數 −0.88%
+          - generic [ref=e1006]:
+            - generic [ref=e1007]: 樣本數
+            - text: 52,837
+            - generic [ref=e1008]: t = 0.6
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e1009]
+        - table [ref=e1012]:
+          - rowgroup [ref=e1013]:
+            - row [ref=e1014]:
+              - columnheader [ref=e1015]
+              - columnheader "勝過一般股 ↕" [ref=e1016] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e1017] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e1018] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e1019] [cursor=pointer]
+          - rowgroup [ref=e1020]:
+            - row [ref=e1021]:
+              - cell "全期間" [ref=e1022]
+              - cell "44.1%" [ref=e1023]
+              - cell "+0.23%" [ref=e1024]
+              - cell "41.2%" [ref=e1025]
+              - cell "52,837" [ref=e1026]
+            - row [ref=e1027]:
+              - cell "樣本外(近一年)" [ref=e1028]
+              - cell "43.2%" [ref=e1029]
+              - cell "+0.40%" [ref=e1030]
+              - cell "42.5%" [ref=e1031]
+              - cell "8,474" [ref=e1032]
+            - row [ref=e1033]:
+              - cell "大盤多頭時" [ref=e1034]
+              - cell "44.0%" [ref=e1035]
+              - cell "+0.40%" [ref=e1036]
+              - cell "40.9%" [ref=e1037]
+              - cell "41,594" [ref=e1038]
+            - row [ref=e1039]:
+              - cell "大盤空頭時" [ref=e1040]
+              - cell "44.9%" [ref=e1041]
+              - cell "−0.40%" [ref=e1042]
+              - cell "42.4%" [ref=e1043]
+              - cell "11,243" [ref=e1044]
+        - link "到觀察名單看今日符合的個股 →" [ref=e1046] [cursor=pointer]:
+          - /url: watch.html
+      - generic [ref=e1047]:
+        - heading "同上,但股價尚未發動 證據弱" [level=2] [ref=e1048]:
+          - text: 同上,但股價尚未發動
+          - generic "證據強度" [ref=e1049]: 證據弱
+        - paragraph [ref=e1050]: 符合上一項,且股價 20 日漲幅 ≤ 10%
+        - paragraph [ref=e1051]: 比較基準:所有板塊成分股平均(扣除板塊清單的後見之明)
+        - generic [ref=e1052]:
+          - generic [ref=e1053]:
+            - generic [ref=e1054]: 10 日勝過一般個股
+            - text: 43.3%
+            - generic [ref=e1055]: 基準 43.2%
+          - generic [ref=e1056]:
+            - generic [ref=e1057]: 平均相對報酬
+            - text: −0.14%
+            - generic [ref=e1058]: 中位數 −0.89%
+          - generic [ref=e1059]:
+            - generic [ref=e1060]: 樣本數
+            - text: 30,293
+            - generic [ref=e1061]: t = -1.6
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e1062]
+        - table [ref=e1065]:
+          - rowgroup [ref=e1066]:
+            - row [ref=e1067]:
+              - columnheader [ref=e1068]
+              - columnheader "勝過一般股 ↕" [ref=e1069] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e1070] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e1071] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e1072] [cursor=pointer]
+          - rowgroup [ref=e1073]:
+            - row [ref=e1074]:
+              - cell "全期間" [ref=e1075]
+              - cell "43.3%" [ref=e1076]
+              - cell "−0.14%" [ref=e1077]
+              - cell "39.9%" [ref=e1078]
+              - cell "30,293" [ref=e1079]
+            - row [ref=e1080]:
+              - cell "樣本外(近一年)" [ref=e1081]
+              - cell "42.2%" [ref=e1082]
+              - cell "−0.15%" [ref=e1083]
+              - cell "42.0%" [ref=e1084]
+              - cell "3,903" [ref=e1085]
+            - row [ref=e1086]:
+              - cell "大盤多頭時" [ref=e1087]
+              - cell "42.9%" [ref=e1088]
+              - cell "−0.03%" [ref=e1089]
+              - cell "39.1%" [ref=e1090]
+              - cell "22,417" [ref=e1091]
+            - row [ref=e1092]:
+              - cell "大盤空頭時" [ref=e1093]
+              - cell "44.5%" [ref=e1094]
+              - cell "−0.44%" [ref=e1095]
+              - cell "42.2%" [ref=e1096]
+              - cell "7,876" [ref=e1097]
+        - link "到觀察名單看今日符合的個股 →" [ref=e1099] [cursor=pointer]:
+          - /url: watch.html
+      - generic [ref=e1100]:
+        - heading "法人持續調節 證據弱" [level=2] [ref=e1101]:
+          - text: 法人持續調節
+          - generic "證據強度" [ref=e1102]: 證據弱
+        - paragraph [ref=e1103]: 個股 20 日法人買賣超佔成交金額,在全市場最後 10%
+        - generic [ref=e1104]:
+          - generic [ref=e1105]:
+            - generic [ref=e1106]: 10 日勝過一般個股
+            - text: 44.6%
+            - generic [ref=e1107]: 基準 43.2%
+          - generic [ref=e1108]:
+            - generic [ref=e1109]: 平均相對報酬
+            - text: −0.16%
+            - generic [ref=e1110]: 中位數 −0.59%
+          - generic [ref=e1111]:
+            - generic [ref=e1112]: 樣本數
+            - text: 76,724
+            - generic [ref=e1113]: t = -1.2
+        - generic "勝率與 95% 信賴區間;白線為基準" [ref=e1114]
+        - table [ref=e1117]:
+          - rowgroup [ref=e1118]:
+            - row [ref=e1119]:
+              - columnheader [ref=e1120]
+              - columnheader "勝過一般股 ↕" [ref=e1121] [cursor=pointer]
+              - columnheader "平均相對 ↕" [ref=e1122] [cursor=pointer]
+              - columnheader "跑贏大盤 ↕" [ref=e1123] [cursor=pointer]
+              - columnheader "樣本 ↕" [ref=e1124] [cursor=pointer]
+          - rowgroup [ref=e1125]:
+            - row [ref=e1126]:
+              - cell "全期間" [ref=e1127]
+              - cell "44.6%" [ref=e1128]
+              - cell "−0.16%" [ref=e1129]
+              - cell "36.6%" [ref=e1130]
+              - cell "76,724" [ref=e1131]
+            - row [ref=e1132]:
+              - cell "樣本外(近一年)" [ref=e1133]
+              - cell "38.5%" [ref=e1134]
+              - cell "−0.89%" [ref=e1135]
+              - cell "32.4%" [ref=e1136]
+              - cell "12,552" [ref=e1137]
+            - row [ref=e1138]:
+              - cell "大盤多頭時" [ref=e1139]
+              - cell "43.7%" [ref=e1140]
+              - cell "−0.24%" [ref=e1141]
+              - cell "34.9%" [ref=e1142]
+              - cell "56,362" [ref=e1143]
+            - row [ref=e1144]:
+              - cell "大盤空頭時" [ref=e1145]
+              - cell "47.3%" [ref=e1146]
+              - cell "+0.07%" [ref=e1147]
+              - cell "41.5%" [ref=e1148]
+              - cell "20,362" [ref=e1149]
+        - link "到觀察名單看今日符合的個股 →" [ref=e1151] [cursor=pointer]:
+          - /url: watch.html
+  - contentinfo [ref=e1152]:
+    - text: 回測使用證交所與櫃買中心公開的個股日資料。歷史表現不代表未來結果;訊號統計是所有個股的平均表現,不是對任何個股的預測。本頁只呈現事實,不構成任何投資建議。
+    - group [ref=e1154]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-23 23:29" [ref=e1155] [cursor=pointer]

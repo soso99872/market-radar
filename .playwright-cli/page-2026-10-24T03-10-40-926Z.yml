@@ -1,0 +1,101 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: 盤前雷達台美股 · 每個交易日 06:00
+      - searchbox "查詢個股" [ref=e14]
+      - navigation "頁面" [ref=e15]:
+        - link "晨報" [ref=e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=e22] [cursor=pointer]:
+          - /url: my.html
+      - generic [ref=e23]:
+        - button "前一天" [ref=e24] [cursor=pointer]: ‹
+        - combobox "選擇日期" [ref=e25] [cursor=pointer]:
+          - option "2026-10-23" [selected]
+          - option "2026-10-22"
+          - option "2026-10-21"
+          - option "2026-10-20"
+          - option "2026-10-19"
+          - option "2026-10-15"
+          - option "2026-10-14"
+          - option "2026-10-13"
+          - option "2026-10-09"
+          - option "2026-10-08"
+          - option "2026-10-07"
+        - button "後一天" [disabled] [ref=e26]: ›
+      - group "漲跌顏色" [ref=e27]:
+        - button "紅漲綠跌" [pressed] [ref=e28] [cursor=pointer]
+        - button "綠漲紅跌" [ref=e29] [cursor=pointer]
+  - main [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]: 2026 年 10 月 23 日 星期五
+      - generic [ref=e33]: 資料截至 07:30
+      - link "對照舊版" [ref=e34] [cursor=pointer]:
+        - /url: ./
+      - button "說明:這頁怎麼算" [ref=e36] [cursor=pointer]: "?"
+    - heading "費半跌 6.06%、台積電 ADR 跌 4.63%，今天先看加權近 15 日低點 46,293" [level=1] [ref=e37]
+    - paragraph [ref=e38]: 10/22 三大法人合計賣超 994.67 億：外資 -815.82、投信 +94.92、自營商 -273.77
+    - region "4 個重點數字" [ref=e39]:
+      - generic [ref=e40]:
+        - heading "加權指數" [level=2] [ref=e41]
+        - generic [ref=e42]: 46,887.77
+        - generic [ref=e43]: +594.84 (+1.28%)
+        - generic [ref=e44]: 14 個交易日跌 2.2%
+        - generic [ref=e45]: 10/21 收盤
+      - generic [ref=e46]:
+        - heading "費城半導體" [level=2] [ref=e47]
+        - generic [ref=e48]: 10,808.56
+        - generic [ref=e49]: "-697.00 (-6.06%)"
+        - generic [ref=e50]: 14 個交易日跌 17.7%
+        - generic [ref=e51]: 10/22 收盤
+      - generic [ref=e52]:
+        - heading "台積電 ADR" [level=2] [ref=e53]
+        - generic [ref=e54]: "411.89"
+        - generic [ref=e55]: "-20.00 (-4.63%)"
+        - generic [ref=e56]: 對台股現股溢價 10.94%
+        - generic [ref=e57]: 10/22 收盤
+      - generic [ref=e58]:
+        - heading "外資買賣超" [level=2] [ref=e59]
+        - generic [ref=e60]: "-815.82億"
+        - generic [ref=e61]: 10/22 外資賣超
+        - generic [ref=e62]: 前一天 10/21 買超 22 億
+        - generic [ref=e63]: 10/22 盤後
+    - generic [ref=e64]:
+      - heading "今天起的事件" [level=2] [ref=e65]
+      - list "今天起的事件時間軸" [ref=e66]:
+        - listitem [ref=e67]:
+          - generic [ref=e68]:
+            - text: 10/23
+            - generic [ref=e69]: 週五 · 今天
+          - list [ref=e70]:
+            - listitem [ref=e71]: 沒有登錄事件
+        - listitem [ref=e72]:
+          - generic [ref=e73]:
+            - text: 10/28
+            - generic [ref=e74]: 週三
+          - list [ref=e75]:
+            - listitem [ref=e76]: 美股大型科技股財報週(Meta、蘋果等約10/28-10/29前後公布,日期為市場預估)
+        - listitem [ref=e77]:
+          - generic [ref=e78]:
+            - text: 10/29
+            - generic [ref=e79]: 週四
+          - list [ref=e80]:
+            - listitem [ref=e81]: FOMC利率決議(10/27-28會議) 02:00
+            - listitem [ref=e82]: 美國第三季GDP初值、9月PCE物價指數 20:30
+    - group [ref=e83]:
+      - generic "其餘行情與三大法人明細" [ref=e84] [cursor=pointer]
+      - text: ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕ ↕
+  - contentinfo [ref=e85]:
+    - text: 本網站內容由 AI 每日自動彙整公開資訊產生，可能有延遲或錯誤，僅供參考，不構成任何投資意見或邀約。行情為前一交易日收盤資料。
+    - group [ref=e87]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-24 10:21" [ref=e88] [cursor=pointer]

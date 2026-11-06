@@ -1,0 +1,167 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - link "盤前雷達" [ref=f1e4] [cursor=pointer]:
+        - /url: ./
+      - searchbox "查詢個股" [ref=f1e14]
+      - navigation "頁面" [ref=f1e15]:
+        - link "晨報" [ref=f1e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f1e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f1e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f1e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f1e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f1e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "建議" [ref=f1e22] [cursor=pointer]:
+          - /url: advice.html
+        - link "我的自選" [ref=f1e23] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=f1e24]:
+        - button "紅漲綠跌" [pressed] [ref=f1e25] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f1e26] [cursor=pointer]
+  - main [ref=f1e27]:
+    - generic [ref=f1e28]:
+      - heading "盤前建議" [level=1] [ref=f1e29]
+      - paragraph [ref=f1e30]: 資料截至 10/23 07:30（晨報）・訊號以 10/22 收盤計算
+    - generic [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - heading "今天的判斷" [level=2] [ref=f1e33]
+        - generic [ref=f1e34]: 未回測
+        - paragraph [ref=f1e35]: 只給方向與要盯的點，是依固定規則整理，沒有回測過。
+      - generic [ref=f1e36]:
+        - generic [ref=f1e37]:
+          - heading "方向" [level=3] [ref=f1e38]
+          - generic [ref=f1e39]: 偏空
+          - paragraph [ref=f1e40]: 費半 -6.06%（10/22）、台積電 ADR -4.63%（10/22）、10/22 三大法人合計賣超 994.67 億
+          - paragraph [ref=f1e41]: 偏多 0 項、偏空 3 項、持平 0 項
+          - paragraph [ref=f1e42]: 出處 10/23 晨報
+        - generic [ref=f1e43]:
+          - heading "要盯的點" [level=3] [ref=f1e44]
+          - paragraph [ref=f1e45]: 加權指數近 15 日收盤低點 46,293
+          - paragraph [ref=f1e46]: 依據：加權指數近 15 個交易日收盤（至 10/21）；台積電 ADR -4.63%（10/22），下跌看低點
+          - paragraph [ref=f1e47]: 出處 10/23 晨報
+    - generic [ref=f1e48]:
+      - generic [ref=f1e49]:
+        - heading "今天的訊號" [level=2] [ref=f1e50]
+        - generic [ref=f1e51]: 已回測
+        - paragraph [ref=f1e52]: 每條都有歷史回測成績；部位建議只放在 4★ 這一條，對應策略績效頁回測過的規則。
+      - generic [ref=f1e53]:
+        - article [ref=f1e54]:
+          - generic [ref=f1e55]:
+            - heading "評級 4★ 以上・每月一籃" [level=3] [ref=f1e56]
+            - generic [ref=f1e57]: 持有
+          - paragraph [ref=f1e58]: 10 月這一籃（約 10/12 起）；下次換股約 11/12
+          - generic [ref=f1e59]:
+            - generic [ref=f1e60]: 勝率 66.2%
+            - generic [ref=f1e61]: 平均每月 +3.90%
+            - generic [ref=f1e62]: 74 期
+            - generic [ref=f1e63]: 最大回撤 -24.4%
+          - paragraph [ref=f1e64]: 回測期間 2020-02-12～2026-03-12
+          - list [ref=f1e65]:
+            - listitem [ref=f1e66]: 分散買，單檔不超過可投入金額的 1/10，只用虧得起的錢：從名單只買 1 檔，約 18% 的機率 60 日內虧超過 15%；分散買 10 檔降到約 5%。
+            - listitem [ref=f1e67]: 回測最大回撤 -24.4%：要能接受帳面上虧掉這麼多，才適合照這個方法操作。
+            - listitem [ref=f1e68]: 目前加權指數在 60 日均線之下（空頭）：歷史上空頭時的 5★，60 日中位數 -5.1%、60 日內曾跌 25% 的有 27%（多頭時約 14–23%），宜降低投入或分批。
+            - listitem [ref=f1e69]: 有財務地雷的股票（見個股健檢）中途大跌的機率約高 1.5–2.5 倍；評級沒有扣分，投入金額宜更少。
+            - listitem [ref=f1e70]: 不靠單檔停損控制風險：每檔各設 15% 停損的回測反而更差（大盤急跌時全部同時停損，剛好賣在低點），風險用投入金額控制。
+          - link "看策略績效的回測 →" [ref=f1e71] [cursor=pointer]:
+            - /url: strategy.html
+        - article [ref=f1e72]:
+          - generic [ref=f1e73]:
+            - heading "評級 5★・每月一籃" [level=3] [ref=f1e74]
+            - generic [ref=f1e75]: 持有
+          - paragraph [ref=f1e76]: 10 月這一籃（約 10/12 起）；下次換股約 11/12
+          - generic [ref=f1e77]:
+            - generic [ref=f1e78]: 勝率 51.4%
+            - generic [ref=f1e79]: 平均每月 +5.16%
+            - generic [ref=f1e80]: 74 期
+            - generic [ref=f1e81]: 最大回撤 -36.7%
+          - paragraph [ref=f1e82]: 回測期間 2020-02-12～2026-03-12
+          - link "看策略績效的回測 →" [ref=f1e83] [cursor=pointer]:
+            - /url: strategy.html
+        - article [ref=f1e84]:
+          - generic [ref=f1e85]:
+            - heading "短線過熱" [level=3] [ref=f1e86]
+            - generic [ref=f1e87]: 觸發
+            - generic [ref=f1e88]: 證據強
+          - paragraph [ref=f1e89]: 1 檔（10/22 收盤）
+          - generic [ref=f1e90]:
+            - generic [ref=f1e91]: 勝率 44.0% （勝過同日一般股的比例）
+            - generic [ref=f1e92]: 10 日平均比一般股 +0.98%
+            - generic [ref=f1e93]: 3,839 次
+          - paragraph [ref=f1e94]: 回測期間 2019-01-02～2026-10-22
+          - link "看訊號回測的證據 →" [ref=f1e95] [cursor=pointer]:
+            - /url: signals.html
+        - article [ref=f1e96]:
+          - generic [ref=f1e97]:
+            - heading "大幅偏離季線" [level=3] [ref=f1e98]
+            - generic [ref=f1e99]: 觸發
+            - generic [ref=f1e100]: 證據強
+          - paragraph [ref=f1e101]: 9 檔（10/22 收盤）
+          - generic [ref=f1e102]:
+            - generic [ref=f1e103]: 勝率 45.0% （勝過同日一般股的比例）
+            - generic [ref=f1e104]: 10 日平均比一般股 +1.10%
+            - generic [ref=f1e105]: 17,357 次
+          - paragraph [ref=f1e106]: 回測期間 2019-01-02～2026-10-22
+          - link "看訊號回測的證據 →" [ref=f1e107] [cursor=pointer]:
+            - /url: signals.html
+        - article [ref=f1e108]:
+          - generic [ref=f1e109]:
+            - heading "投信連買 3 天" [level=3] [ref=f1e110]
+            - generic [ref=f1e111]: 觸發
+            - generic [ref=f1e112]: 證據中
+          - paragraph [ref=f1e113]: 3 檔（10/22 收盤）
+          - generic [ref=f1e114]:
+            - generic [ref=f1e115]: 勝率 45.8% （勝過同日一般股的比例）
+            - generic [ref=f1e116]: 10 日平均比一般股 +0.29%
+            - generic [ref=f1e117]: 12,567 次
+          - paragraph [ref=f1e118]: 回測期間 2019-01-02～2026-10-22
+          - link "看訊號回測的證據 →" [ref=f1e119] [cursor=pointer]:
+            - /url: signals.html
+        - article [ref=f1e120]:
+          - generic [ref=f1e121]:
+            - heading "創 52 週新高且量增" [level=3] [ref=f1e122]
+            - generic [ref=f1e123]: 觸發
+            - generic [ref=f1e124]: 證據中
+          - paragraph [ref=f1e125]: 3 檔（10/22 收盤）
+          - generic [ref=f1e126]:
+            - generic [ref=f1e127]: 勝率 44.1% （勝過同日一般股的比例）
+            - generic [ref=f1e128]: 10 日平均比一般股 +0.76%
+            - generic [ref=f1e129]: 6,181 次
+          - paragraph [ref=f1e130]: 回測期間 2019-01-02～2026-10-22
+          - link "看訊號回測的證據 →" [ref=f1e131] [cursor=pointer]:
+            - /url: signals.html
+        - article [ref=f1e132]:
+          - generic [ref=f1e133]:
+            - heading "資金持續撤出的板塊" [level=3] [ref=f1e134]
+            - generic [ref=f1e135]: 觸發
+            - generic [ref=f1e136]: 證據反向
+          - paragraph [ref=f1e137]: 16 個板塊（10/22 收盤）
+          - generic [ref=f1e138]:
+            - generic [ref=f1e139]: 勝率 42.5% （勝過同日一般股的比例）
+            - generic [ref=f1e140]: 10 日平均比一般股 -0.27%
+            - generic [ref=f1e141]: 98,628 次
+          - paragraph [ref=f1e142]: 回測期間 2019-01-02～2026-10-22
+          - link "看訊號回測的證據 →" [ref=f1e143] [cursor=pointer]:
+            - /url: signals.html
+        - article [ref=f1e144]:
+          - generic [ref=f1e145]:
+            - heading "資金排名墊底的板塊" [level=3] [ref=f1e146]
+            - generic [ref=f1e147]: 觸發
+            - generic [ref=f1e148]: 證據反向
+          - paragraph [ref=f1e149]: 5 個板塊（10/22 收盤）
+          - generic [ref=f1e150]:
+            - generic [ref=f1e151]: 勝率 41.0% （勝過同日一般股的比例）
+            - generic [ref=f1e152]: 10 日平均比一般股 -0.59%
+            - generic [ref=f1e153]: 41,077 次
+          - paragraph [ref=f1e154]: 回測期間 2019-01-02～2026-10-22
+          - link "看訊號回測的證據 →" [ref=f1e155] [cursor=pointer]:
+            - /url: signals.html
+  - contentinfo [ref=f1e156]:
+    - text: 非投資建議；判斷區未經回測，只是依固定規則整理的方向。回測使用證交所與櫃買中心公開的個股日資料。歷史表現不代表未來結果。
+    - group [ref=f1e158]:
+      - generic "✓ 資料狀態:全部按時更新 · 檢查 10-24 10:21" [ref=f1e159] [cursor=pointer]

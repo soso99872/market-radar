@@ -1,0 +1,27 @@
+- generic [active] [ref=f6e1]:
+  - banner [ref=f6e2]:
+    - generic [ref=f6e3]:
+      - link "盤前雷達" [ref=f6e4] [cursor=pointer]:
+        - /url: ./
+      - searchbox "查詢個股" [ref=f6e14]
+      - navigation "頁面" [ref=f6e15]:
+        - link "晨報" [ref=f6e16] [cursor=pointer]:
+          - /url: ./
+        - link "板塊資金" [ref=f6e17] [cursor=pointer]:
+          - /url: sectors.html
+        - link "起漲雷達" [ref=f6e18] [cursor=pointer]:
+          - /url: radar.html
+        - link "觀察名單" [ref=f6e19] [cursor=pointer]:
+          - /url: watch.html
+        - link "訊號回測" [ref=f6e20] [cursor=pointer]:
+          - /url: signals.html
+        - link "策略績效" [ref=f6e21] [cursor=pointer]:
+          - /url: strategy.html
+        - link "我的自選" [ref=f6e22] [cursor=pointer]:
+          - /url: my.html
+      - group "漲跌顏色" [ref=f6e23]:
+        - button "紅漲綠跌" [pressed] [ref=f6e24] [cursor=pointer]
+        - button "綠漲紅跌" [ref=f6e25] [cursor=pointer]
+  - main [ref=f6e26]:
+    - generic "載入中" [ref=f6e27]
+  - contentinfo [ref=f6e32]: 名單依公開的月營收、股價與成交資料,用固定規則篩出;每個交易日收盤後自動更新,開啟頁面時若證交所已公布更新的收盤資料,上市股會直接用官方資料即時更新。 不是買賣建議,也不代表會漲。回測期間是 AI 多頭行情,空頭時表現可能差很多。

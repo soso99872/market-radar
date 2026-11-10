@@ -62,7 +62,9 @@ jobs:
         run: python scripts/margin.py || echo "::warning::margin 失敗"
       - name: 財報品質(地雷檢查)與處置 / 注意股
         run: python scripts/quality.py || echo "::warning::quality 失敗"
-      - name: 個股基本資料(30 天內抓過就略過)
+      - name: 個股基本資料(30 天內抓過就略過;程式自己限 7 分鐘,這裡再設上限保底)
+        timeout-minutes: 10
+        continue-on-error: true
         run: python scripts/profile.py || echo "::warning::profile 失敗"
       - name: 本益比每月快照
         run: python scripts/valuation.py || echo "::warning::valuation 失敗"

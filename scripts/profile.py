@@ -4,8 +4,9 @@
   Yahoo 股市 公司資料頁   產業類別、主要經營業務、相關概念股(頁面只列前幾個)
   MoneyDJ 基本資料頁     營收比重(公司年報揭露的產品別比重,每年更新一次)、成立與上市日期、股本
 
-對象是有個股面板的股票(data/stocks/*.json)。這些資料一年才變幾次,每檔 30 天重抓一次,
-每次執行最多抓 MAX_PER_RUN 檔,避免拖長排程。
+對象是有個股面板的股票(data/stocks/*.json)。這些資料一年才變幾次,每檔約 30 天重抓一次
+(依代號錯開 0~14 天,避免同一天抓的一千多檔同時到期),每次執行最多抓 MAX_PER_RUN 檔、
+最多跑 BUDGET_SEC 秒,時間到就先存檔,剩下的下次再抓,不拖垮整個排程。
 
 輸出 data/profile/latest.json
   {代號: {"ind", "biz", "mix": [[項目, 比重%]], "mix_year", "concepts": [...], "founded", "listed", "capital", "upd"}}
@@ -27,21 +28,22 @@ IND_OUT = os.path.join(history.ROOT, "data", "profile", "industry.json")
 STOCKS = os.path.join(history.ROOT, "data", "stocks")
 STALE_DAYS = 30
 MAX_PER_RUN = 120
+BUDGET_SEC = int(os.environ.get("PROFILE_BUDGET_SEC", "420"))
 PAUSE = 1.0
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129 Safari/537.36"}
 
 
 def fetch(url, encoding):
-    for attempt in range(3):
+    for attempt in range(2):
         try:
             req = urllib.request.Request(url, headers=UA)
-            with urllib.request.urlopen(req, timeout=30) as r:
+            with urllib.request.urlopen(req, timeout=15) as r:
                 return r.read().decode(encoding, errors="replace")
         except Exception as e:  # noqa: BLE001
-            if attempt == 2:
+            if attempt == 1:
                 print("profile: %s %s" % (url, e), file=sys.stderr)
                 return ""
-            time.sleep(5 * (attempt + 1))
+            time.sleep(3)
 
 
 def text(s):
@@ -149,20 +151,30 @@ def main():
             db = json.load(f)
     except (OSError, ValueError):
         db = {}
-    codes = sorted(fn[:-5] for fn in os.listdir(STOCKS) if fn.endswith(".json") and fn != "index.json")
+    codes = sorted(fn[:-5] for fn in os.listdir(STOCKS) if fn.endswith(".json") and history.STOCK.match(fn[:-5]))
     try:   # 查詢索引裡的其他股票也補(排在有面板的股票之後)
         with open(os.path.join(STOCKS, "index.json"), encoding="utf-8") as f:
             codes += sorted(set(json.load(f)["s"]) - set(codes))
     except (OSError, ValueError, KeyError):
         pass
-    cutoff = (datetime.now(history.TZ) - timedelta(days=STALE_DAYS)).strftime("%Y-%m-%d")
-    todo = [c for c in codes if db.get(c, {}).get("upd", "") < cutoff]
+    now = datetime.now(history.TZ)
+
+    def stale(c):   # 依代號錯開到期日,同一天補抓的股票不會在同一天一起到期
+        cutoff = (now - timedelta(days=STALE_DAYS + int(c[:4]) % 15)).strftime("%Y-%m-%d") if c[:4].isdigit() else             (now - timedelta(days=STALE_DAYS)).strftime("%Y-%m-%d")
+        return db.get(c, {}).get("upd", "") < cutoff
+
+    todo = [c for c in codes if stale(c)]
     order = {c: k for k, c in enumerate(codes)}
     todo.sort(key=lambda c: (db.get(c, {}).get("upd", ""), order[c]))   # 從沒抓過、最舊的優先;同樣沒抓過時有面板的先
     limit = int(sys.argv[1]) if len(sys.argv) > 1 else MAX_PER_RUN
     today = datetime.now(history.TZ).strftime("%Y-%m-%d")
-    done = 0
+    done = tried = 0
+    start = time.time()
     for c in todo[:limit]:
+        if time.time() - start > BUDGET_SEC:
+            print("profile: 超過 %d 秒,先存檔,剩下的下次再抓" % BUDGET_SEC, file=sys.stderr)
+            break
+        tried += 1
         rec = {}
         rec.update(yahoo(c))
         time.sleep(PAUSE)
@@ -177,7 +189,7 @@ def main():
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(db, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
     write_shards(db)
-    print("profile updated", done, "of", len(todo[:limit]), "| total", len(db), "| still stale", max(0, len(todo) - done))
+    print("profile updated", done, "of", tried, "tried (%d due) in %.0fs" % (len(todo), time.time() - start), "| total", len(db), "| still stale", max(0, len(todo) - done))
 
 
 if __name__ == "__main__":

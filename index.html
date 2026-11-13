@@ -44,6 +44,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 20px 16px 48px; display: grid
 .gauge p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
 .gauge .lbl-sm { font-size: 15px; white-space: normal; }
 .gauge .sb { margin-top: 4px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.gauge .sb a:hover { color: var(--text); }
 @media (max-width: 760px) { .head { grid-template-columns: 1fr; } .gauge { max-width: none; } }
 
 /* 今天起的事件(時間軸):手機直排、寬螢幕橫排;重要程度用文字加色,不用紅綠 */
@@ -213,6 +214,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
 
 <script src="assets/common.js"></script>
 <script src="assets/brief.js"></script>
+<script src="assets/advice.js"></script>
 <script src="assets/live.js"></script>
 <script>
 (function () {
@@ -314,8 +316,12 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
     var h = [];
     if (r.sample) h.push('<div class="banner">目前顯示的是<b>範例資料</b>,用來預覽版面。第一份真實報告產生後會自動取代。</div>');
 
-    var s = r.sentiment || {}, score = s.score || 0;
-    var bs = MRBrief.basis(r);
+    // 開盤情緒跟建議頁「方向」同一套規則（MRAdvice.judge，PRD 8.8）；晨報 AI 的 label 不當方向
+    var s = r.sentiment || {}, jd = MRAdvice.judge(r).dir;
+    var lc = jd ? { "偏多": 1, "偏空": -1 }[jd.label] || 0 : 0, score = lc * 2;
+    var bs = { show: !!jd, text: jd ? "依據：" + jd.text + "（" + jd.tally + "）" : "" };
+    // AI 敘述常帶自己的結論，標明出處；跟固定規則不同時直接寫出來
+    var ai = s.summary ? "晨報 AI 看法" + (jd && s.label && s.label !== jd.label ? "（它判斷" + s.label + "，跟上面的固定規則不同）" : "") + "：" + s.summary : "";
     var meter = [-2, -1, 0, 1, 2].map(function (v) {
       var on = score === 0 ? v === 0 : (score > 0 ? v > 0 && v <= score : v < 0 && v >= score);
       var c = v > 0 ? "var(--up)" : v < 0 ? "var(--down)" : "var(--muted)";
@@ -325,9 +331,9 @@ footer { max-width: 1280px; margin: 0 auto; padding: 0 16px 32px; color: var(--f
       ' · 更新 ' + esc((r.generated_at || "").slice(11, 16)) + '</div><h1>' + esc(r.headline) + "</h1></div>" +
       '<div class="gauge">' + (bs.show ? '<div class="meter" aria-hidden="true">' + meter + "</div>" : "") +
       "<div>" + (bs.show
-        ? '<div class="lbl ' + dir(score) + '">開盤情緒 ' + esc(s.label) + "</div><p>" + esc(s.summary) + "</p>"
+        ? '<div class="lbl ' + dir(lc) + '">開盤情緒 ' + esc(jd.label) + "</div>" + (ai ? '<p class="ai">' + esc(ai) + "</p>" : "")
         : '<div class="lbl flat lbl-sm">開盤情緒：依據不足，不顯示方向</div>') +
-      (bs.text ? '<div class="sb" id="sent-basis">' + esc(bs.text) + "</div>" : "") + "</div></div></section>");
+      (bs.text ? '<div class="sb" id="sent-basis">' + esc(bs.text) + ' <a href="advice.html">同建議頁規則</a>' + (r.date !== dates[0] ? "（建議頁只顯示最新一天）" : "") + "</div>" : "") + "</div></div></section>");
     h.push(evSection(r));
 
     h.push('<section class="groups">' + (r.markets || []).map(function (g) {

@@ -1,0 +1,83 @@
+name: 研究:004 短線進場規則 2011–2018 一次性考試
+
+on:
+  push:
+    branches: [research/oos-2010]
+    paths: [research/entry-2011/trigger.txt]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: entry-2011
+  cancel-in-progress: false
+
+jobs:
+  exam:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PYTHONIOENCODING: utf-8
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v5
+      # 跟本機通過對照的環境相同
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.8" }
+      - run: pip install -q pandas==2.0.3 numpy==1.24.4
+      - name: 只考一次
+        run: test ! -f research/entry-2011/out/exam-4.txt
+      - name: 取回 2004–2018 資料
+        run: |
+          pick() { gh run list -R "$GITHUB_REPOSITORY" --workflow "$1" -b research/oos-2010 -L 20 --json databaseId,headSha \
+                   -q ".[] | select(.headSha==\"$2\") | .databaseId" | head -1; }
+          a=$(pick oos-2010.yml f0ebbc8a122b401a3947841f1fc2e375d22fcbb5); b=$(pick oos-2018.yml 6fad00b8ce503def3746043a5b060f7c8e7b866c); c=$(pick pre2010.yml 1858d6bb392685d0a84e496df869e11eef5c2e51)
+          echo "runs: $a $b $c"
+          gh run download "$a" -R "$GITHUB_REPOSITORY" -D /tmp/art1
+          gh run download "$b" -R "$GITHUB_REPOSITORY" -D /tmp/art2
+          gh run download "$c" -R "$GITHUB_REPOSITORY" -D /tmp/pre
+          for d in /tmp/art1/history-* /tmp/art2/history-* /tmp/pre/pre-*; do cp -rn "$d/data/." data/ 2>/dev/null || true; done
+          cp -rn /tmp/art1/revenue-old/data/. data/ 2>/dev/null || true
+      - name: 補缺口(2018-01 前幾天、2013-06 月營收;已有的會跳過)
+        run: |
+          R=research/entry-2011/out; mkdir -p $R
+          python research/oos-2010/backfill_old.py 2018 || true
+          python research/oos-2010/revenue_old.py || true
+          for y in 2010 2011 2012 2013 2014 2015 2016 2017 2018; do echo "$y $(ls data/history/$y | wc -l)"; done | tee $R/jobs.txt
+          ls data/revenue/2013-06.json >> $R/jobs.txt 2>&1
+      - name: 核對凍結程式指紋(換行統一成 LF 再算)
+        working-directory: research/entry-2011
+        run: |
+          printf '%s\n' \
+            "b46cd5d572fab175dd6b519cdaee8ff1eea76c04809c01d5a82bd94276bcd2c2  exam_2011_18.py" \
+            "c479abb0d07dbfbf391db879c8b3cdeca7e19394f6712f64fa4404c5c8fc68dc  final.py" \
+            "e35972fd0163199ec45a053b9daa4836070a3ebf29b95df3b08d8e18809f59cc  combo.py" \
+            "a1385b437884ca136d03b91060c93e665012246f5ae12100d15bba49386383ba  entry_backtest.py" \
+            "8e9bc5e5b96d5fb8d04d012c64228616a9f85d221437cc03bc478e292026f02e  load.py" > /tmp/sha.txt
+          for f in exam_2011_18.py final.py combo.py entry_backtest.py load.py; do echo "$(tr -d '\r' < $f | sha256sum | cut -d' ' -f1)  $f"; done > /tmp/now.txt
+          diff /tmp/sha.txt /tmp/now.txt
+          cp /tmp/now.txt out/sha.txt
+      # load.py 用相對路徑找 products/market-radar/scripts，照本機目錄排好，程式不用改
+      - name: 排目錄
+        run: |
+          mkdir -p /tmp/w/sprints/004-market-radar /tmp/w/products
+          ln -s "$GITHUB_WORKSPACE" /tmp/w/products/market-radar
+          cp -r research/entry-2011 /tmp/w/sprints/004-market-radar/backtest
+      - name: 先跑對照組,不吻合就停(不跑考試)
+        run: |
+          cd /tmp/w/sprints/004-market-radar/backtest
+          python exam_2011_18.py --control > "$GITHUB_WORKSPACE/research/entry-2011/out/control-4.txt"
+      - name: 考試(只跑一次)
+        run: |
+          cd /tmp/w/sprints/004-market-radar/backtest
+          O="$GITHUB_WORKSPACE/research/entry-2011/out"
+          python exam_2011_18.py > "$O/exam-4.txt" 2> "$O/err.txt"
+          python exam_2011_18.py --stars 3 > "$O/exam-3.txt" 2>> "$O/err.txt"
+      - name: 結果寫回分支
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add research/entry-2011/out
+          git commit -m "研究:004 短線進場規則 2011–2018 考試結果" && git pull --rebase -q && git push

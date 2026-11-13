@@ -87,6 +87,20 @@ class LoadBrkTest(unittest.TestCase):
         r = radar.load_brk(self.p, today=TODAY)["2454"]
         self.assertEqual([(x["broker"], x.get("stale")) for x in r], [("甲", None)])
 
+    def test_anon_same_target_as_named_dropped(self):
+        # 2454:09-25 瑞銀 7,300,11-03 新聞「目標價以瑞銀證券的7,300元最高」解析成未具名 7,300,不能算兩家
+        self.write(json.dumps([ev("2454", "2026-09-25", broker="瑞銀", target=7300), ev("2454", "2026-10-22", broker="花旗", target=6800),
+                               ev("2454", "2026-11-03", broker="未具名", target=7300), ev("2330", "2026-11-03", broker="未具名", target=7300)]))
+        r = radar.load_brk(self.p, today=datetime.date(2026, 11, 13))
+        self.assertEqual([x["broker"] for x in r["2454"]], ["花旗", "瑞銀"])
+        self.assertEqual([x["broker"] for x in r["2330"]], ["未具名"])
+        self.assertEqual(radar.brk_tgt(r["2454"], 3970)["n"], 2)
+
+    def test_anon_other_target_kept(self):
+        self.write(json.dumps([ev("2454", "2026-10-01", broker="瑞銀", target=7300), ev("2454", "2026-10-02", broker="未具名", target=7000)]))
+        r = radar.load_brk(self.p, today=TODAY)["2454"]
+        self.assertEqual([x["broker"] for x in r], ["未具名", "瑞銀"])
+
 
 class TgtStaleTest(unittest.TestCase):
     def test_6213_dropped(self):

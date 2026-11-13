@@ -204,6 +204,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 48px; display: grid
       if (r.mdd != null) pair(line, "最大回撤", (r.mdd < 0 ? "-" : "") + dd + "%");
       x.appendChild(line);
       x.appendChild(el("p", "s-span", "回測期間 " + s.span[0] + "～" + s.span[1]));
+      if (strat) x.appendChild(el("p", "s-span", "這是回測不是實盤：不含已下市股、規則是事後訂的，數字偏樂觀。評級 4★ 以上的實盤追蹤 2026-10-09 才開始，成績見雷達頁。"));
     } else {
       x.appendChild(el("p", "s-none", "回測期間晚於資料日，不顯示成績"));
     }

@@ -389,7 +389,8 @@ html.nosplash #splash, #splash.done { opacity: 0; visibility: hidden; pointer-ev
 
 /* 說明按鈕(MR.help):標題旁的「?」,點開顯示怎麼看與回測證明 */
 .help-btn { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-left: 6px; padding: 0; vertical-align: 2px;
-  border: 1px solid var(--line); border-radius: 50%; background: var(--panel-2); color: var(--muted); font: 700 12px/1 var(--sans); cursor: pointer; }
+  border: 1px solid var(--line); border-radius: 50%; background: var(--panel-2); color: var(--muted); font: 700 12px/1 var(--sans); cursor: pointer; position: relative; }
+.help-btn::before { content: ""; position: absolute; inset: -12px; }   /* 看起來 20px,點擊範圍 44×44 */
 .help-btn:hover, .help-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
 .help-body { font-size: 14px; color: var(--muted); line-height: 1.7; }
 .help-body p { margin: 10px 0 0; }

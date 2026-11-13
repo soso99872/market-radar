@@ -789,6 +789,8 @@ def load_brk(path, limit=BRK_MAX, today=None, days=BRK_DAYS):
                 if top < old:   # 最新一筆也超過 365 天:不退回
                     continue
                 fresh = [dict(x, stale=True) for x in v if str(x.get("date") or "")[:10] == top]
+            named = {x.get("target") for x in fresh if x.get("broker") != "未具名"}
+            fresh = [x for x in fresh if x.get("broker") != "未具名" or x.get("target") not in named]   # 未具名轉述同期具名券商的同金額(例「以瑞銀證券的7,300元最高」),不重複算
             out[c] = sorted(fresh, key=lambda x: str(x.get("date") or ""), reverse=True)[:limit]
         return out
     except (OSError, ValueError):
